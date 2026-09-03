@@ -9,6 +9,7 @@ exports.up = function (knex) {
     table.string('pw_hash').notNullable();
     table.boolean('is_admin').defaultTo(false);
     table.boolean('is_evaluator').defaultTo(false);
+    table.boolean('is_planner').defaultTo(false);
   });
 };
 
