@@ -21,7 +21,7 @@ app.get('/users', (request, response) => {
 
 // /domain route that returns domain table
 app.get('/domain', (request, response) => {
-    knex('domain')
+    knex('domains')
         .select('*')
         .then(domain => response.json(domain))
 });
@@ -34,14 +34,14 @@ app.get('/personnel', (request, response) => {
 });
 
 // /weaponsystems route that returns weapon_systems table
-app.get('/weaponsystems', (response, request) => {
+app.get('/weaponsystems', (request, response) => {
     knex('weapon_systems')
         .select('*')
         .then(systems => response.json(systems))
 });
 
 // /crewroles route that returns crew_roles tablea
-app.get('crew_roles', (request, response) =>{
+app.get('/crewroles', (request, response) =>{
     knex('crew_roles')
         .select('*')
         .then(roles => response.json(roles))
