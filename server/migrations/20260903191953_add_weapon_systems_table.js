@@ -8,7 +8,11 @@ exports.up = function (knex) {
     table.string('name').notNullable();
     table.string('acronym');
     table.string('description');
-    table.integer('domain_id').notNullable().references('domains.id');
+    table
+      .integer('domain_id')
+      .notNullable()
+      .references('domains.id')
+      .onDelete('CASCADE');
   });
 };
 

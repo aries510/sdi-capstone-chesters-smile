@@ -5,8 +5,16 @@
 exports.up = function (knex) {
   return knex.schema.createTable('crew_role_certifications', (table) => {
     table.increments('id').primary();
-    table.integer('crew_role_id').notNullable().references('crew_roles.id');
-    table.integer('certifications_id').notNullable().references('certifications.id');
+    table
+      .integer('crew_role_id')
+      .notNullable()
+      .references('crew_roles.id')
+      .onDelete('CASCADE');
+    table
+      .integer('certifications_id')
+      .notNullable()
+      .references('certifications.id')
+      .onDelete('CASCADE');
     table.unique(['crew_role_id', 'certifications_id']);
   });
 };
