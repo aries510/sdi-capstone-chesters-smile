@@ -23,14 +23,13 @@ erDiagram
     string pw_hash
     boolean is_admin
     boolean is_evaluator
+    boolean is_planner
   }
   personnel {
     int id PK
     string rank
     string lname
     string fname
-    string service_number
-    boolean active
   }
   crew_roles {
     int id PK
