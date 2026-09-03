@@ -55,7 +55,7 @@ app.get('/weaponsystems', (request, response) => {
             'weapon_systems.name', 
             'weapon_systems.acronym', 
             'weapon_systems.description', 
-            'domains.name as domain_id'
+            'domains.name as domain'
         )
         .then(systems => response.json(systems))
 });
