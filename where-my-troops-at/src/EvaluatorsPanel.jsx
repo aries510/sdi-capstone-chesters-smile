@@ -1,7 +1,9 @@
 import { useState } from "react";
 
-function EvaluatorsPanel() {
-    const [evaluators, setEvaluators] = useState([]);
+function EvaluatorsPanel({ evaluators }) {
+    const handleEdit = (id) => {
+        console.log('Edit evaluator', id)
+    }
 
     return (
         <div className="panel">
