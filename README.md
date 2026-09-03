@@ -15,6 +15,8 @@ erDiagram
     int id PK
     string username
     string pw_hash
+    boolean is_admin
+    boolean is_evaluator
   }
   personnel {
     int id PK
