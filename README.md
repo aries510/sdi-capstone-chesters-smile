@@ -23,8 +23,6 @@ erDiagram
     string rank
     string lname
     string fname
-    string service_number
-    boolean active
   }
   crew_roles {
     int id PK
