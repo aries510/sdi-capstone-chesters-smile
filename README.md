@@ -66,3 +66,12 @@ erDiagram
     int id_certifications FK
   }
 ```
+---
+
+## <summary> Resources </summary>
+<details>
+
+### [Calendar.js]('https://calendarjs.com/docs')
+
+
+</details>
