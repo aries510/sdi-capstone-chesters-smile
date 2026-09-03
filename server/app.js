@@ -54,5 +54,27 @@ app.get('/certs', (request, response) => {
         .then(certs => response.json(certs))
 });
 
-//
+// /quals route returns crew_qualifications table
+app.get('/quals', (request, response) => {
+    knex('crew_qualifications')
+        .select('*')
+        .then(quals => response.json(quals))
+});
+
+// /perscerts route returns personnel_certifications table
+app.get('/perscerts', (request, response) => {
+    knex('personnel_certifications')
+        .select('*')
+        .then(pcerts => response.json(pcerts))
+});
+
+// /crewcerts route returns crew_role_certifications
+app.get('/crewcerts', (request, response) => {
+    knex('crew_role_certifications')
+        .select('*')
+        .then(crewcerts => response.json(crewcerts))
+});
+
+
+
 app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
