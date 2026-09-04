@@ -42,11 +42,29 @@ const stages = [
     "Plan / CONOP",
     "Personnel",
     "Readiness",
-    "Publish",
+    "Approval",
 ];
 
 function MPC() {
     const [showMissionForm, setShowMissionForm] = useState(false);
+    const [newMission, setNewMission] = useState({
+        name: "",
+        type: "",
+        startDate: "",
+        endDate: "",
+        location: "",
+        oic: "",
+        purpose: "",
+    });
+
+    function handleChange(event) {
+        const { name, value } = event.target;
+
+        setNewMission({
+            ...newMission,
+            [name]: value,
+        });
+    }
 
     return (
         <main className="mpc-page">
@@ -86,8 +104,11 @@ function MPC() {
                                 <label htmlFor="missionName">Mission Name</label>
                                 <input
                                     id="missionName"
+                                    name="name"
                                     type="text"
                                     placeholder="Range Support"
+                                    value={newMission.name}
+                                    onChange={handleChange}
                                 />
                             </div>
 
