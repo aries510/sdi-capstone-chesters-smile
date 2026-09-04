@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function EvaluatorsPanel({ evaluators }) {
+function EvaluatorsPanel({ evaluators = [] }) {
     const handleEdit = (id) => {
         console.log('Edit evaluator', id)
     }
