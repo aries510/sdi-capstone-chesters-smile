@@ -13,11 +13,7 @@ app.get('/', (request, response) => {
 });
 
 // /users route that returns users table
-app.get('/users', (request, response) => {
-  knex('users')
-    .select('*')
-    .then((users) => response.json(users));
-});
+app.use('/users', require('./routes/users'));
 
 // /domain route that returns domains table
 app.use('/domains', require('./routes/domains'));
