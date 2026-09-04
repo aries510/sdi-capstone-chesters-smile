@@ -26,17 +26,37 @@ app.get('/domain', (request, response) => {
         .then(domain => response.json(domain))
 });
 
+// Route for domain per the id
+app.get('/domain/:id', (request, response) => {
+    const { id } = request.params
+
+    knex('domains')
+        .where('id', id)
+        .first()
+        .then(domain => response.json(domain))
+});
+
 // /personnel route that returns personnel table
-app.get('/personnel', (request, response) => {
+app.get('/personnel/:id', (request, response) => {
+    const { id } = request.params;
+
     knex('personnel')
-        .select('*')
+        .where('id', id)
+        .first()
         .then(personnel => response.json(personnel))
 });
 
 // /weaponsystems route that returns weapon_systems table
 app.get('/weaponsystems', (request, response) => {
     knex('weapon_systems')
-        .select('*')
+        .join('domains', 'weapon_systems.domain_id', '=', 'domains.id')
+        .select(
+            'weapon_systems.id', 
+            'weapon_systems.name', 
+            'weapon_systems.acronym', 
+            'weapon_systems.description', 
+            'domains.name as domain'
+        )
         .then(systems => response.json(systems))
 });
 

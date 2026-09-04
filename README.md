@@ -80,3 +80,19 @@ erDiagram
 
 
 </details>
+
+
+[URLS]
+
+http://localhost:8080
+../ - Home Page no data
+../users - Users table
+../domain - Domains table
+../domain/:id - Domain specified by ID#
+../personnel/:id - Personnel specified by ID#
+../weaponsystems - Weapon Systems table
+../crewroles - Crew Roles table
+../certs - Certifications table
+../quals - Qualifications table
+../perscerts - Personnel certifications table
+../crewcerts - Crew Role certifications table
