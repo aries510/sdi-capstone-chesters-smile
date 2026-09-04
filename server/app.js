@@ -1,80 +1,62 @@
 const express = require('express');
 const app = express();
-const PORT = 8080;
+const port = 8080;
 const cors = require('cors');
-const knex = require('knex')(require('./knexfile.js')['development']);
 
 app.use(express.json());
 app.use(cors());
 
 // API homepage route
 app.get('/', (request, response) => {
-    response.status(200).send('Chester Smiles API Homepage....')
+  response.status(418).send('Chester Smiles API Homepage....');
+});
+
+app.get('/brew', (req, res) => {
+  res.status(418).json({
+    error: "I'm a teapot",
+    message: 'This server refuses to brew coffee because it is a teapot.',
+  });
 });
 
 // /users route that returns users table
-app.get('/users', (request, response) => {
-    knex('users')
-        .select('*')
-        .then(users => response.json(users))
-});
+app.use('/users', require('./routes/users'));
 
 // /domain route that returns domain table
 app.get('/domain', (request, response) => {
-    knex('domains')
-        .select('*')
-        .then(domain => response.json(domain))
+  knex('domains')
+    .select('*')
+    .then((domain) => response.json(domain));
 });
 
 // /personnel route that returns personnel table
 app.get('/personnel', (request, response) => {
-    knex('personnel')
-        .select('*')
-        .then(personnel => response.json(personnel))
+  knex('personnel')
+    .select('*')
+    .then((personnel) => response.json(personnel));
 });
 
 // /weaponsystems route that returns weapon_systems table
 app.get('/weaponsystems', (request, response) => {
-    knex('weapon_systems')
-        .select('*')
-        .then(systems => response.json(systems))
+  knex('weapon_systems')
+    .select('*')
+    .then((systems) => response.json(systems));
 });
 
 // /crewroles route that returns crew_roles tablea
-app.get('/crewroles', (request, response) =>{
-    knex('crew_roles')
-        .select('*')
-        .then(roles => response.json(roles))
-});
+app.use('/crewroles', require('./routes/crewRoles'));
 
 // /certs route returns certifications table
-app.get('/certs', (request, response) => {
-    knex('certifications')
-        .select('*')
-        .then(certs => response.json(certs))
-});
+app.use('/certs', require('./routes/certs'));
 
 // /quals route returns crew_qualifications table
-app.get('/quals', (request, response) => {
-    knex('crew_qualifications')
-        .select('*')
-        .then(quals => response.json(quals))
-});
+app.use('/quals', require('./routes/crewQualifications'));
 
 // /perscerts route returns personnel_certifications table
-app.get('/perscerts', (request, response) => {
-    knex('personnel_certifications')
-        .select('*')
-        .then(pcerts => response.json(pcerts))
-});
+app.use('/perscerts', require('./routes/personnelCertifications'));
 
 // /crewcerts route returns crew_role_certifications
-app.get('/crewcerts', (request, response) => {
-    knex('crew_role_certifications')
-        .select('*')
-        .then(crewcerts => response.json(crewcerts))
-});
+app.use('/crewcerts', require('./routes/crewCertifications'));
 
-
-
-app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
+app.listen(port, () =>
+  console.log(`Server is running on http://localhost:${port}`),
+);

@@ -6,7 +6,7 @@ function CertificationCatalog() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetch(`${import.meta.env.VITE_API_URL}/certifications`)
+        fetch(`http://127.0.0.1:8080/certs`)
             .then(res => res.json())
             .then(data => {
                 setCertifications(data)
@@ -18,15 +18,9 @@ function CertificationCatalog() {
             })
     }, [])
 
-    const filteredCertifications = certifications.filter(cert => {
-        const term = query.toLowerCase()
-        return (
-            cert.name?.toLowerCase().includes(term) ||
-            cert.owner?.toLowerCase().includes(term) ||
-            cert.expiration_date?.toLowerCase().includes(term) ||
-            cert.issuing_authority?.toLowerCase().includes(term)
-        )
-    })
+    const filteredCertifications = certifications.filter(cert =>
+        cert.name?.toLowerCase().includes(query.toLowerCase())
+    )
 
     return (
         <div className="cert-catalog">
@@ -34,7 +28,7 @@ function CertificationCatalog() {
             <input
                 type="text"
                 className="cert-search"
-                placeholder="Search by certification, owner, expiration date, or issuing authority."
+                placeholder="Search by certification."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
             />
@@ -47,9 +41,7 @@ function CertificationCatalog() {
                         <li>No certifications found.</li>
                     ) : (
                         filteredCertifications.map(cert => (
-                            <li key={cert.id}>
-                                {cert.name} — {cert.owner} | Expires: {cert.expiration_date} | {cert.issuing_authority}
-                            </li>
+                            <li key={cert.id}>{cert.name}</li>
                         ))
                     )}
                 </ul>
