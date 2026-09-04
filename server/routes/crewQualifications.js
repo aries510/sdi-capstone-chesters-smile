@@ -9,13 +9,16 @@ router.get('/', (req, res) => {
   const { member } = req.query;
 
   const query = knex('crew_qualifications')
+    .select('personnel.id as personId')
     .select('personnel.rank')
     .select(
       knex.raw("personnel.first_name || ' ' || personnel.last_name as member"),
     )
     .select(
       knex.raw(`json_agg(json_build_object(
+        'roleId', crew_roles.id,
         'role', crew_roles.name,
+        'systemId', weapon_systems.id,
         'system', weapon_systems.name,
         'qualified_date', crew_qualifications.qualified_date
       )) as qualifications`),
@@ -57,13 +60,16 @@ router.get('/:personId', (req, res) => {
   }
 
   const query = knex('crew_qualifications')
+    .select('personnel.id as personId')
     .select('personnel.rank')
     .select(
       knex.raw("personnel.first_name || ' ' || personnel.last_name as member"),
     )
     .select(
       knex.raw(`json_agg(json_build_object(
+        'roleId', crew_roles.id,
         'role', crew_roles.name,
+        'systemId', weapon_systems.id,
         'system', weapon_systems.name,
         'qualified_date', crew_qualifications.qualified_date
       )) as qualifications`),
