@@ -14,7 +14,7 @@ function EvaluatorsPanel({ evaluators }) {
             <ul>
                 {evaluators.map(e => (
                     <li key={e.id}>
-                        {e.name} | Training Quals | Trainees -{' '}
+                        {e.username} | Training Quals | Trainees -{' '}
                         <button onClick={() => handleEdit(e.id)}>Edit</button>
                     </li>
                 ))}

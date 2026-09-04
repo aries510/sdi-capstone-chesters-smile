@@ -10,12 +10,12 @@ function AdminHome() {
     const [trainees, setTrainees] = useState([]);
 
     useEffect(() => {
-        fetch(`${import.meta.env.API_URL}/evaluators`)
+        fetch(`http://127.0.0.1:8080/users`)
             .then(res => res.json())
-            .then(setEvaluators)
+            .then(users => setEvaluators(users.filter(u => u.is_evaluator)))
             .catch(console.error)
 
-        fetch(`${import.meta.env.API_URL}/trainees`)
+        fetch('http://127.0.0.1:8080/personnel')
             .then(res => res.json())
             .then(setTrainees)
             .catch(console.error)
@@ -30,8 +30,8 @@ function AdminHome() {
 
             <div className='eval-trainee-list'>
                 <h3>Evaluators and Trainees</h3>
-                <ul>{evaluators.map(e => <li key={e.id}>{e.name}</li>)}</ul>
-                <ul>{trainees.map(t => <li key={t.id}>{t.name}</li>)}</ul>
+                <ul>{evaluators.map(e => <li key={e.id}>{e.username}</li>)}</ul>
+                <ul>{trainees.map(t => <li key={t.id}>{t.rank} {t.first_name} {t.last_name}</li>)}</ul>
             </div>
 
             <div className='admin-actions'>

@@ -6,7 +6,7 @@ function CertificationCatalog() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetch(`${import.meta.env.VITE_API_URL}/certs`)
+        fetch(`http://127.0.0.1:8080/certs`)
             .then(res => res.json())
             .then(data => {
                 setCertifications(data)
