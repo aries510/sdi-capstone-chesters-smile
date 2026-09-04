@@ -17,7 +17,8 @@ router.get('/', (req, res) => {
       knex.raw(`json_agg(json_build_object(
         'certification', certifications.name,
         'date_earned', personnel_certifications.date_earned,
-        'expiry_date', personnel_certifications.expiry_date
+        'expiry_date', personnel_certifications.expiry_date,
+        'is_current', personnel_certifications.expiry_date >= CURRENT_DATE
       )) as certifications`),
     )
     .join(
@@ -64,7 +65,8 @@ router.get('/:personId', (req, res) => {
       knex.raw(`json_agg(json_build_object(
         'certification', certifications.name,
         'date_earned', personnel_certifications.date_earned,
-        'expiry_date', personnel_certifications.expiry_date
+        'expiry_date', personnel_certifications.expiry_date,
+        'is_current', personnel_certifications.expiry_date >= CURRENT_DATE
       )) as certifications`),
     )
     .where('personnel.id', '=', personId)

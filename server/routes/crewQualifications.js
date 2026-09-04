@@ -20,7 +20,8 @@ router.get('/', (req, res) => {
         'role', crew_roles.name,
         'systemId', weapon_systems.id,
         'system', weapon_systems.name,
-        'qualified_date', crew_qualifications.qualified_date
+        'qualified_date', crew_qualifications.qualified_date,
+        'is_current', crew_qualifications.qualified_date + interval '1 year' >= CURRENT_DATE
       )) as qualifications`),
     )
     .join('personnel', 'crew_qualifications.personnel_id', '=', 'personnel.id')
@@ -71,7 +72,8 @@ router.get('/:personId', (req, res) => {
         'role', crew_roles.name,
         'systemId', weapon_systems.id,
         'system', weapon_systems.name,
-        'qualified_date', crew_qualifications.qualified_date
+        'qualified_date', crew_qualifications.qualified_date,
+        'is_current', crew_qualifications.qualified_date + interval '1 year' >= CURRENT_DATE
       )) as qualifications`),
     )
     .where('crew_qualifications.personnel_id', personId)
