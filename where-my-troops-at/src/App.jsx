@@ -15,7 +15,7 @@ function App() {
       <Routes>
         <Route path='/' element={<Login />}></Route>
 
-        {/* <Route path='/GeneralUser' element={<GenUser />}></Route> */}
+        <Route path='/GeneralUser' element={<GenUser />}></Route>
         <Route path='/Admin' element={<AdminHome />}></Route>
         <Route path='/Evaluator' element={<EvaluatorsPanel />}></Route>
         {/* <Route path='/MPC' element={<Mpc />}></Route> */}
