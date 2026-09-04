@@ -21,26 +21,14 @@ app.get('/brew', (req, res) => {
 // /users route that returns users table
 app.use('/users', require('./routes/users'));
 
-// /domain route that returns domain table
-app.get('/domain', (request, response) => {
-  knex('domains')
-    .select('*')
-    .then((domain) => response.json(domain));
-});
+// /domains route that returns domains table
+app.use('/domains', require('./routes/domains'));
 
 // /personnel route that returns personnel table
-app.get('/personnel', (request, response) => {
-  knex('personnel')
-    .select('*')
-    .then((personnel) => response.json(personnel));
-});
+app.use('/personnel', require('./routes/personnel'));
 
 // /weaponsystems route that returns weapon_systems table
-app.get('/weaponsystems', (request, response) => {
-  knex('weapon_systems')
-    .select('*')
-    .then((systems) => response.json(systems));
-});
+app.use('/weaponsystems', require('./routes/weaponSystems'));
 
 // /crewroles route that returns crew_roles tablea
 app.use('/crewroles', require('./routes/crewRoles'));
