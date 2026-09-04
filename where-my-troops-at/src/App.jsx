@@ -4,6 +4,7 @@ import './App.css';
 import Login from './Login/Login.jsx';
 import AdminHome from './AdminHome.jsx';
 import EvaluatorsPanel from './EvaluatorsPanel';
+import GenUser from './genUser/genUser.jsx';
 
 function App() {
 
@@ -14,7 +15,7 @@ function App() {
       <Routes>
         <Route path='/' element={<Login />}></Route>
 
-        {/* <Route path='/GeneralUser' element={<GeneralUser />}></Route> */}
+        {/* <Route path='/GeneralUser' element={<GenUser />}></Route> */}
         <Route path='/Admin' element={<AdminHome />}></Route>
         <Route path='/Evaluator' element={<EvaluatorsPanel />}></Route>
         {/* <Route path='/MPC' element={<Mpc />}></Route> */}
