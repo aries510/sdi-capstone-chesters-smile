@@ -40,11 +40,7 @@ app.get('/crewroles', (request, response) => {
 });
 
 // /certs route returns certifications table
-app.get('/certs', (request, response) => {
-  knex('certifications')
-    .select('*')
-    .then((certs) => response.json(certs));
-});
+app.use('/certs', require('./routes/certs'));
 
 // /quals route returns crew_qualifications table
 app.use('/quals', require('./routes/crewQualifications'));
