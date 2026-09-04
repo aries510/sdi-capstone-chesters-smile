@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Route, Routes, useNavigate} from 'react-router-dom';
 import './App.css';
-
+import Login from './Login/Login.jsx';
+import AdminHome from './AdminHome.jsx';
+import EvaluatorsPanel from './EvaluatorsPanel';
 
 function App() {
 
@@ -12,10 +14,10 @@ function App() {
       <Routes>
         <Route path='/' element={<Login />}></Route>
 
-        <Route path='/GeneralUser' element={<GeneralUser />}></Route>
-        <Route path='/Admin' element={<Admin />}></Route>
-        <Route path='/Evaluator' element={<Evaluator />}></Route>
-        <Route path='/MPC' element={<Mpc />}></Route>
+        {/* <Route path='/GeneralUser' element={<GeneralUser />}></Route> */}
+        <Route path='/Admin' element={<AdminHome />}></Route>
+        <Route path='/Evaluator' element={<EvaluatorsPanel />}></Route>
+        {/* <Route path='/MPC' element={<Mpc />}></Route> */}
       </Routes>
     </div>
   )
