@@ -10,10 +10,8 @@ router.get('/', (req, res) => {
 
   if (role) {
     knex('crew_role_certifications')
-      .select(
-        'crew_roles.name as crew_role',
-        'certifications.name as certification',
-      )
+      .select('crew_roles.name as crew_role')
+      .select(knex.raw('json_agg(certifications.name) as certifications'))
       .join(
         'crew_roles',
         'crew_role_certifications.crew_role_id',
@@ -27,14 +25,13 @@ router.get('/', (req, res) => {
         'certifications.id',
       )
       .where('crew_roles.name', 'ilike', role)
+      .groupBy('crew_roles.name')
       .then((crewcerts) => res.json(crewcerts))
       .catch((error) => res.status(500).json({ error: error.message }));
   } else {
     knex('crew_role_certifications')
-      .select(
-        'crew_roles.name as crew_role',
-        'certifications.name as certification',
-      )
+      .select('crew_roles.name as crew_role')
+      .select(knex.raw('json_agg(certifications.name) as certifications'))
       .join(
         'crew_roles',
         'crew_role_certifications.crew_role_id',
@@ -47,6 +44,7 @@ router.get('/', (req, res) => {
         '=',
         'certifications.id',
       )
+      .groupBy('crew_roles.name')
       .then((crewcerts) => res.json(crewcerts))
       .catch((error) => res.status(500).json({ error: error.message }));
   }
@@ -60,10 +58,8 @@ router.get('/:roleId', (req, res) => {
   }
 
   knex('crew_role_certifications')
-    .select(
-      'crew_roles.name as crew_role',
-      'certifications.name as certification',
-    )
+    .select('crew_roles.name as crew_role')
+    .select(knex.raw('json_agg(certifications.name) as certifications'))
     .where('crew_role_certifications.crew_role_id', roleId)
     .join(
       'crew_roles',
@@ -77,7 +73,40 @@ router.get('/:roleId', (req, res) => {
       '=',
       'certifications.id',
     )
-    .then((crewcerts) => res.json(crewcerts))
+    .groupBy('crew_roles.name')
+    .then((crewcerts) =>
+      res.json(crewcerts[0] || { crew_role: null, certifications: [] }),
+    )
+    .catch((error) => res.status(500).json({ error: error.message }));
+});
+
+router.post('/', (req, res) => {
+  const { crewRole, certification } = req.body;
+
+  if (!crewRole || !certification) {
+    return res
+      .status(400)
+      .json({ error: 'crewRole and certification are required' });
+  }
+
+  Promise.all([
+    knex('crew_roles').select('id').where('name', 'ilike', crewRole).first(),
+    knex('certifications')
+      .select('id')
+      .where('name', 'ilike', certification)
+      .first(),
+  ])
+    .then(([role, cert]) => {
+      if (!role || !cert) {
+        return res
+          .status(404)
+          .json({ error: 'crew role or certification not found' });
+      }
+
+      return knex('crew_role_certifications')
+        .insert({ crew_role_id: role.id, certifications_id: cert.id })
+        .then(() => res.status(201).json({ message: 'Successfully created' }));
+    })
     .catch((error) => res.status(500).json({ error: error.message }));
 });
 
