@@ -46,6 +46,8 @@ const stages = [
 ];
 
 function MPC() {
+    const [showMissionForm, setShowMissionForm] = useState(false);
+
     return (
         <main className="mpc-page">
             <header className="mpc-header">
@@ -54,9 +56,103 @@ function MPC() {
                     <p>Manage mission planning and unit readiness</p>
                 </div>
 
-                <button type="button">+ New Mission Plan</button>
+                <button
+                    type="button"
+                    onClick={() => setShowMissionForm(true)}
+                >
+                    + New Mission Plan
+                </button>
             </header>
 
+            {showMissionForm && (
+                <section className="new-mission-form">
+                    <div className="new-mission-header">
+                        <div>
+                            <h2>New Mission Plan</h2>
+                            <p>Step 1 of 5: Mission</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setShowMissionForm(false)}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+
+                    <form>
+                        <div className="form-grid">
+                            <div className="form-group">
+                                <label htmlFor="missionName">Mission Name</label>
+                                <input
+                                    id="missionName"
+                                    type="text"
+                                    placeholder="Range Support"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="missionType">Mission Type</label>
+                                <input
+                                    id="missionType"
+                                    type="text"
+                                    placeholder="Training Support"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="startDate">Start Date</label>
+                                <input id="startDate" type="date" />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="endDate">End Date</label>
+                                <input id="endDate" type="date" />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="location">Location</label>
+                                <input
+                                    id="location"
+                                    type="text"
+                                    placeholder="Fort Bragg, NC"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="oic">OIC</label>
+                                <input
+                                    id="oic"
+                                    type="text"
+                                    placeholder="CPT Smith"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-group full-width">
+                            <label htmlFor="purpose">Purpose / Description</label>
+                            <textarea
+                                id="purpose"
+                                rows="4"
+                                placeholder="Describe the mission purpose..."
+                            />
+                        </div>
+
+                        <div className="form-actions">
+                            <button
+                                type="button"
+                                onClick={() => setShowMissionForm(false)}
+                            >
+                                Cancel
+                            </button>
+
+                            <button type="submit">
+                                Save & Continue
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            )}
             <section className="summary-grid">
                 <div className="summary-card">
                     <h3>Active Missions</h3>
