@@ -19,12 +19,8 @@ app.get('/users', (request, response) => {
     .then((users) => response.json(users));
 });
 
-// /domain route that returns domain table
-app.get('/domain', (request, response) => {
-  knex('domains')
-    .select('*')
-    .then((domain) => response.json(domain));
-});
+// /domain route that returns domains table
+app.use('/domains', require('./routes/domains'));
 
 // /personnel route that returns personnel table
 app.get('/personnel', (request, response) => {
