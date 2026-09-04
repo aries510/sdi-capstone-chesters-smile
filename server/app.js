@@ -33,11 +33,7 @@ app.get('/weaponsystems', (request, response) => {
 });
 
 // /crewroles route that returns crew_roles tablea
-app.get('/crewroles', (request, response) => {
-  knex('crew_roles')
-    .select('*')
-    .then((roles) => response.json(roles));
-});
+app.use('/crewroles', require('./routes/crewRoles'));
 
 // /certs route returns certifications table
 app.use('/certs', require('./routes/certs'));
