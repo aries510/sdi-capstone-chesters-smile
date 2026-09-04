@@ -9,14 +9,14 @@ app.use(cors());
 
 // API homepage route
 app.get('/', (request, response) => {
-    response.status(200).send('Chester Smiles API Homepage....')
+  response.status(200).send('Chester Smiles API Homepage....');
 });
 
 // /users route that returns users table
 app.get('/users', (request, response) => {
-    knex('users')
-        .select('*')
-        .then(users => response.json(users))
+  knex('users')
+    .select('*')
+    .then((users) => response.json(users));
 });
 
 // /domain route that returns domain table
@@ -61,40 +61,32 @@ app.get('/weaponsystems', (request, response) => {
 });
 
 // /crewroles route that returns crew_roles tablea
-app.get('/crewroles', (request, response) =>{
-    knex('crew_roles')
-        .select('*')
-        .then(roles => response.json(roles))
+app.get('/crewroles', (request, response) => {
+  knex('crew_roles')
+    .select('*')
+    .then((roles) => response.json(roles));
 });
 
 // /certs route returns certifications table
 app.get('/certs', (request, response) => {
-    knex('certifications')
-        .select('*')
-        .then(certs => response.json(certs))
+  knex('certifications')
+    .select('*')
+    .then((certs) => response.json(certs));
 });
 
 // /quals route returns crew_qualifications table
 app.get('/quals', (request, response) => {
-    knex('crew_qualifications')
-        .select('*')
-        .then(quals => response.json(quals))
+  knex('crew_qualifications')
+    .select('*')
+    .then((quals) => response.json(quals));
 });
 
 // /perscerts route returns personnel_certifications table
-app.get('/perscerts', (request, response) => {
-    knex('personnel_certifications')
-        .select('*')
-        .then(pcerts => response.json(pcerts))
-});
+app.use('/perscerts', require('./routes/personnelCertifications'));
 
 // /crewcerts route returns crew_role_certifications
-app.get('/crewcerts', (request, response) => {
-    knex('crew_role_certifications')
-        .select('*')
-        .then(crewcerts => response.json(crewcerts))
-});
+app.use('/crewcerts', require('./routes/crewCertifications'));
 
-
-
-app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Server is running on http://localhost:${PORT}`),
+);
