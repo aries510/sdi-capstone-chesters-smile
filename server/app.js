@@ -9,7 +9,7 @@ app.use(cors());
 
 // API homepage route
 app.get('/', (request, response) => {
-  response.status(200).send('Chester Smiles API Homepage....');
+  response.status(418).send('Chester Smiles API Homepage....');
 });
 
 // /users route that returns users table
@@ -19,11 +19,7 @@ app.use('/users', require('./routes/users'));
 app.use('/domains', require('./routes/domains'));
 
 // /personnel route that returns personnel table
-app.get('/personnel', (request, response) => {
-  knex('personnel')
-    .select('*')
-    .then((personnel) => response.json(personnel));
-});
+app.use('/personnel', require('./routes/personnel'));
 
 // /weaponsystems route that returns weapon_systems table
 app.get('/weaponsystems', (request, response) => {
