@@ -27,6 +27,9 @@ GeneralUser is where the underlying data actually gets populated and kept curren
 - **Export "my record" as PDF** — useful for boards/evaluations outside the app entirely, low priority
 - **Self-service training request** — let a general user flag "I want to pursue qual X," surfacing demand to Evaluators/MPC rather than requiring a memory sync
 
+## Finishing-touch idea (not building yet)
+- **Ambient color/lighting feedback**, tied to status rather than just badges/text: a red vignette on sign-in failure or missing records; on the general page, green = ready, blue = in-training/in-process, yellow = new or missing/expired certs; red specifically for "assigned despite missing certs" — signals a real mistake was made, not just a routine gap. A later polish pass, once core functionality/data is in place.
+
 ## Not Yet Discussed, Worth Considering
 - **Unit/assignment context** — which unit or squadron this person currently belongs to; relevant if the app ever needs to filter "show me everyone in my unit," and not covered by current tables
 - **Contact info** — how MPC actually reaches someone once assigned; not in `personnel` currently
