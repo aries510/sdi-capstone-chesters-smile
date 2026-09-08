@@ -11,7 +11,7 @@
 
 /* Dark Theme Variables*/
 .dark-theme {
-    --bg-color: #121212;
+    --bg-color: #001026;
     --panel-bg: #1e1e1e;
     --text-color: #c0c0c0;
     --border-color: #333333;
@@ -50,7 +50,7 @@ body {
 
 .import-button,
 .new-btn {
-    background-color: var(--panel-bg);
+    background-color: var(--bg-color);
     color: var(--text-color);
     border-color: var(--border-color);
 }
@@ -188,9 +188,19 @@ body {
 
 /* Bottom Catalog Section */
 .catalog-wrapper {
-    background-color: #eaf1f8;
+    background-color: var(--bg-color);
     border: 1px solid #c9d8e5;
     border-radius: 4px;
     padding: 25px;
     text-align: center;
+}
+
+.catalog-wrapper {
+    background-color: var(--catalog-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 25px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    text-align: left;
+    color: var(--text-color);
 }

@@ -32,7 +32,7 @@ function AdminHome() {
 
     return (
         <div className='admin-container'>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} >
                 <h1 className='admin-title'>Admin Dashboard</h1>
                 <button onClick={toggleDarkMode} className='new-btn'>
                     {darkMode ? 'Light Mode' : 'Dark Mode'}
@@ -59,7 +59,9 @@ function AdminHome() {
                 <CertQualRenewalPanel />
             </div>
 
-            <CertificationCatalog />
+            <div className='catalog-wrapper'>
+                <CertificationCatalog />
+            </div>
         </div>
     )
 }
