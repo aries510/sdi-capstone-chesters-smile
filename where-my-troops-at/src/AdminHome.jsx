@@ -89,7 +89,26 @@ function AdminHome() {
             </div>
 
             <div className='admin-panels'>
-                <EvaluatorsPanel evaluators={evaluators} />
+                <EvaluatorsPanel
+                    evaluators={evaluators}
+                    trainees={trainees}
+                    onEvaluatorAdded={(newEvaluator) => {
+                        setEvaluators(prev => [...prev, newEvaluator]);
+                    }}
+                    onEvaluatorUpdated={(updatedUser) => {
+                        if (updatedUser.is_evaluator) {
+                            setEvaluators(prev => {
+                                const exists = prev.some(e => e.id === updatedUser.id);
+                                if (exists) {
+                                    return prev.map(e => e.id === updatedUser.id ? updatedUser : e);
+                                }
+                                return [...prev, updatedUser];
+                            });
+                        } else {
+                            setEvaluators(prev => prev.filter(e => e.id !== updatedUser.id));
+                        }
+                    }}
+                />
                 <CertQualRenewalPanel />
             </div>
 
