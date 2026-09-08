@@ -90,7 +90,7 @@ Base URL: `http://localhost:8080`
 | ------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | GET    | `/users`         | List users. Optional `?username=`                                                                                                                                 |
 | GET    | `/users/:userId` | Get a single user by id                                                                                                                                           |
-| POST   | `/users`         | Create a user. Body: `{ username, pw_hash, is_admin?, is_evaluator?, is_planner? }` (`pw_hash` is the plaintext password; it's hashed server-side before storing) |
+| POST   | `/users`         | Create a user. Body: `{ username, password, is_admin?, is_evaluator?, is_planner? }` (`password` is plaintext; it's hashed server-side before storing)            |
 | PATCH  | `/users/:userId` | Update a user. Body: any of `{ pw_hash, is_admin, is_evaluator, is_planner }`                                                                                     |
 | DELETE | `/users/:userId` | Delete a user                                                                                                                                                     |
 
