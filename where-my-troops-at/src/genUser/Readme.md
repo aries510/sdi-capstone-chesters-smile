@@ -35,6 +35,9 @@ GeneralUser is where the underlying data actually gets populated and kept curren
 - **Contact info** — how MPC actually reaches someone once assigned; not in `personnel` currently
 - **Qualification currency trend over time** — not urgent, but a "history" view (quals gained/lost/renewed over time) could be a nice differentiator in the final presentation vs. the spreadsheet it's replacing
 
+## Terminology note (not yet applied)
+- Recommended: use real maintenance-readiness codes instead of generic labels for the status badges — **PMC / FMC / NMC** (Partially / Fully / Not Mission Capable) instead of "In-Progress / Ready / Not Started." More domain-authentic. Swap once the status columns are finalized.
+
 ## Feature ideas for other roles (context, not building these)
 - **Evaluator**: same core data as GeneralUser, plus editing rights over their assigned trainees' quals/certs; bulk import; search/filter across personnel
 - **Admin**: manage evaluator/trainee assignments; certification catalog CRUD; bulk import/upload documents
