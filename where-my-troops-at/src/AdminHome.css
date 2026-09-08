@@ -1,4 +1,4 @@
-/* Light Theme Variables*/
+/* Light Theme Variables */
 :root {
     --bg-color: #ffffff;
     --panel-bg: #ffffff;
@@ -7,20 +7,22 @@
     --list-bg: #fdf5e6;
     --catalog-bg: #eaf1f8;
     --button-text: #ffffff;
+    --scrollbar-thumb: #cbd5e1;
 }
 
-/* Dark Theme Variables*/
+/* Dark Theme Variables */
 .dark-theme {
     --bg-color: #001026;
     --panel-bg: #1e1e1e;
     --text-color: #c0c0c0;
     --border-color: #333333;
-    --list-bg: #2c2416;
+    --list-bg: #111e38;
     --catalog-bg: #16222c;
     --button-text: #ffffff;
+    --scrollbar-thumb: #334155;
 }
 
-/* color flipping */
+/* Global Theme Transitions */
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
@@ -28,44 +30,12 @@ body {
 }
 
 .admin-container {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-}
-
-.eval-trainee-list {
-    background-color: var(--list-bg) !important;
-    border-color: var(--border-color) !important;
-}
-
-.panel {
-    background-color: var(--panel-bg) !important;
-    border-color: var(--border-color) !important;
-    color: var(--text-color);
-}
-
-.catalog-wrapper {
-    background-color: var(--catalog-bg) !important;
-    border-color: var(--border-color) !important;
-}
-
-.import-button,
-.new-btn {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    border-color: var(--border-color);
-}
-
-/*Dashboard layout*/
-.main h1 {
-    text-align: center;
-    font-family: "Fantasy", cursive;
-}
-
-.admin-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     font-family: sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
 .admin-title {
@@ -76,40 +46,47 @@ body {
     color: var(--text-color);
 }
 
-/* Top Row: List box and Actions */
+/* Top Row: List Box & Actions */
 .top-row {
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
+    align-items: stretch;
+    /* Ensures list box matches height of action buttons */
 }
 
 .eval-trainee-list {
     flex: 1;
-    background-color: #fdf5e6;
-    border: 1px solid #f2e3cb;
+    background-color: var(--list-bg);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .eval-trainee-list h3 {
-    margin: 0;
-    font-weight: 400;
+    margin: 0 0 12px 0;
+    font-weight: 500;
     color: var(--text-color);
 }
 
-.list-content {
-    display: flex;
-    gap: 40px;
-    width: 100%;
-    justify-content: center;
-    margin-top: 10px;
+/* Custom Scrollbar Styles for the Inner List */
+.eval-trainee-list ::-webkit-scrollbar {
+    width: 6px;
 }
 
-/*Action Buttons*/
+.eval-trainee-list ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.eval-trainee-list ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+
+/* Action Buttons */
 .admin-actions {
     display: flex;
     flex-direction: column;
@@ -129,17 +106,17 @@ body {
 }
 
 .import-button {
-    background-color: white;
-    color: #333;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     padding: 16px;
     text-align: center;
     border-radius: 4px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/*Middle Panels (Evaluators & Upcoming Certs)*/
+/* Middle Panels (Evaluators & Upcoming Certs) */
 .admin-panels {
     display: flex;
     gap: 20px;
@@ -148,11 +125,12 @@ body {
 
 .panel {
     flex: 1;
-    background-color: white;
-    border: 1px solid #dcdcdc;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 20px;
     min-height: 250px;
+    color: var(--text-color);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -169,8 +147,9 @@ body {
 }
 
 .new-btn {
-    background-color: white;
-    border: 1px solid #333;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     border-radius: 20px;
     padding: 4px 20px;
     cursor: pointer;
@@ -188,19 +167,11 @@ body {
 
 /* Bottom Catalog Section */
 .catalog-wrapper {
-    background-color: var(--bg-color);
-    border: 1px solid #c9d8e5;
-    border-radius: 4px;
-    padding: 25px;
-    text-align: center;
-}
-
-.catalog-wrapper {
     background-color: var(--catalog-bg);
     border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 25px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     text-align: left;
     color: var(--text-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
