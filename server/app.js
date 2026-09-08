@@ -4,7 +4,7 @@ const PORT = 8080;
 const cors = require('cors');
 const knex = require('knex')(require('./knexfile.js')['development']);
 
-const users = require('./users.js')
+const users = require('./routes/users.js')
 
 app.use(express.json());
 app.use(cors());
