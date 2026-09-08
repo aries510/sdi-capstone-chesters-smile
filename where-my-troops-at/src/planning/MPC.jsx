@@ -123,6 +123,111 @@ function MPC() {
         }
     }
 
+    function handlePersonnelSubmit() {
+        const selectedPersonnel = personnel.filter((person) =>
+            assignedPersonnel.includes(person.id)
+        );
+
+        const readiness = calculateReadiness(selectedPersonnel);
+
+        const qualificationGaps = selectedPersonnel.filter(
+            (person) => !person.qualified
+        ).length;
+
+        const availabilityConflicts = selectedPersonnel.filter(
+            (person) => !person.available
+        ).length;
+
+        const totalIssues = qualificationGaps + availabilityConflicts;
+
+        const updatedMissions = missions.map((mission) => {
+            if (mission.id === selectedMission.id) {
+                return {
+                    ...mission,
+                    personnel: selectedPersonnel,
+                    readiness: readiness,
+                    qualificationGaps: qualificationGaps,
+                    availabilityConflicts: availabilityConflicts,
+                    issue:
+                        totalIssues > 0
+                            ? `${totalIssues} Personnel Issue${totalIssues > 1 ? "s" : ""}`
+                            : null,
+                    stage: 4,
+                };
+            }
+
+            return mission;
+        });
+
+        setMissions(updatedMissions);
+
+        setSelectedMission({
+            ...selectedMission,
+            personnel: selectedPersonnel,
+            readiness: readiness,
+            qualificationGaps: qualificationGaps,
+            availabilityConflicts: availabilityConflicts,
+            issue:
+                totalIssues > 0
+                    ? `${totalIssues} Personnel Issue${totalIssues > 1 ? "s" : ""}`
+                    : null,
+            stage: 4,
+        });
+    }
+
+    function calculateReadiness(assigned) {
+        if (assigned.length === 0) {
+            return 0;
+        }
+
+        const readyPersonnel = assigned.filter(
+            (person) => person.qualified && person.available
+        );
+
+        return Math.round(
+            (readyPersonnel.length / assigned.length) * 100
+        );
+    }
+
+    function handleReadinessSubmit() {
+        const updatedMissions = missions.map((mission) => {
+            if (mission.id === selectedMission.id) {
+                return {
+                    ...mission,
+                    stage: 5,
+                };
+            }
+
+            return mission;
+        });
+
+        setMissions(updatedMissions);
+
+        setSelectedMission({
+            ...selectedMission,
+            stage: 5,
+        });
+    }
+
+    function handleApprovalSubmit() {
+        const updatedMissions = missions.map((mission) => {
+            if (mission.id === selectedMission.id) {
+                return {
+                    ...mission,
+                    status: "Ready",
+                    issue: null,
+                    stage: 6,
+                };
+            }
+
+            return mission;
+        });
+
+        setMissions(updatedMissions);
+
+        setSelectedMission(null);
+    }
+
     function handleConopSubmit(event) {
         event.preventDefault();
 
@@ -179,6 +284,26 @@ function MPC() {
         });
 
         setShowMissionForm(false);
+    }
+
+    function handleMissionSelect(mission) {
+        setSelectedMission(mission);
+
+        setAssignedPersonnel(
+            mission.personnel
+                ? mission.personnel.map((person) => person.id)
+                : []
+        );
+
+        setConop(
+            mission.conop || {
+                situation: "",
+                missionStatement: "",
+                execution: "",
+                sustainment: "",
+                commandSignal: "",
+            }
+        );
     }
 
     return (
@@ -345,8 +470,121 @@ function MPC() {
                             Back
                         </button>
 
-                        <button type="button">
+                        <button
+                            type="button"
+                            onClick={handlePersonnelSubmit}
+                        >
                             Save & Continue
+                        </button>
+                    </div>
+                </section>
+            )}
+
+            {selectedMission && selectedMission.stage === 4 && (
+                <section className="new-mission-form">
+                    <div className="new-mission-header">
+                        <div>
+                            <h2>{selectedMission.name}</h2>
+                            <p>Step 4 of 5: Readiness</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setSelectedMission(null)}
+                        >
+                            Back
+                        </button>
+                    </div>
+
+                    <div className="summary-grid">
+                        <div className="summary-card">
+                            <h3>Personnel Assigned</h3>
+                            <span>{selectedMission.personnel?.length || 0}</span>
+                            <p>Personnel</p>
+                        </div>
+
+                        <div className="summary-card">
+                            <h3>Qualification Gaps</h3>
+                            <span>{selectedMission.qualificationGaps || 0}</span>
+                            <p>Issues</p>
+                        </div>
+
+                        <div className="summary-card">
+                            <h3>Availability Conflicts</h3>
+                            <span>{selectedMission.availabilityConflicts || 0}</span>
+                            <p>Issues</p>
+                        </div>
+                    </div>
+
+                    <div className="readiness-summary">
+                        <h3>Mission Readiness</h3>
+                        <strong>{selectedMission.readiness}% Ready</strong>
+                    </div>
+
+                    <div className="form-actions">
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setSelectedMission({
+                                    ...selectedMission,
+                                    stage: 3,
+                                })
+                            }
+                        >
+                            Back
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleReadinessSubmit}
+                        >
+                            Save & Continue
+                        </button>
+                    </div>
+                </section>
+            )}
+
+            {selectedMission && selectedMission.stage === 5 && (
+                <section className="new-mission-form">
+                    <div className="new-mission-header">
+                        <div>
+                            <h2>{selectedMission.name}</h2>
+                            <p>Step 5 of 5: Approval</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setSelectedMission(null)}
+                        >
+                            Back
+                        </button>
+                    </div>
+
+                    <div className="readiness-summary">
+                        <h3>Mission Readiness</h3>
+                        <strong>{selectedMission.readiness}% Ready</strong>
+                    </div>
+
+                    <p>Mission plan is ready for leadership review and approval.</p>
+
+                    <div className="form-actions">
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setSelectedMission({
+                                    ...selectedMission,
+                                    stage: 4,
+                                })
+                            }
+                        >
+                            Back
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleApprovalSubmit}
+                        >
+                            Approve Mission
                         </button>
                     </div>
                 </section>
@@ -552,7 +790,7 @@ function MPC() {
 
                             <button
                                 type="button"
-                                onClick={() => setSelectedMission(mission)}
+                                onClick={() => handleMissionSelect(mission)}
                             >
                                 {mission.status === "Ready"
                                     ? "View Mission"
