@@ -192,7 +192,7 @@ function EvaluatorsPanel({
                     {/* Mode A: Create New User */}
                     {addMode === 'create' && (
                         <form onSubmit={handleCreateEvaluator} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Create Brand New Evaluator</h4>
+                            <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Create New Evaluator</h4>
                             {createError && <p style={{ color: '#dc2626', fontSize: '0.8rem', margin: 0 }}>{createError}</p>}
                             <input
                                 type="text"
