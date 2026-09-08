@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./MPC.css";
 
-const missions = [
+const initialMissions = [
     {
         id: 1,
         name: "Range Support",
@@ -45,8 +45,35 @@ const stages = [
     "Approval",
 ];
 
+const personnel = [
+    {
+        id: 1,
+        name: "CPT Aragorn",
+        role: "OIC",
+        qualified: true,
+        available: true,
+    },
+    {
+        id: 2,
+        name: "SGT Legolas",
+        role: "Team Leader",
+        qualified: true,
+        available: true,
+    },
+    {
+        id: 3,
+        name: "SPC Gandalf",
+        role: "Medic",
+        qualified: false,
+        available: true,
+    },
+];
+
 function MPC() {
+    const [missions, setMissions] = useState(initialMissions);
     const [showMissionForm, setShowMissionForm] = useState(false);
+    const [selectedMission, setSelectedMission] = useState(null);
+    const [assignedPersonnel, setAssignedPersonnel] = useState([]);
     const [newMission, setNewMission] = useState({
         name: "",
         type: "",
@@ -57,6 +84,14 @@ function MPC() {
         purpose: "",
     });
 
+    const [conop, setConop] = useState({
+        situation: "",
+        missionStatement: "",
+        execution: "",
+        sustainment: "",
+        commandSignal: "",
+    });
+
     function handleChange(event) {
         const { name, value } = event.target;
 
@@ -64,6 +99,86 @@ function MPC() {
             ...newMission,
             [name]: value,
         });
+    }
+
+    function handleConopChange(event) {
+        const { name, value } = event.target;
+
+        setConop({
+            ...conop,
+            [name]: value,
+        });
+    }
+
+    function handlePersonnelToggle(personId) {
+        if (assignedPersonnel.includes(personId)) {
+            setAssignedPersonnel(
+                assignedPersonnel.filter((id) => id !== personId)
+            );
+        } else {
+            setAssignedPersonnel([
+                ...assignedPersonnel,
+                personId,
+            ]);
+        }
+    }
+
+    function handleConopSubmit(event) {
+        event.preventDefault();
+
+        const updatedMissions = missions.map((mission) => {
+            if (mission.id === selectedMission.id) {
+                return {
+                    ...mission,
+                    conop: conop,
+                    stage: 3,
+                };
+            }
+
+            return mission;
+        });
+
+        setMissions(updatedMissions);
+
+        setSelectedMission({
+            ...selectedMission,
+            conop: conop,
+            stage: 3,
+        });
+    }
+
+    function handleSubmit(event) {
+        event.preventDefault();
+
+        const missionToAdd = {
+            id: Date.now(),
+            name: newMission.name,
+            type: newMission.type,
+            dates: `${newMission.startDate} - ${newMission.endDate}`,
+            location: newMission.location,
+            oic: newMission.oic,
+            purpose: newMission.purpose,
+            status: "In Planning",
+            stage: 2,
+            readiness: 0,
+            issue: null,
+        };
+
+        setMissions([...missions, missionToAdd]);
+
+        setSelectedMission(missionToAdd);
+
+        setNewMission({
+            name: "",
+            type: "",
+            startDate: "",
+            endDate: "",
+            location: "",
+            oic: "",
+            purpose: "",
+        });
+
+        setShowMissionForm(false);
     }
 
     return (
@@ -82,6 +197,161 @@ function MPC() {
                 </button>
             </header>
 
+            {selectedMission && selectedMission.stage <= 2 && (
+                <section className="new-mission-form">
+                    <div className="new-mission-header">
+                        <div>
+                            <h2>{selectedMission.name}</h2>
+                            <p>Step 2 of 5: Plan / CONOP</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setSelectedMission(null)}
+                        >
+                            Back
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleConopSubmit}>
+                        <div className="form-group full-width">
+                            <label htmlFor="situation">Situation</label>
+                            <textarea
+                                id="situation"
+                                name="situation"
+                                rows="3"
+                                value={conop.situation}
+                                onChange={handleConopChange}
+                                placeholder="Describe the operational situation/environment..."
+                            />
+                        </div>
+
+                        <div className="form-group full-width">
+                            <label htmlFor="missionStatement">Mission Statement</label>
+                            <textarea
+                                id="missionStatement"
+                                name="missionStatement"
+                                rows="3"
+                                value={conop.missionStatement}
+                                onChange={handleConopChange}
+                                placeholder="5Ws: Who, what, where, when, and why..."
+                            />
+                        </div>
+
+                        <div className="form-group full-width">
+                            <label htmlFor="execution">Execution</label>
+                            <textarea
+                                id="execution"
+                                name="execution"
+                                rows="4"
+                                value={conop.execution}
+                                onChange={handleConopChange}
+                                placeholder="Provide details on how the mission will be accomplished, including the commander's intent, specific tasks, and coordinating instructions..."
+                            />
+                        </div>
+
+                        <div className="form-group full-width">
+                            <label htmlFor="sustainment">Sustainment</label>
+                            <textarea
+                                id="sustainment"
+                                name="sustainment"
+                                rows="3"
+                                value={conop.sustainment}
+                                onChange={handleConopChange}
+                                placeholder="Beans, bullets, band-aids..."
+                            />
+                        </div>
+
+                        <div className="form-group full-width">
+                            <label htmlFor="commandSignal">Command & Signal</label>
+                            <textarea
+                                id="commandSignal"
+                                name="commandSignal"
+                                rows="3"
+                                value={conop.commandSignal}
+                                onChange={handleConopChange}
+                                placeholder="Leadership/Chain of Command, communications, reporting..."
+                            />
+                        </div>
+
+                        <div className="form-actions">
+                            <button
+                                type="button"
+                                onClick={() => setSelectedMission(null)}
+                            >
+                                Back
+                            </button>
+
+                            <button type="submit">
+                                Save & Continue
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            )}
+
+            {selectedMission && selectedMission.stage === 3 && (
+                <section className="new-mission-form">
+                    <div className="new-mission-header">
+                        <div>
+                            <h2>{selectedMission.name}</h2>
+                            <p>Step 3 of 5: Personnel</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setSelectedMission(null)}
+                        >
+                            Back
+                        </button>
+                    </div>
+
+                    <div className="personnel-list">
+                        {personnel.map((person) => (
+                            <div className="personnel-row" key={person.id}>
+                                <div>
+                                    <strong>{person.name}</strong>
+                                    <p>{person.role}</p>
+                                </div>
+
+                                <div>
+                                    <p>
+                                        {person.qualified
+                                            ? "Qualified"
+                                            : "Qualification Gap"}
+                                    </p>
+
+                                    <p>
+                                        {person.available
+                                            ? "Available"
+                                            : "Unavailable"}
+                                    </p>
+                                </div>
+
+                                <input
+                                    type="checkbox"
+                                    checked={assignedPersonnel.includes(person.id)}
+                                    onChange={() => handlePersonnelToggle(person.id)}
+                                />
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="form-actions">
+                        <button
+                            type="button"
+                            onClick={() => setSelectedMission(null)}
+                        >
+                            Back
+                        </button>
+
+                        <button type="button">
+                            Save & Continue
+                        </button>
+                    </div>
+                </section>
+            )}
+
             {showMissionForm && (
                 <section className="new-mission-form">
                     <div className="new-mission-header">
@@ -98,8 +368,9 @@ function MPC() {
                         </button>
                     </div>
 
-                    <form>
+                    <form onSubmit={handleSubmit}>
                         <div className="form-grid">
+
                             <div className="form-group">
                                 <label htmlFor="missionName">Mission Name</label>
                                 <input
@@ -116,27 +387,45 @@ function MPC() {
                                 <label htmlFor="missionType">Mission Type</label>
                                 <input
                                     id="missionType"
+                                    name="type"
                                     type="text"
                                     placeholder="Training Support"
+                                    value={newMission.type}
+                                    onChange={handleChange}
                                 />
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="startDate">Start Date</label>
-                                <input id="startDate" type="date" />
+                                <input
+                                    id="startDate"
+                                    name="startDate"
+                                    type="date"
+                                    value={newMission.startDate}
+                                    onChange={handleChange}
+                                />
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="endDate">End Date</label>
-                                <input id="endDate" type="date" />
+                                <input
+                                    id="endDate"
+                                    name="endDate"
+                                    type="date"
+                                    value={newMission.endDate}
+                                    onChange={handleChange}
+                                />
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="location">Location</label>
                                 <input
                                     id="location"
+                                    name="location"
                                     type="text"
                                     placeholder="Fort Bragg, NC"
+                                    value={newMission.location}
+                                    onChange={handleChange}
                                 />
                             </div>
 
@@ -144,18 +433,25 @@ function MPC() {
                                 <label htmlFor="oic">OIC</label>
                                 <input
                                     id="oic"
+                                    name="oic"
                                     type="text"
                                     placeholder="CPT Smith"
+                                    value={newMission.oic}
+                                    onChange={handleChange}
                                 />
                             </div>
+
                         </div>
 
                         <div className="form-group full-width">
                             <label htmlFor="purpose">Purpose / Description</label>
                             <textarea
                                 id="purpose"
+                                name="purpose"
                                 rows="4"
                                 placeholder="Describe the mission purpose..."
+                                value={newMission.purpose}
+                                onChange={handleChange}
                             />
                         </div>
 
@@ -254,7 +550,10 @@ function MPC() {
                                 )}
                             </div>
 
-                            <button type="button">
+                            <button
+                                type="button"
+                                onClick={() => setSelectedMission(mission)}
+                            >
                                 {mission.status === "Ready"
                                     ? "View Mission"
                                     : "Continue Planning"}
