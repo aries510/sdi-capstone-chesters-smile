@@ -1,0 +1,30 @@
+{
+  "name": "sdi-capstone-chesters-smile",
+  "version": "1.0.0",
+  "description": "- Current personnel tracking is fragmented across disconnected spreadsheets and PowerPoint presentations. This leaves commanders without a centralized method to evaluate unit readiness in real time, leading to ineffective management of unit personnel.",
+  "homepage": "https://github.com/aries510/sdi-capstone-chesters-smile#readme",
+  "bugs": {
+    "url": "https://github.com/aries510/sdi-capstone-chesters-smile/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aries510/sdi-capstone-chesters-smile.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:client": "npm run dev --workspace where-my-troops-at",
+    "dev:server": "npm run dev --workspace server",
+    "dev": "concurrently -n CLIENT,SERVER \"npm run dev --workspace where-my-troops-at\" \"npm start --workspace server\""
+  },
+  "workspaces": [
+    "where-my-troops-at",
+    "server"
+  ],
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

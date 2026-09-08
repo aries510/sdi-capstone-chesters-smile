@@ -41,8 +41,8 @@ router.get('/:userId', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { username, pw_hash, is_admin, is_evaluator, is_planner } = req.body;
-  if (!username || !pw_hash) {
+  const { username, password, is_admin, is_evaluator, is_planner } = req.body;
+  if (!username || !password) {
     return res
       .status(400)
       .json({ error: 'username and password are required' });
@@ -57,7 +57,7 @@ router.post('/', (req, res) => {
         return res.status(409).json({ error: 'user already exists' });
       }
 
-      return bcrypt.hash(pw_hash, saltRounds).then((hashedPassword) =>
+      return bcrypt.hash(password, saltRounds).then((hashedPassword) =>
         knex('users')
           .insert({
             username,
