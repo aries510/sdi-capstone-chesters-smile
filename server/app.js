@@ -5,11 +5,13 @@ const cors = require('cors');
 const knex = require('knex')(require('./knexfile.js')['development']);
 
 const users = require('./routes/users.js')
+const msnPlans = require('./routes/msnPlans.js')
 
 app.use(express.json());
 app.use(cors());
 
 app.use('/users', users)
+app.use('/msnplans', msnPlans)
 
 // API homepage route
 app.get('/', (request, response) => {
