@@ -5,11 +5,13 @@ const cors = require('cors');
 const knex = require('knex')(require('./knexfile.js')['development']);
 
 const users = require('./routes/users.js')
+const msnPlans = require('./routes/msnPlans.js')
 
 app.use(express.json());
 app.use(cors());
 
 app.use('/users', users)
+app.use('/msnplans', msnPlans)
 
 // API homepage route
 app.get('/', (request, response) => {
@@ -83,11 +85,9 @@ app.get('/certs', (request, response) => {
 
 // /quals route returns crew_qualifications table
 app.get('/quals', (request, response) => {
-<<<<<<< Updated upstream
   knex('crew_qualifications')
     .select('*')
     .then((quals) => response.json(quals));
-=======
     knex('crew_qualifications')
         .innerJoin('personnel', 'crew_qualifications.personnel_id', '=', 'personnel.id')
         .innerJoin('crew_roles', 'crew_qualifications.crew_role_id', '=', 'crew_roles.id')
@@ -99,7 +99,6 @@ app.get('/quals', (request, response) => {
             'weapon_systems.name as weapon_systems'
         )
         .then(quals => response.json(quals))
->>>>>>> Stashed changes
 });
 
 // /perscerts route returns personnel_certifications table
