@@ -6,8 +6,18 @@ router.use(express.json());
 
 router.get('/', (request, response) => {
     knex('msn_plans')
-        .select('*')
-        .then(users => response.json(users))
+        .join('personnel', 'msn_plans.personnel_id', '=', 'personnel.id')
+        .select(
+            'msn_plans.id',
+            'msn_plans.msn_name',
+            'msn_plans.msn_type',
+            'msn_plans.start_date',
+            'msn_plans.end_date',
+            'msn_plans.location',
+            knex.raw("CONCAT(personnel.rank, ' ', personnel.last_name, ', ', personnel.first_name) AS personnel"),
+            'msn_plans.description'
+        )
+        .then(plans => response.json(plans))
 });
 
 router.post('/', (req, res) => {
