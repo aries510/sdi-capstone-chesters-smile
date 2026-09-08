@@ -18,6 +18,9 @@ app.get('/brew', (req, res) => {
   });
 });
 
+// /login route authenticates a user
+app.use('/login', require('./routes/login'));
+
 // /users route that returns users table
 app.use('/users', require('./routes/users'));
 
