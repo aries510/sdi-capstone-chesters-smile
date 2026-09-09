@@ -74,6 +74,7 @@ function MPC() {
     const [showMissionForm, setShowMissionForm] = useState(false);
     const [selectedMission, setSelectedMission] = useState(null);
     const [assignedPersonnel, setAssignedPersonnel] = useState([]);
+    const [viewStage, setViewStage] = useState(null);
     const [newMission, setNewMission] = useState({
         name: "",
         type: "",
@@ -224,6 +225,8 @@ function MPC() {
             personnelWithQualificationGaps: personnelWithQualificationGaps,
             stage: 4,
         });
+
+        setViewStage(4);
     }
 
     function calculateReadiness(assigned, requiredPersonnel) {
@@ -267,6 +270,8 @@ function MPC() {
             ...selectedMission,
             stage: 5,
         });
+
+        setViewStage(5);
     }
 
     function handleApprovalSubmit() {
@@ -295,6 +300,10 @@ function MPC() {
     function handleConopSubmit(event) {
         event.preventDefault();
 
+        if (!selectedMission) {
+            return;
+        }
+
         const updatedMissions = missions.map((mission) => {
             if (mission.id === selectedMission.id) {
                 return {
@@ -314,6 +323,7 @@ function MPC() {
             conop: conop,
             stage: 3,
         });
+        setViewStage(3);
     }
 
     function handleSubmit(event) {
@@ -333,11 +343,20 @@ function MPC() {
             stage: 2,
             readiness: 0,
             issue: null,
+            personnel: [],
+            conop: {
+                situation: "",
+                missionStatement: "",
+                execution: "",
+                sustainment: "",
+                commandSignal: "",
+            },
         };
 
         setMissions([...missions, missionToAdd]);
 
         setSelectedMission(missionToAdd);
+        setViewStage(2);
 
         setNewMission({
             name: "",
@@ -355,16 +374,26 @@ function MPC() {
     }
 
     function handleMissionSelect(mission) {
-        setSelectedMission(mission);
+        const currentMission = missions.find(
+            (item) => item.id === mission.id
+        );
+
+        if (!currentMission) {
+            return;
+        }
+
+        setShowMissionForm(false);
+        setSelectedMission(currentMission);
+        setViewStage(currentMission.stage);
 
         setAssignedPersonnel(
-            mission.personnel
-                ? mission.personnel.map((person) => person.id)
+            currentMission.personnel
+                ? currentMission.personnel.map((person) => person.id)
                 : []
         );
 
         setConop(
-            mission.conop || {
+            currentMission.conop || {
                 situation: "",
                 missionStatement: "",
                 execution: "",
@@ -390,7 +419,7 @@ function MPC() {
                 </button>
             </header>
 
-            {selectedMission && selectedMission.stage <= 2 && (
+            {selectedMission && viewStage === 2 && (
                 <section className="new-mission-form">
                     <div className="new-mission-header">
                         <div>
@@ -415,6 +444,7 @@ function MPC() {
                                 rows="3"
                                 value={conop.situation}
                                 onChange={handleConopChange}
+                                required
                                 placeholder="Describe the operational situation/environment..."
                             />
                         </div>
@@ -427,6 +457,7 @@ function MPC() {
                                 rows="3"
                                 value={conop.missionStatement}
                                 onChange={handleConopChange}
+                                required
                                 placeholder="5Ws: Who, what, where, when, and why..."
                             />
                         </div>
@@ -439,6 +470,7 @@ function MPC() {
                                 rows="4"
                                 value={conop.execution}
                                 onChange={handleConopChange}
+                                required
                                 placeholder="Provide details on how the mission will be accomplished, including the commander's intent, specific tasks, and coordinating instructions..."
                             />
                         </div>
@@ -451,6 +483,7 @@ function MPC() {
                                 rows="3"
                                 value={conop.sustainment}
                                 onChange={handleConopChange}
+                                required
                                 placeholder="Beans, bullets, band-aids..."
                             />
                         </div>
@@ -463,6 +496,7 @@ function MPC() {
                                 rows="3"
                                 value={conop.commandSignal}
                                 onChange={handleConopChange}
+                                required
                                 placeholder="Leadership/Chain of Command, communications, reporting..."
                             />
                         </div>
@@ -483,7 +517,7 @@ function MPC() {
                 </section>
             )}
 
-            {selectedMission && selectedMission.stage === 3 && (
+            {selectedMission && viewStage === 3 && (
                 <section className="new-mission-form">
                     <div className="new-mission-header">
                         <div>
@@ -507,25 +541,33 @@ function MPC() {
                                     <p>{person.role}</p>
                                 </div>
 
-                                <div>
-                                    <p>
+                                <div className="personnel-statuses">
+                                    <span
+                                        className={`personnel-status ${person.qualified ? "status-good" : "status-bad"
+                                            }`}
+                                    >
                                         {person.qualified
                                             ? "Qualified"
                                             : "Qualification Gap"}
-                                    </p>
+                                    </span>
 
-                                    <p>
+                                    <span
+                                        className={`personnel-status ${person.available ? "status-good" : "status-bad"
+                                            }`}
+                                    >
                                         {person.available
                                             ? "Available"
                                             : "Unavailable"}
-                                    </p>
+                                    </span>
                                 </div>
-
-                                <input
-                                    type="checkbox"
-                                    checked={assignedPersonnel.includes(person.id)}
-                                    onChange={() => handlePersonnelToggle(person.id)}
-                                />
+                                <label className="personnel-select">
+                                    <input
+                                        type="checkbox"
+                                        checked={assignedPersonnel.includes(person.id)}
+                                        onChange={() => handlePersonnelToggle(person.id)}
+                                    />
+                                    <span>Assign</span>
+                                </label>
                             </div>
                         ))}
                     </div>
@@ -548,7 +590,7 @@ function MPC() {
                 </section>
             )}
 
-            {selectedMission && selectedMission.stage === 4 && (
+            {selectedMission && viewStage === 4 && (
                 <section className="new-mission-form">
                     <div className="new-mission-header">
                         <div>
@@ -564,70 +606,126 @@ function MPC() {
                         </button>
                     </div>
 
-                    <div className="summary-grid">
-                        <div className="summary-card">
-                            <h3>Personnel Assigned</h3>
-                            <span>{selectedMission.personnel?.length || 0}</span>
-                            <p>Personnel</p>
-                        </div>
-
-                        <div className="summary-card">
-                            <h3>Personnel Shortage</h3>
-                            <span>{selectedMission.personnelShortage || 0}</span>
-                            <p>Unfilled Positions</p>
-                        </div>
-
-                        <div className="summary-card">
-                            <h3>Qualification Gaps</h3>
-
-                            <span>{selectedMission.qualificationGaps || 0}</span>
-
-                            <p>
-                                {selectedMission.personnelWithQualificationGaps?.length > 0
-                                    ? selectedMission.personnelWithQualificationGaps
-                                        .map((person) => person.name)
-                                        .join(", ")
-                                    : "None"}
+                    <div className="readiness-overview">
+                        <div>
+                            <p className="readiness-label">
+                                Mission Readiness
                             </p>
+
+                            <strong className="readiness-score">
+                                {selectedMission.readiness}% Ready
+                            </strong>
                         </div>
 
-                        <div className="summary-card">
-                            <h3>Availability Conflicts</h3>
-                            <span>{selectedMission.availabilityConflicts || 0}</span>
-                            <p>Issues</p>
-                        </div>
-
-                        <div className="summary-card">
-                            <h3>Missing Roles</h3>
-                            <span>{selectedMission.missingRoles?.length || 0}</span>
-                            <p>
-                                {selectedMission.missingRoles?.length > 0
-                                    ? selectedMission.missingRoles.join(", ")
-                                    : "None"}
-                            </p>
+                        <div
+                            className={`readiness-status ${selectedMission.issue
+                                ? "not-ready"
+                                : "ready"
+                                }`}
+                        >
+                            {selectedMission.issue
+                                ? "Not Ready for Approval"
+                                : "Ready for Approval"}
                         </div>
                     </div>
 
-                    <div className="readiness-summary">
-                        <h3>Mission Readiness</h3>
-                        <strong>{selectedMission.readiness}% Ready</strong>
+                    <div className="readiness-progress">
+                        <div
+                            className="readiness-progress-fill"
+                            style={{
+                                width: `${selectedMission.readiness}%`,
+                            }}
+                        />
                     </div>
 
-                    {selectedMission.issue && (
-                        <p className="mission-issue">
-                            Resolve readiness issues before continuing to approval
-                        </p>
-                    )}
+                    <h3 className="readiness-section-title">
+                        Requires Attention
+                    </h3>
+
+                    <div className="attention-grid">
+                        {selectedMission.personnelShortage > 0 && (
+                            <div className="attention-card">
+                                <h3>Personnel Shortage</h3>
+                                <strong>
+                                    {selectedMission.personnelShortage}
+                                </strong>
+                                <p>Unfilled Positions</p>
+                            </div>
+                        )}
+
+                        {selectedMission.missingRoles?.length > 0 && (
+                            <div className="attention-card">
+                                <h3>Missing Roles</h3>
+                                <strong>
+                                    {selectedMission.missingRoles.length}
+                                </strong>
+                                <p>
+                                    {selectedMission.missingRoles.join(", ")}
+                                </p>
+                            </div>
+                        )}
+
+                        {selectedMission.qualificationGaps > 0 && (
+                            <div className="attention-card">
+                                <h3>Qualification Gaps</h3>
+                                <strong>
+                                    {selectedMission.qualificationGaps}
+                                </strong>
+                                <p>
+                                    {selectedMission.personnelWithQualificationGaps
+                                        ?.map((person) => person.name)
+                                        .join(", ")}
+                                </p>
+                            </div>
+                        )}
+
+                        {selectedMission.availabilityConflicts > 0 && (
+                            <div className="attention-card">
+                                <h3>Availability Conflicts</h3>
+                                <strong>
+                                    {selectedMission.availabilityConflicts}
+                                </strong>
+                                <p>Personnel Unavailable</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <h3 className="readiness-section-title">
+                        Readiness Details
+                    </h3>
+
+                    <div className="ready-checks">
+                        <div className="ready-check-row">
+                            <span>Personnel Assigned</span>
+                            <strong>
+                                {selectedMission.personnel?.length || 0} of{" "}
+                                {selectedMission.requiredPersonnel || 0}
+                            </strong>
+                        </div>
+
+                        <div className="ready-check-row">
+                            <span>Qualification Gaps</span>
+                            <strong>
+                                {selectedMission.qualificationGaps > 0
+                                    ? selectedMission.qualificationGaps
+                                    : "None"}
+                            </strong>
+                        </div>
+
+                        <div className="ready-check-row">
+                            <span>Availability Conflicts</span>
+                            <strong>
+                                {selectedMission.availabilityConflicts > 0
+                                    ? selectedMission.availabilityConflicts
+                                    : "None"}
+                            </strong>
+                        </div>
+                    </div>
 
                     <div className="form-actions">
                         <button
                             type="button"
-                            onClick={() =>
-                                setSelectedMission({
-                                    ...selectedMission,
-                                    stage: 3,
-                                })
-                            }
+                            onClick={() => setViewStage(3)}
                         >
                             Back to Personnel
                         </button>
@@ -637,207 +735,216 @@ function MPC() {
                             onClick={handleReadinessSubmit}
                             disabled={selectedMission.issue !== null}
                         >
-                            Save & Continue
+                            Continue to Approval
                         </button>
                     </div>
                 </section>
-            )}
+            )
+            }
 
-            {selectedMission && selectedMission.stage === 5 && (
-                <section className="new-mission-form">
-                    <div className="new-mission-header">
-                        <div>
-                            <h2>{selectedMission.name}</h2>
-                            <p>Step 5 of 5: Approval</p>
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={() => setSelectedMission(null)}
-                        >
-                            Back
-                        </button>
-                    </div>
-
-                    <div className="readiness-summary">
-                        <h3>Mission Readiness</h3>
-                        <strong>{selectedMission.readiness}% Ready</strong>
-                    </div>
-
-                    <p>Mission plan is ready for review and approval</p>
-
-                    <div className="form-actions">
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setSelectedMission({
-                                    ...selectedMission,
-                                    stage: 4,
-                                })
-                            }
-                        >
-                            Back
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={handleApprovalSubmit}
-                        >
-                            Approve Mission
-                        </button>
-                    </div>
-                </section>
-            )}
-
-            {showMissionForm && (
-                <section className="new-mission-form">
-                    <div className="new-mission-header">
-                        <div>
-                            <h2>New Mission Plan</h2>
-                            <p>Step 1 of 5: Mission</p>
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={() => setShowMissionForm(false)}
-                        >
-                            Cancel
-                        </button>
-                    </div>
-
-                    <form onSubmit={handleSubmit}>
-                        <div className="form-grid">
-
-                            <div className="form-group">
-                                <label htmlFor="missionName">Mission Name</label>
-                                <input
-                                    id="missionName"
-                                    name="name"
-                                    type="text"
-                                    placeholder="Range Support"
-                                    value={newMission.name}
-                                    onChange={handleChange}
-                                />
+            {
+                selectedMission && viewStage === 5 && (
+                    <section className="new-mission-form">
+                        <div className="new-mission-header">
+                            <div>
+                                <h2>{selectedMission.name}</h2>
+                                <p>Step 5 of 5: Approval</p>
                             </div>
 
-                            <div className="form-group">
-                                <label htmlFor="missionType">Mission Type</label>
-                                <input
-                                    id="missionType"
-                                    name="type"
-                                    type="text"
-                                    placeholder="Training Support"
-                                    value={newMission.type}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="startDate">Start Date</label>
-                                <input
-                                    id="startDate"
-                                    name="startDate"
-                                    type="date"
-                                    value={newMission.startDate}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="endDate">End Date</label>
-                                <input
-                                    id="endDate"
-                                    name="endDate"
-                                    type="date"
-                                    value={newMission.endDate}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="location">Location</label>
-                                <input
-                                    id="location"
-                                    name="location"
-                                    type="text"
-                                    placeholder="Fort Bragg, NC"
-                                    value={newMission.location}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="oic">OIC</label>
-                                <input
-                                    id="oic"
-                                    name="oic"
-                                    type="text"
-                                    placeholder="CPT Smith"
-                                    value={newMission.oic}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
+                            <button
+                                type="button"
+                                onClick={() => setSelectedMission(null)}
+                            >
+                                Back
+                            </button>
                         </div>
 
-                        <div className="form-group full-width">
-                            <label htmlFor="purpose">Purpose / Description</label>
-                            <textarea
-                                id="purpose"
-                                name="purpose"
-                                rows="4"
-                                placeholder="Describe the mission purpose..."
-                                value={newMission.purpose}
-                                onChange={handleChange}
-                            />
+                        <div className="readiness-summary">
+                            <h3>Mission Readiness</h3>
+                            <strong>{selectedMission.readiness}% Ready</strong>
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="requiredPersonnel">
-                                Required Personnel
-                            </label>
-
-                            <input
-                                id="requiredPersonnel"
-                                name="requiredPersonnel"
-                                type="number"
-                                min="1"
-                                placeholder="4"
-                                value={newMission.requiredPersonnel}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="requiredRoles">
-                                Required Roles
-                            </label>
-
-                            <input
-                                id="requiredRoles"
-                                name="requiredRoles"
-                                type="text"
-                                placeholder="OIC, Team Leader, Medic"
-                                value={newMission.requiredRoles}
-                                onChange={handleChange}
-                            />
-                        </div>
+                        <p>Mission plan is ready for review and approval</p>
 
                         <div className="form-actions">
+                            <button
+                                type="button"
+                                onClick={() => setViewStage(4)}
+                            >
+                                Back to Readiness
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleApprovalSubmit}
+                            >
+                                Approve Mission
+                            </button>
+                        </div>
+                    </section>
+                )
+            }
+
+            {
+                showMissionForm && (
+                    <section className="new-mission-form">
+                        <div className="new-mission-header">
+                            <div>
+                                <h2>New Mission Plan</h2>
+                                <p>Step 1 of 5: Mission</p>
+                            </div>
+
                             <button
                                 type="button"
                                 onClick={() => setShowMissionForm(false)}
                             >
                                 Cancel
                             </button>
-
-                            <button type="submit">
-                                Save & Continue
-                            </button>
                         </div>
-                    </form>
-                </section>
-            )}
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-grid">
+
+                                <div className="form-group">
+                                    <label htmlFor="missionName">Mission Name</label>
+                                    <input
+                                        id="missionName"
+                                        name="name"
+                                        type="text"
+                                        placeholder="Range Support"
+                                        value={newMission.name}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="missionType">Mission Type</label>
+                                    <input
+                                        id="missionType"
+                                        name="type"
+                                        type="text"
+                                        placeholder="Training Support"
+                                        value={newMission.type}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="startDate">Start Date</label>
+                                    <input
+                                        id="startDate"
+                                        name="startDate"
+                                        type="date"
+                                        value={newMission.startDate}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="endDate">End Date</label>
+                                    <input
+                                        id="endDate"
+                                        name="endDate"
+                                        type="date"
+                                        value={newMission.endDate}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="location">Location</label>
+                                    <input
+                                        id="location"
+                                        name="location"
+                                        type="text"
+                                        placeholder="Fort Bragg, NC"
+                                        value={newMission.location}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="oic">OIC</label>
+                                    <input
+                                        id="oic"
+                                        name="oic"
+                                        type="text"
+                                        placeholder="CPT Smith"
+                                        value={newMission.oic}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                            </div>
+
+                            <div className="form-group full-width">
+                                <label htmlFor="purpose">Purpose / Description</label>
+                                <textarea
+                                    id="purpose"
+                                    name="purpose"
+                                    rows="4"
+                                    placeholder="Describe the mission purpose..."
+                                    value={newMission.purpose}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="requiredPersonnel">
+                                    Required Personnel
+                                </label>
+
+                                <input
+                                    id="requiredPersonnel"
+                                    name="requiredPersonnel"
+                                    type="number"
+                                    min="1"
+                                    placeholder="4"
+                                    value={newMission.requiredPersonnel}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="requiredRoles">
+                                    Required Roles
+                                </label>
+
+                                <input
+                                    id="requiredRoles"
+                                    name="requiredRoles"
+                                    type="text"
+                                    placeholder="OIC, Team Leader, Medic"
+                                    value={newMission.requiredRoles}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-actions">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowMissionForm(false)}
+                                >
+                                    Cancel
+                                </button>
+
+                                <button type="submit">
+                                    Save & Continue
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                )
+            }
             <section className="summary-grid">
                 <div className="summary-card">
                     <h3>Active Missions</h3>
@@ -936,7 +1043,7 @@ function MPC() {
                     ))}
                 </div>
             </section>
-        </main>
+        </main >
     );
 }
 
