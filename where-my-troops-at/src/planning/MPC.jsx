@@ -82,6 +82,8 @@ function MPC() {
         location: "",
         oic: "",
         purpose: "",
+        requiredPersonnel: "",
+        requiredRoles: "",
     });
 
     const [conop, setConop] = useState({
@@ -124,21 +126,70 @@ function MPC() {
     }
 
     function handlePersonnelSubmit() {
-        const selectedPersonnel = personnel.filter((person) =>
-            assignedPersonnel.includes(person.id)
-        );
+        if (!selectedMission) {
+            return;
+        }
 
-        const readiness = calculateReadiness(selectedPersonnel);
+        const selectedPersonnel = personnel.filter((person) => assignedPersonnel.includes(person.id));
 
-        const qualificationGaps = selectedPersonnel.filter(
-            (person) => !person.qualified
-        ).length;
+        const requiredPersonnel = selectedMission.requiredPersonnel || selectedPersonnel.length;
 
-        const availabilityConflicts = selectedPersonnel.filter(
-            (person) => !person.available
-        ).length;
+        const readiness = calculateReadiness(selectedPersonnel, requiredPersonnel);
 
-        const totalIssues = qualificationGaps + availabilityConflicts;
+        const personnelWithQualificationGaps = selectedPersonnel.filter((person) => !person.qualified);
+
+        const qualificationGaps = personnelWithQualificationGaps.length;
+
+        const availabilityConflicts = selectedPersonnel.filter((person) => !person.available).length;
+
+        const requiredRoles = selectedMission.requiredRoles
+            ? selectedMission.requiredRoles
+                .split(",")
+                .map((role) => role.trim())
+                .filter((role) => role)
+            : [];
+
+        const assignedRoles = selectedPersonnel.map((person) => person.role.toLowerCase());
+
+        const missingRoles = requiredRoles.filter((role) => !assignedRoles.includes(role.toLowerCase()));
+
+        const personnelShortage = Math.max(
+            requiredPersonnel - selectedPersonnel.length, 0);
+
+        const issueParts = [];
+
+        if (personnelShortage > 0) {
+            issueParts.push(
+                `${personnelShortage} Personnel Shortage${personnelShortage === 1 ? "" : "s"
+                }`
+            );
+        }
+
+        if (qualificationGaps > 0) {
+            issueParts.push(
+                `${qualificationGaps} Qualification Gap${qualificationGaps === 1 ? "" : "s"
+                }`
+            );
+        }
+
+        if (availabilityConflicts > 0) {
+            issueParts.push(
+                `${availabilityConflicts} Availability Conflict${availabilityConflicts === 1 ? "" : "s"
+                }`
+            );
+        }
+
+        if (missingRoles.length > 0) {
+            issueParts.push(
+                `${missingRoles.length} Role Gap${missingRoles.length === 1 ? "" : "s"
+                }`
+            );
+        }
+
+        const missionIssue =
+            issueParts.length > 0
+                ? issueParts.join(" • ")
+                : null;
 
         const updatedMissions = missions.map((mission) => {
             if (mission.id === selectedMission.id) {
@@ -148,10 +199,10 @@ function MPC() {
                     readiness: readiness,
                     qualificationGaps: qualificationGaps,
                     availabilityConflicts: availabilityConflicts,
-                    issue:
-                        totalIssues > 0
-                            ? `${totalIssues} Personnel Issue${totalIssues > 1 ? "s" : ""}`
-                            : null,
+                    personnelShortage: personnelShortage,
+                    missingRoles: missingRoles,
+                    issue: missionIssue,
+                    personnelWithQualificationGaps: personnelWithQualificationGaps,
                     stage: 4,
                 };
             }
@@ -167,15 +218,15 @@ function MPC() {
             readiness: readiness,
             qualificationGaps: qualificationGaps,
             availabilityConflicts: availabilityConflicts,
-            issue:
-                totalIssues > 0
-                    ? `${totalIssues} Personnel Issue${totalIssues > 1 ? "s" : ""}`
-                    : null,
+            personnelShortage: personnelShortage,
+            missingRoles: missingRoles,
+            issue: missionIssue,
+            personnelWithQualificationGaps: personnelWithQualificationGaps,
             stage: 4,
         });
     }
 
-    function calculateReadiness(assigned) {
+    function calculateReadiness(assigned, requiredPersonnel) {
         if (assigned.length === 0) {
             return 0;
         }
@@ -184,12 +235,21 @@ function MPC() {
             (person) => person.qualified && person.available
         );
 
-        return Math.round(
-            (readyPersonnel.length / assigned.length) * 100
+        const required = requiredPersonnel || assigned.length;
+
+        return Math.min(
+            Math.round(
+                (readyPersonnel.length / required) * 100
+            ),
+            100
         );
     }
 
     function handleReadinessSubmit() {
+        if (!selectedMission) {
+            return;
+        }
+
         const updatedMissions = missions.map((mission) => {
             if (mission.id === selectedMission.id) {
                 return {
@@ -210,6 +270,10 @@ function MPC() {
     }
 
     function handleApprovalSubmit() {
+        if (!selectedMission) {
+            return;
+        }
+
         const updatedMissions = missions.map((mission) => {
             if (mission.id === selectedMission.id) {
                 return {
@@ -263,6 +327,8 @@ function MPC() {
             location: newMission.location,
             oic: newMission.oic,
             purpose: newMission.purpose,
+            requiredPersonnel: Number(newMission.requiredPersonnel),
+            requiredRoles: newMission.requiredRoles,
             status: "In Planning",
             stage: 2,
             readiness: 0,
@@ -281,6 +347,8 @@ function MPC() {
             location: "",
             oic: "",
             purpose: "",
+            requiredPersonnel: "",
+            requiredRoles: "",
         });
 
         setShowMissionForm(false);
@@ -504,9 +572,23 @@ function MPC() {
                         </div>
 
                         <div className="summary-card">
+                            <h3>Personnel Shortage</h3>
+                            <span>{selectedMission.personnelShortage || 0}</span>
+                            <p>Unfilled Positions</p>
+                        </div>
+
+                        <div className="summary-card">
                             <h3>Qualification Gaps</h3>
+
                             <span>{selectedMission.qualificationGaps || 0}</span>
-                            <p>Issues</p>
+
+                            <p>
+                                {selectedMission.personnelWithQualificationGaps?.length > 0
+                                    ? selectedMission.personnelWithQualificationGaps
+                                        .map((person) => person.name)
+                                        .join(", ")
+                                    : "None"}
+                            </p>
                         </div>
 
                         <div className="summary-card">
@@ -514,12 +596,28 @@ function MPC() {
                             <span>{selectedMission.availabilityConflicts || 0}</span>
                             <p>Issues</p>
                         </div>
+
+                        <div className="summary-card">
+                            <h3>Missing Roles</h3>
+                            <span>{selectedMission.missingRoles?.length || 0}</span>
+                            <p>
+                                {selectedMission.missingRoles?.length > 0
+                                    ? selectedMission.missingRoles.join(", ")
+                                    : "None"}
+                            </p>
+                        </div>
                     </div>
 
                     <div className="readiness-summary">
                         <h3>Mission Readiness</h3>
                         <strong>{selectedMission.readiness}% Ready</strong>
                     </div>
+
+                    {selectedMission.issue && (
+                        <p className="mission-issue">
+                            Resolve readiness issues before continuing to approval
+                        </p>
+                    )}
 
                     <div className="form-actions">
                         <button
@@ -531,12 +629,13 @@ function MPC() {
                                 })
                             }
                         >
-                            Back
+                            Back to Personnel
                         </button>
 
                         <button
                             type="button"
                             onClick={handleReadinessSubmit}
+                            disabled={selectedMission.issue !== null}
                         >
                             Save & Continue
                         </button>
@@ -565,7 +664,7 @@ function MPC() {
                         <strong>{selectedMission.readiness}% Ready</strong>
                     </div>
 
-                    <p>Mission plan is ready for leadership review and approval.</p>
+                    <p>Mission plan is ready for review and approval</p>
 
                     <div className="form-actions">
                         <button
@@ -693,6 +792,37 @@ function MPC() {
                             />
                         </div>
 
+                        <div className="form-group">
+                            <label htmlFor="requiredPersonnel">
+                                Required Personnel
+                            </label>
+
+                            <input
+                                id="requiredPersonnel"
+                                name="requiredPersonnel"
+                                type="number"
+                                min="1"
+                                placeholder="4"
+                                value={newMission.requiredPersonnel}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="requiredRoles">
+                                Required Roles
+                            </label>
+
+                            <input
+                                id="requiredRoles"
+                                name="requiredRoles"
+                                type="text"
+                                placeholder="OIC, Team Leader, Medic"
+                                value={newMission.requiredRoles}
+                                onChange={handleChange}
+                            />
+                        </div>
+
                         <div className="form-actions">
                             <button
                                 type="button"
@@ -723,7 +853,13 @@ function MPC() {
 
                 <div className="summary-card">
                     <h3>Upcoming Missions</h3>
-                    <span>3</span>
+                    <span>
+                        {
+                            missions.filter(
+                                (mission) => mission.status !== "Ready"
+                            ).length
+                        }
+                    </span>
                     <p>Upcoming</p>
                 </div>
             </section>
