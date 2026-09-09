@@ -4,6 +4,7 @@ import LoginPage from './Login/LoginPage.jsx';
 import AdminHome from './AdminHome.jsx';
 import EvaluatorsPanel from './EvaluatorsPanel';
 import CreateAccount from './Login/CreateAccount';
+import CreatePersonnel from './CreatePersonnel';
 import ProtectedRoute from './ProtectedRoute';
 
 function App() {
@@ -30,6 +31,15 @@ function App() {
         {/* Uncomment below to require a login to the page */}
         {/* <Route element={<ProtectedRoute role="is_evaluator" />}>
           <Route path="/Evaluator" element={<EvaluatorsPanel />}></Route>
+        </Route> */}
+
+        <Route
+          path="/Evaluator/createpersonnel"
+          element={<CreatePersonnel />}
+        ></Route>
+        {/* Uncomment below to require a login to the page */}
+        {/* <Route element={<ProtectedRoute role="is_evaluator" />}>
+          <Route path="//Evaluator/createpersonnel" element={<CreatePersonnel />}></Route>
         </Route> */}
 
         {/* <Route path='/MPC' element={<Mpc />}></Route> */}
