@@ -3,6 +3,8 @@ const app = express();
 const knex = require('knex')(require('../knexfile.js')['development']);
 const router = express.Router();
 
+const roles = ['trainee', 'evaluator'];
+
 app.use(express.json());
 
 router.get('/', (req, res) => {
@@ -49,11 +51,16 @@ router.get('/:personId', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { rank, first_name, last_name } = req.body;
+  const { rank, first_name, last_name, role } = req.body;
   if (!rank || !first_name || !last_name) {
     return res
       .status(400)
       .json({ error: 'rank/first_name/last_name are required' });
+  }
+  if (role !== undefined && !roles.includes(role)) {
+    return res
+      .status(400)
+      .json({ error: `role must be one of: ${roles.join(', ')}` });
   }
 
   knex('personnel')
@@ -67,7 +74,7 @@ router.post('/', (req, res) => {
       }
 
       return knex('personnel')
-        .insert({ rank, last_name, first_name })
+        .insert({ rank, last_name, first_name, role })
         .returning('*')
         .then(([newPerson]) => res.status(201).json(newPerson));
     })
@@ -76,7 +83,7 @@ router.post('/', (req, res) => {
 
 router.patch('/:personId', (req, res) => {
   const { personId } = req.params;
-  const { rank, last_name, first_name } = req.body;
+  const { rank, last_name, first_name, role } = req.body;
 
   if (!/^\d+$/.test(personId)) {
     return res
@@ -84,8 +91,14 @@ router.patch('/:personId', (req, res) => {
       .json({ error: 'personId must be a positive integer' });
   }
 
-  if (!rank && !last_name && !first_name) {
-    return res.status(400).json({ error: 'rank or name is required' });
+  if (!rank && !last_name && !first_name && !role) {
+    return res.status(400).json({ error: 'rank, name, or role is required' });
+  }
+
+  if (role !== undefined && !roles.includes(role)) {
+    return res
+      .status(400)
+      .json({ error: `role must be one of: ${roles.join(', ')}` });
   }
 
   knex('personnel')
@@ -99,7 +112,7 @@ router.patch('/:personId', (req, res) => {
 
       return knex('personnel')
         .where('id', personId)
-        .update({ rank, last_name, first_name })
+        .update({ rank, last_name, first_name, role })
         .returning('*')
         .then(([updated]) => res.status(200).json(updated));
     })
@@ -112,14 +125,21 @@ router.patch('/', (req, res) => {
     rank: newRank,
     last_name: newLastName,
     first_name: newFirstName,
+    role: newRole,
   } = req.body;
 
   if (!name) {
     return res.status(400).json({ error: 'name query parameter is required' });
   }
 
-  if (!newRank && !newLastName && !newFirstName) {
-    return res.status(400).json({ error: 'rank or name is required' });
+  if (!newRank && !newLastName && !newFirstName && !newRole) {
+    return res.status(400).json({ error: 'rank, name, or role is required' });
+  }
+
+  if (newRole !== undefined && !roles.includes(newRole)) {
+    return res
+      .status(400)
+      .json({ error: `role must be one of: ${roles.join(', ')}` });
   }
 
   knex('personnel')
@@ -137,6 +157,7 @@ router.patch('/', (req, res) => {
           rank: newRank,
           last_name: newLastName,
           first_name: newFirstName,
+          role: newRole,
         })
         .returning('*')
         .then(([updated]) => res.status(200).json(updated));

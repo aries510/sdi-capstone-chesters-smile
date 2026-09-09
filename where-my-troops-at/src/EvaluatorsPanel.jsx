@@ -2,26 +2,27 @@ import { useState } from "react";
 
 function EvaluatorsPanel({
     evaluators = [],
+    standardUsers = [],
     trainees = [],
     onEvaluatorAdded,
-    onEvaluatorUpdated
+    onEvaluatorUpdated,
+    onEvaluatorDeleted
 }) {
-    // --- New / Promote State ---
     const [showAddMenu, setShowAddMenu] = useState(false);
-    const [addMode, setAddMode] = useState("create"); // "create" or "promote"
+    const [addMode, setAddMode] = useState("create");
 
-    // Create state
     const [createUsername, setCreateUsername] = useState("");
     const [createPassword, setCreatePassword] = useState("");
     const [createError, setCreateError] = useState("");
     const [createLoading, setCreateLoading] = useState(false);
 
-    // Promote state
-    const [selectedTraineeId, setSelectedTraineeId] = useState("");
+    // Selected entity can be 'user:12' or 'trainee:45'
+    const [selectedTarget, setSelectedTarget] = useState("");
+    const [promotePassword, setPromotePassword] = useState("");
+    const [promoteUsername, setPromoteUsername] = useState("");
     const [promoteError, setPromoteError] = useState("");
     const [promoteLoading, setPromoteLoading] = useState(false);
 
-    // --- Edit State ---
     const [editingId, setEditingId] = useState(null);
     const [editAdmin, setEditAdmin] = useState(false);
     const [editEvaluator, setEditEvaluator] = useState(true);
@@ -30,10 +31,6 @@ function EvaluatorsPanel({
     const [editError, setEditError] = useState("");
     const [editLoading, setEditLoading] = useState(false);
 
-    // Filter trainees who aren't already evaluators
-    const eligibleTrainees = trainees.filter(t => !t.is_evaluator);
-
-    // 1. Create Brand New Evaluator (POST /users)
     const handleCreateEvaluator = async (e) => {
         e.preventDefault();
         setCreateError("");
@@ -71,32 +68,61 @@ function EvaluatorsPanel({
         }
     };
 
-    // 2. Promote Existing Trainee to Evaluator (PATCH /users/:id)
-    const handlePromoteTrainee = async (e) => {
+    const handlePromote = async (e) => {
         e.preventDefault();
         setPromoteError("");
 
-        if (!selectedTraineeId) {
-            setPromoteError("Please select a user to promote.");
+        if (!selectedTarget) {
+            setPromoteError("Please select a user or trainee to promote.");
             return;
         }
 
+        const [type, id] = selectedTarget.split(":");
         setPromoteLoading(true);
 
         try {
-            const res = await fetch(`http://127.0.0.1:8080/users/${selectedTraineeId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ is_evaluator: true })
-            });
+            if (type === "user") {
+                // Promoting existing standard user account
+                const res = await fetch(`http://127.0.0.1:8080/users/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_evaluator: true })
+                });
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to promote user');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to promote user');
 
-            setSelectedTraineeId("");
+                const updatedUser = Array.isArray(data) ? data[0] : (data.user || data);
+                if (onEvaluatorUpdated) onEvaluatorUpdated(updatedUser);
+
+            } else if (type === "trainee") {
+                // Creating a login account for a trainee to become an evaluator
+                if (!promoteUsername || !promotePassword) {
+                    throw new Error("Username and password are required to create an evaluator account for this trainee.");
+                }
+
+                const res = await fetch('http://127.0.0.1:8080/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: promoteUsername,
+                        password: promotePassword,
+                        is_evaluator: true,
+                        personnel_id: Number(id)
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to create evaluator account');
+
+                if (onEvaluatorAdded) onEvaluatorAdded(data);
+            }
+
+            setSelectedTarget("");
+            setPromoteUsername("");
+            setPromotePassword("");
             setShowAddMenu(false);
 
-            if (onEvaluatorUpdated) onEvaluatorUpdated(data);
         } catch (err) {
             setPromoteError(err.message);
         } finally {
@@ -104,7 +130,6 @@ function EvaluatorsPanel({
         }
     };
 
-    // 3. Edit Existing Evaluator (PATCH /users/:id)
     const startEdit = (evaluator) => {
         setEditingId(evaluator.id);
         setEditAdmin(!!evaluator.is_admin);
@@ -148,6 +173,24 @@ function EvaluatorsPanel({
         }
     };
 
+    const handleDeleteEvaluator = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this evaluator account?")) return;
+
+        try {
+            const res = await fetch(`http://127.0.0.1:8080/users/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) throw new Error('Failed to delete user');
+
+            if (onEvaluatorDeleted) onEvaluatorDeleted(id);
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const isSelectingTrainee = selectedTarget.startsWith("trainee:");
+
     return (
         <div className="panel">
             <div className="panel-header">
@@ -160,7 +203,6 @@ function EvaluatorsPanel({
                 </button>
             </div>
 
-            {/* Add / Promote Section */}
             {showAddMenu && (
                 <div style={{
                     marginBottom: '15px',
@@ -169,7 +211,6 @@ function EvaluatorsPanel({
                     borderRadius: '6px',
                     backgroundColor: 'var(--list-bg)'
                 }}>
-                    {/* Mode Toggle Tabs */}
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                         <button
                             type="button"
@@ -185,11 +226,10 @@ function EvaluatorsPanel({
                             style={{ opacity: addMode === 'promote' ? 1 : 0.6 }}
                             onClick={() => setAddMode('promote')}
                         >
-                            Promote Trainee
+                            Promote User / Trainee
                         </button>
                     </div>
 
-                    {/* Mode A: Create New User */}
                     {addMode === 'create' && (
                         <form onSubmit={handleCreateEvaluator} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Create New Evaluator</h4>
@@ -214,24 +254,57 @@ function EvaluatorsPanel({
                         </form>
                     )}
 
-                    {/* Mode B: Promote Existing Trainee */}
                     {addMode === 'promote' && (
-                        <form onSubmit={handlePromoteTrainee} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Promote Trainee to Evaluator</h4>
+                        <form onSubmit={handlePromote} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Promote to Evaluator</h4>
                             {promoteError && <p style={{ color: '#dc2626', fontSize: '0.8rem', margin: 0 }}>{promoteError}</p>}
+
                             <select
-                                value={selectedTraineeId}
-                                onChange={(e) => setSelectedTraineeId(e.target.value)}
+                                value={selectedTarget}
+                                onChange={(e) => setSelectedTarget(e.target.value)}
                                 style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
                             >
-                                <option value="">Select a trainee...</option>
-                                {eligibleTrainees.map(t => (
-                                    <option key={t.id} value={t.id}>
-                                        {t.username || `${t.first_name || ''} ${t.last_name || ''}`.trim() || `User #${t.id}`}
-                                    </option>
-                                ))}
+                                <option value="">Select a user or trainee...</option>
+                                {standardUsers.length > 0 && (
+                                    <optgroup label="Standard Users">
+                                        {standardUsers.map(u => (
+                                            <option key={`user-${u.id}`} value={`user:${u.id}`}>
+                                                {u.username}
+                                            </option>
+                                        ))}
+                                    </optgroup>
+                                )}
+                                {trainees.length > 0 && (
+                                    <optgroup label="Trainees / Personnel">
+                                        {trainees.map(t => (
+                                            <option key={`trainee-${t.id}`} value={`trainee:${t.id}`}>
+                                                {t.rank ? `${t.rank} ` : ''}{t.first_name} {t.last_name}
+                                            </option>
+                                        ))}
+                                    </optgroup>
+                                )}
                             </select>
-                            <button type="submit" disabled={promoteLoading || !selectedTraineeId} className="new-btn">
+
+                            {isSelectingTrainee && (
+                                <>
+                                    <input
+                                        type="text"
+                                        placeholder="Assign Username for Evaluator account"
+                                        value={promoteUsername}
+                                        onChange={(e) => setPromoteUsername(e.target.value)}
+                                        style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Assign Password"
+                                        value={promotePassword}
+                                        onChange={(e) => setPromotePassword(e.target.value)}
+                                        style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                                    />
+                                </>
+                            )}
+
+                            <button type="submit" disabled={promoteLoading || !selectedTarget} className="new-btn">
                                 {promoteLoading ? 'Promoting...' : 'Make Evaluator'}
                             </button>
                         </form>
@@ -239,12 +312,10 @@ function EvaluatorsPanel({
                 </div>
             )}
 
-            {/* Evaluators List */}
             <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
                 {evaluators.map(e => (
                     <li key={e.id} style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
                         {editingId === e.id ? (
-                            /* Edit Form */
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '8px', backgroundColor: 'var(--list-bg)', borderRadius: '4px' }}>
                                 <strong>Editing: {e.username}</strong>
                                 {editError && <p style={{ color: '#dc2626', fontSize: '0.8rem', margin: 0 }}>{editError}</p>}
@@ -291,10 +362,18 @@ function EvaluatorsPanel({
                                 </div>
                             </div>
                         ) : (
-                            /* Normal View */
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span>{e.username} | Training Quals | Trainees</span>
-                                <button className="new-btn" onClick={() => startEdit(e)}>Edit</button>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button className="new-btn" onClick={() => startEdit(e)}>Edit</button>
+                                    <button
+                                        className="new-btn"
+                                        style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
+                                        onClick={() => handleDeleteEvaluator(e.id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </li>

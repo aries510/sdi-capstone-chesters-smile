@@ -3,10 +3,11 @@ import './AdminHome.css'
 import EvaluatorsPanel from './EvaluatorsPanel';
 import CertQualRenewalPanel from './CertQualRenewalPanel';
 import CertificationCatalog from './CertificationCatalog'
+import logo from './bg-images/spaceforcelogo.png';
 
 function AdminHome() {
-
     const [evaluators, setEvaluators] = useState([]);
+    const [standardUsers, setStandardUsers] = useState([]);
     const [trainees, setTrainees] = useState([]);
     const [darkMode, setDarkMode] = useState(false)
 
@@ -18,22 +19,42 @@ function AdminHome() {
     useEffect(() => {
         fetch(`http://127.0.0.1:8080/users`)
             .then(res => res.json())
-            .then(users => setEvaluators(users.filter(u => u.is_evaluator)))
+            .then(users => {
+                setEvaluators(users.filter(u => u.is_evaluator));
+                setStandardUsers(users.filter(u => !u.is_evaluator));
+            })
             .catch(console.error)
 
         fetch('http://127.0.0.1:8080/personnel')
             .then(res => res.json())
             .then(setTrainees)
             .catch(console.error)
-
     }, [])
 
+    // Delete Trainee / Personnel Record
+    const handleDeleteTrainee = async (id) => {
+        if (!window.confirm("Are you sure you want to remove this trainee from the unit?")) return;
 
+        try {
+            const res = await fetch(`http://127.0.0.1:8080/personnel/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) throw new Error('Failed to delete trainee');
+
+            setTrainees(prev => prev.filter(t => t.id !== id));
+        } catch (err) {
+            alert(err.message);
+        }
+    };
 
     return (
         <div className='admin-container'>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1 className='admin-title'>Admin Dashboard</h1>
+                <div className='admin-header'>
+                    <img src={logo} alt='Space Force Logo' className='admin-logo' />
+                    <span>Admin Dashboard</span>
+                </div>
                 <button onClick={toggleDarkMode} className='new-btn'>
                     {darkMode ? 'Light Mode' : 'Dark Mode'}
                 </button>
@@ -71,9 +92,17 @@ function AdminHome() {
                                     {trainees.map(t => (
                                         <li key={t.id} style={{ padding: '4px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <span>{t.rank} {t.first_name} {t.last_name}</span>
-                                            <span style={{ fontSize: '0.75rem', backgroundColor: '#d1fae5', color: '#065f46', padding: '2px 8px', borderRadius: '12px' }}>
-                                                Trainee
-                                            </span>
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '0.75rem', backgroundColor: '#d1fae5', color: '#065f46', padding: '2px 8px', borderRadius: '12px' }}>
+                                                    Trainee
+                                                </span>
+                                                <button
+                                                    onClick={() => handleDeleteTrainee(t.id)}
+                                                    style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: '0.8rem' }}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
@@ -91,22 +120,34 @@ function AdminHome() {
             <div className='admin-panels'>
                 <EvaluatorsPanel
                     evaluators={evaluators}
+                    standardUsers={standardUsers}
                     trainees={trainees}
                     onEvaluatorAdded={(newEvaluator) => {
-                        setEvaluators(prev => [...prev, newEvaluator]);
+                        const user = Array.isArray(newEvaluator) ? newEvaluator[0] : (newEvaluator.user || newEvaluator);
+                        setEvaluators(prev => [...prev, user]);
                     }}
-                    onEvaluatorUpdated={(updatedUser) => {
-                        if (updatedUser.is_evaluator) {
+                    onEvaluatorUpdated={(updatedData) => {
+                        const user = Array.isArray(updatedData) ? updatedData[0] : (updatedData.user || updatedData);
+                        if (!user || !user.id) return;
+
+                        const isEvaluator = Boolean(user.is_evaluator);
+
+                        if (isEvaluator) {
                             setEvaluators(prev => {
-                                const exists = prev.some(e => e.id === updatedUser.id);
-                                if (exists) {
-                                    return prev.map(e => e.id === updatedUser.id ? updatedUser : e);
-                                }
-                                return [...prev, updatedUser];
+                                const exists = prev.some(e => Number(e.id) === Number(user.id));
+                                return exists ? prev.map(e => Number(e.id) === Number(user.id) ? user : e) : [...prev, user];
                             });
+                            setStandardUsers(prev => prev.filter(u => Number(u.id) !== Number(user.id)));
                         } else {
-                            setEvaluators(prev => prev.filter(e => e.id !== updatedUser.id));
+                            setEvaluators(prev => prev.filter(e => Number(e.id) !== Number(user.id)));
+                            setStandardUsers(prev => {
+                                const exists = prev.some(u => Number(u.id) === Number(user.id));
+                                return exists ? prev.map(u => Number(u.id) === Number(user.id) ? user : u) : [...prev, user];
+                            });
                         }
+                    }}
+                    onEvaluatorDeleted={(id) => {
+                        setEvaluators(prev => prev.filter(e => Number(e.id) !== Number(id)));
                     }}
                 />
                 <CertQualRenewalPanel />
@@ -119,4 +160,4 @@ function AdminHome() {
     );
 }
 
-export default AdminHome
+export default AdminHome;
