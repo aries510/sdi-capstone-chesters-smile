@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const createUserUrl = 'http://localhost:8080/users';
 
@@ -11,9 +11,55 @@ export default function CreateAccount() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isEvaluator, setIsEvaluator] = useState(false);
   const [isPlanner, setIsPlanner] = useState(false);
+  const [personnelId, setPersonnelId] = useState(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [lookupError, setLookupError] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const personnelLookup = async () => {
+      if (!firstName || !lastName) {
+        setPersonnelId(null);
+        setLookupError('');
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/personnel?firstName=${firstName}&lastName=${lastName}`,
+        );
+        const data = await response.json();
+        if (cancelled) return;
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Personnel lookup failed');
+        }
+        if (!data.length) {
+          setPersonnelId(null);
+          setLookupError('No matching personnel record found');
+          return;
+        }
+
+        setPersonnelId(data[0].id);
+        setLookupError('');
+      } catch (err) {
+        if (cancelled) return;
+        setPersonnelId(null);
+        setLookupError(err.message);
+      }
+    };
+
+    personnelLookup();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [firstName, lastName]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +68,11 @@ export default function CreateAccount() {
 
     if (!username || !password) {
       setError('Missing username/password');
+      return;
+    }
+
+    if (!personnelId) {
+      setError('No matching personnel record — check the first/last name');
       return;
     }
 
@@ -42,6 +93,7 @@ export default function CreateAccount() {
           is_admin: isAdmin,
           is_evaluator: isEvaluator,
           is_planner: isPlanner,
+          personnel_id: personnelId,
         }),
       });
 
@@ -70,9 +122,30 @@ export default function CreateAccount() {
       <h2>Create Account</h2>
 
       {error && <div>{error}</div>}
+      {lookupError && <div>{lookupError}</div>}
       {success && <div>{success}</div>}
 
       <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="firstName">First Name</label>
+          <input
+            id="firstName"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="lastName">Last Name</label>
+          <input
+            id="lastName"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+          />
+        </div>
+
         <div>
           <label htmlFor="username">Username</label>
           <input
