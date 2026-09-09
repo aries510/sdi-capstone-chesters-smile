@@ -1,11 +1,11 @@
 /* Light Theme Variables */
 :root {
     --bg-color: #ffffff;
-    --panel-bg: #ffffff;
+    --panel-bg: rgba(255, 255, 255, 0.55);
     --text-color: #222222;
     --border-color: #dcdcdc;
-    --list-bg: #fdf5e6;
-    --catalog-bg: #eaf1f8;
+    --list-bg: rgba(253, 245, 230, 0.55);
+    --catalog-bg: rgba(234, 241, 248, 0.55);
     --button-text: #ffffff;
     --scrollbar-thumb: #cbd5e1;
 }
@@ -13,20 +13,26 @@
 /* Dark Theme Variables */
 .dark-theme {
     --bg-color: #001026;
-    --panel-bg: #1e1e1e;
+    --panel-bg: rgba(30, 30, 30, 0.55);
     --text-color: #c0c0c0;
     --border-color: #333333;
-    --list-bg: #111e38;
-    --catalog-bg: #16222c;
+    --list-bg: rgba(17, 30, 56, 0.55);
+    --catalog-bg: rgba(22, 34, 44, 0.55);
     --button-text: #ffffff;
     --scrollbar-thumb: #334155;
 }
 
-/* Global Theme Transitions */
+/* Global Theme Transitions & Background Image */
 body {
-    background-color: var(--bg-color);
+    background-image: url('./bg-images/admin-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     color: var(--text-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: color 0.3s ease;
+    margin: 0;
+    min-height: 100vh;
 }
 
 .admin-container {
@@ -34,8 +40,26 @@ body {
     margin: 0 auto;
     padding: 20px;
     font-family: sans-serif;
-    background-color: var(--bg-color);
     color: var(--text-color);
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.admin-logo {
+    height: 100px;
+    width: auto;
+}
+
+.admin-header span {
+    color: #ffffff;
+    font-size: 2.5rem;
+    font-family: Verdana, Geneva, Tahoma, sans-serif
 }
 
 .admin-title {
@@ -44,6 +68,11 @@ body {
     font-size: 1.5rem;
     margin-bottom: 30px;
     color: var(--text-color);
+    background-color: var(--panel-bg);
+    backdrop-filter: blur(6px);
+    padding: 10px;
+    border-radius: 4px;
+    display: inline-block;
 }
 
 /* Top Row: List Box & Actions */
@@ -52,12 +81,12 @@ body {
     gap: 20px;
     margin-bottom: 20px;
     align-items: stretch;
-    /* Ensures list box matches height of action buttons */
 }
 
 .eval-trainee-list {
     flex: 1;
     background-color: var(--list-bg);
+    backdrop-filter: blur(6px);
     border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 20px;
@@ -106,7 +135,8 @@ body {
 }
 
 .import-button {
-    background-color: var(--bg-color);
+    background-color: var(--panel-bg);
+    backdrop-filter: blur(6px);
     color: var(--text-color);
     padding: 16px;
     text-align: center;
@@ -126,6 +156,7 @@ body {
 .panel {
     flex: 1;
     background-color: var(--panel-bg);
+    backdrop-filter: blur(6px);
     border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 20px;
@@ -147,7 +178,7 @@ body {
 }
 
 .new-btn {
-    background-color: var(--bg-color);
+    background-color: var(--panel-bg);
     color: var(--text-color);
     border: 1px solid var(--border-color);
     border-radius: 20px;
@@ -168,6 +199,7 @@ body {
 /* Bottom Catalog Section */
 .catalog-wrapper {
     background-color: var(--catalog-bg);
+    backdrop-filter: blur(6px);
     border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 25px;
