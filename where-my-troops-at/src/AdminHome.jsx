@@ -54,7 +54,7 @@ function AdminHome() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <div className='admin-header'>
                     <img src={logo} alt='Space Force Logo' className='admin-logo' />
-                    <div className='admin-title'>Admin Dashboard</div>
+                    <div className='admin-title'>WMTA Admin Dashboard</div>
                 </div>
                 <button onClick={toggleDarkMode} className='new-btn'>
                     {darkMode ? 'Light Mode' : 'Dark Mode'}
