@@ -9,11 +9,14 @@ const saltRounds = 10;
 app.use(express.json());
 
 router.get('/', (req, res) => {
-  const { username } = req.query;
+  const { username, personnel_id } = req.query;
   const query = knex('users').select('*');
 
   if (username) {
     query.where('username', 'ilike', username);
+  }
+  if (personnel_id) {
+    query.where('personnel_id', personnel_id);
   }
   query
     .then((data) => res.status(200).json(data))
@@ -41,11 +44,27 @@ router.get('/:userId', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { username, password, is_admin, is_evaluator, is_planner } = req.body;
+  const {
+    username,
+    password,
+    is_admin,
+    is_evaluator,
+    is_planner,
+    personnel_id,
+  } = req.body;
   if (!username || !password) {
     return res
       .status(400)
       .json({ error: 'username and password are required' });
+  }
+  if (
+    personnel_id !== undefined &&
+    personnel_id !== null &&
+    !/^\d+$/.test(String(personnel_id))
+  ) {
+    return res
+      .status(400)
+      .json({ error: 'personnel_id must be a positive integer or null' });
   }
 
   knex('users')
@@ -57,24 +76,37 @@ router.post('/', (req, res) => {
         return res.status(409).json({ error: 'user already exists' });
       }
 
-      return bcrypt.hash(password, saltRounds).then((hashedPassword) =>
-        knex('users')
-          .insert({
-            username,
-            pw_hash: hashedPassword,
-            is_admin: !!is_admin,
-            is_evaluator: !!is_evaluator,
-            is_planner: !!is_planner,
-          })
-          .returning([
-            'id',
-            'username',
-            'is_admin',
-            'is_evaluator',
-            'is_planner',
-          ])
-          .then(([user]) => res.status(201).json(user)),
-      );
+      const personnelCheck =
+        personnel_id === undefined || personnel_id === null
+          ? Promise.resolve(true)
+          : knex('personnel').select('id').where('id', personnel_id).first();
+
+      return personnelCheck.then((person) => {
+        if (person === undefined) {
+          return res.status(404).json({ error: 'personnel not found' });
+        }
+
+        return bcrypt.hash(password, saltRounds).then((hashedPassword) =>
+          knex('users')
+            .insert({
+              username,
+              pw_hash: hashedPassword,
+              is_admin: !!is_admin,
+              is_evaluator: !!is_evaluator,
+              is_planner: !!is_planner,
+              personnel_id,
+            })
+            .returning([
+              'id',
+              'username',
+              'is_admin',
+              'is_evaluator',
+              'is_planner',
+              'personnel_id',
+            ])
+            .then(([user]) => res.status(201).json(user)),
+        );
+      });
     })
     .catch((error) => res.status(500).json({ error: error.message }));
 });
@@ -100,7 +132,8 @@ router.delete('/:userId', (req, res) => {
 
 router.patch('/:userId', (req, res) => {
   const { userId } = req.params;
-  const { pw_hash, is_admin, is_evaluator, is_planner } = req.body;
+  const { pw_hash, is_admin, is_evaluator, is_planner, personnel_id } =
+    req.body;
 
   if (!/^\d+$/.test(userId)) {
     return res.status(400).json({ error: 'userId must be a positive integer' });
@@ -110,9 +143,20 @@ router.patch('/:userId', (req, res) => {
     pw_hash === undefined &&
     is_admin === undefined &&
     is_evaluator === undefined &&
-    is_planner === undefined
+    is_planner === undefined &&
+    personnel_id === undefined
   ) {
     return res.status(400).json({ error: 'no fields to update' });
+  }
+
+  if (
+    personnel_id !== undefined &&
+    personnel_id !== null &&
+    !/^\d+$/.test(String(personnel_id))
+  ) {
+    return res
+      .status(400)
+      .json({ error: 'personnel_id must be a positive integer or null' });
   }
 
   knex('users')
@@ -124,30 +168,46 @@ router.patch('/:userId', (req, res) => {
         return res.status(404).json({ error: 'user not found' });
       }
 
-      const updates = {};
-      if (is_admin !== undefined) updates.is_admin = !!is_admin;
-      if (is_evaluator !== undefined) updates.is_evaluator = !!is_evaluator;
-      if (is_planner !== undefined) updates.is_planner = !!is_planner;
+      const personnelCheck =
+        personnel_id === undefined || personnel_id === null
+          ? Promise.resolve(true)
+          : knex('personnel').select('id').where('id', personnel_id).first();
 
-      const applyUpdate = pw_hash
-        ? bcrypt
-            .hash(pw_hash, saltRounds)
-            .then((hashedPassword) => ({ ...updates, pw_hash: hashedPassword }))
-        : Promise.resolve(updates);
+      return personnelCheck.then((person) => {
+        if (person === undefined) {
+          return res.status(404).json({ error: 'personnel not found' });
+        }
 
-      return applyUpdate.then((finalUpdates) =>
-        knex('users')
-          .where('id', userId)
-          .update(finalUpdates)
-          .returning([
-            'id',
-            'username',
-            'is_admin',
-            'is_evaluator',
-            'is_planner',
-          ])
-          .then(([user]) => res.status(200).json(user)),
-      );
+        const updates = {};
+        if (is_admin !== undefined) updates.is_admin = !!is_admin;
+        if (is_evaluator !== undefined) updates.is_evaluator = !!is_evaluator;
+        if (is_planner !== undefined) updates.is_planner = !!is_planner;
+        if (personnel_id !== undefined) updates.personnel_id = personnel_id;
+
+        const applyUpdate = pw_hash
+          ? bcrypt
+              .hash(pw_hash, saltRounds)
+              .then((hashedPassword) => ({
+                ...updates,
+                pw_hash: hashedPassword,
+              }))
+          : Promise.resolve(updates);
+
+        return applyUpdate.then((finalUpdates) =>
+          knex('users')
+            .where('id', userId)
+            .update(finalUpdates)
+            .returning([
+              'id',
+              'username',
+              'is_admin',
+              'is_evaluator',
+              'is_planner',
+              'personnel_id',
+            ])
+            .then(([user]) => res.status(200).json(user)),
+        );
+      });
     })
     .catch((error) => res.status(500).json({ error: error.message }));
 });
