@@ -1,386 +1,150 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-function EvaluatorsPanel({
-    evaluators = [],
-    standardUsers = [],
-    trainees = [],
-    onEvaluatorAdded,
-    onEvaluatorUpdated,
-    onEvaluatorDeleted
-}) {
-    const [showAddMenu, setShowAddMenu] = useState(false);
-    const [addMode, setAddMode] = useState("create");
+export default function EvaluatorsPanel({ evaluators, standardUsers, trainees, onEvaluatorAdded, onEvaluatorDeleted }) {
+    const [isFormOpen, setIsFormOpen] = useState(false);
 
-    const [createUsername, setCreateUsername] = useState("");
-    const [createPassword, setCreatePassword] = useState("");
-    const [createError, setCreateError] = useState("");
-    const [createLoading, setCreateLoading] = useState(false);
+    const [rank, setRank] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Selected entity can be 'user:12' or 'trainee:45'
-    const [selectedTarget, setSelectedTarget] = useState("");
-    const [promotePassword, setPromotePassword] = useState("");
-    const [promoteUsername, setPromoteUsername] = useState("");
-    const [promoteError, setPromoteError] = useState("");
-    const [promoteLoading, setPromoteLoading] = useState(false);
+    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-    const [editingId, setEditingId] = useState(null);
-    const [editAdmin, setEditAdmin] = useState(false);
-    const [editEvaluator, setEditEvaluator] = useState(true);
-    const [editPlanner, setEditPlanner] = useState(false);
-    const [editPassword, setEditPassword] = useState("");
-    const [editError, setEditError] = useState("");
-    const [editLoading, setEditLoading] = useState(false);
-
-    const handleCreateEvaluator = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setCreateError("");
+        setError('');
 
-        if (!createUsername || !createPassword) {
-            setCreateError("Username and password are required.");
+        if (!rank || !firstName || !lastName || !username || !password) {
+            setError('All fields are required.');
             return;
         }
 
-        setCreateLoading(true);
+        setIsLoading(true);
 
         try {
-            const res = await fetch('http://127.0.0.1:8080/users', {
+            const personnelRes = await fetch('http://localhost:8080/personnel', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    username: createUsername,
-                    password: createPassword,
-                    is_evaluator: true
+                    rank,
+                    last_name: lastName,
+                    first_name: firstName,
+                    role: 'evaluator',
+                }),
+            });
+
+            const personnelData = await personnelRes.json();
+
+            if (!personnelRes.ok) {
+                throw new Error(capitalize(personnelData.error || 'Failed to create personnel record'));
+            }
+
+            const userRes = await fetch('http://127.0.0.1:8080/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    is_evaluator: true,
+                    is_admin: false,
+                    is_planner: false,
                 })
             });
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to create evaluator');
+            const userData = await userRes.json();
 
-            setCreateUsername("");
-            setCreatePassword("");
-            setShowAddMenu(false);
-
-            if (onEvaluatorAdded) onEvaluatorAdded(data);
-        } catch (err) {
-            setCreateError(err.message);
-        } finally {
-            setCreateLoading(false);
-        }
-    };
-
-    const handlePromote = async (e) => {
-        e.preventDefault();
-        setPromoteError("");
-
-        if (!selectedTarget) {
-            setPromoteError("Please select a user or trainee to promote.");
-            return;
-        }
-
-        const [type, id] = selectedTarget.split(":");
-        setPromoteLoading(true);
-
-        try {
-            if (type === "user") {
-                // Promoting existing standard user account
-                const res = await fetch(`http://127.0.0.1:8080/users/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ is_evaluator: true })
-                });
-
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Failed to promote user');
-
-                const updatedUser = Array.isArray(data) ? data[0] : (data.user || data);
-                if (onEvaluatorUpdated) onEvaluatorUpdated(updatedUser);
-
-            } else if (type === "trainee") {
-                // Creating a login account for a trainee to become an evaluator
-                if (!promoteUsername || !promotePassword) {
-                    throw new Error("Username and password are required to create an evaluator account for this trainee.");
-                }
-
-                const res = await fetch('http://127.0.0.1:8080/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: promoteUsername,
-                        password: promotePassword,
-                        is_evaluator: true,
-                        personnel_id: Number(id)
-                    })
-                });
-
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Failed to create evaluator account');
-
-                if (onEvaluatorAdded) onEvaluatorAdded(data);
+            if (!userRes.ok) {
+                throw new Error('Failed to create user credentials.');
             }
 
-            setSelectedTarget("");
-            setPromoteUsername("");
-            setPromotePassword("");
-            setShowAddMenu(false);
+            onEvaluatorAdded(userData);
+
+            setRank('');
+            setLastName('');
+            setFirstName('');
+            setUsername('');
+            setPassword('');
+            setIsFormOpen(false);
 
         } catch (err) {
-            setPromoteError(err.message);
+            setError(err.message);
         } finally {
-            setPromoteLoading(false);
+            setIsLoading(false);
         }
     };
-
-    const startEdit = (evaluator) => {
-        setEditingId(evaluator.id);
-        setEditAdmin(!!evaluator.is_admin);
-        setEditEvaluator(!!evaluator.is_evaluator);
-        setEditPlanner(!!evaluator.is_planner);
-        setEditPassword("");
-        setEditError("");
-    };
-
-    const handleSaveEdit = async (id) => {
-        setEditError("");
-        setEditLoading(true);
-
-        const updatePayload = {
-            is_admin: editAdmin,
-            is_evaluator: editEvaluator,
-            is_planner: editPlanner,
-        };
-
-        if (editPassword.trim()) {
-            updatePayload.pw_hash = editPassword;
-        }
-
-        try {
-            const res = await fetch(`http://127.0.0.1:8080/users/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatePayload)
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to update user');
-
-            setEditingId(null);
-
-            if (onEvaluatorUpdated) onEvaluatorUpdated(data);
-        } catch (err) {
-            setEditError(err.message);
-        } finally {
-            setEditLoading(false);
-        }
-    };
-
-    const handleDeleteEvaluator = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this evaluator account?")) return;
-
-        try {
-            const res = await fetch(`http://127.0.0.1:8080/users/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (!res.ok) throw new Error('Failed to delete user');
-
-            if (onEvaluatorDeleted) onEvaluatorDeleted(id);
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    const isSelectingTrainee = selectedTarget.startsWith("trainee:");
 
     return (
-        <div className="panel">
+        <div className="panel" style={{ position: 'relative' }}>
             <div className="panel-header">
-                <h3>Evaluators:</h3>
-                <button
-                    className="new-btn"
-                    onClick={() => setShowAddMenu(!showAddMenu)}
-                >
-                    {showAddMenu ? 'Cancel' : '+ New / Add'}
-                </button>
+                <h3>Evaluator Management</h3>
+                <button className="new-btn" onClick={() => setIsFormOpen(true)}>+ New Evaluator</button>
             </div>
 
-            {showAddMenu && (
-                <div style={{
-                    marginBottom: '15px',
-                    padding: '12px',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '6px',
-                    backgroundColor: 'var(--list-bg)'
-                }}>
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+            <ul style={{ listStyle: 'none', paddingLeft: 0, margin: 0 }}>
+                {evaluators.map(evaluator => (
+                    <li key={evaluator.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
+                        <span>{evaluator.username}</span>
                         <button
-                            type="button"
-                            className="new-btn"
-                            style={{ opacity: addMode === 'create' ? 1 : 0.6 }}
-                            onClick={() => setAddMode('create')}
+                            style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}
+                            onClick={() => onEvaluatorDeleted(evaluator.id)}
                         >
-                            Create New User
+                            Remove
                         </button>
-                        <button
-                            type="button"
-                            className="new-btn"
-                            style={{ opacity: addMode === 'promote' ? 1 : 0.6 }}
-                            onClick={() => setAddMode('promote')}
-                        >
-                            Promote User / Trainee
-                        </button>
-                    </div>
-
-                    {addMode === 'create' && (
-                        <form onSubmit={handleCreateEvaluator} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Create New Evaluator</h4>
-                            {createError && <p style={{ color: '#dc2626', fontSize: '0.8rem', margin: 0 }}>{createError}</p>}
-                            <input
-                                type="text"
-                                placeholder="Username"
-                                value={createUsername}
-                                onChange={(e) => setCreateUsername(e.target.value)}
-                                style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-                            />
-                            <input
-                                type="password"
-                                placeholder="Password"
-                                value={createPassword}
-                                onChange={(e) => setCreatePassword(e.target.value)}
-                                style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-                            />
-                            <button type="submit" disabled={createLoading} className="new-btn">
-                                {createLoading ? 'Saving...' : 'Create Evaluator'}
-                            </button>
-                        </form>
-                    )}
-
-                    {addMode === 'promote' && (
-                        <form onSubmit={handlePromote} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Promote to Evaluator</h4>
-                            {promoteError && <p style={{ color: '#dc2626', fontSize: '0.8rem', margin: 0 }}>{promoteError}</p>}
-
-                            <select
-                                value={selectedTarget}
-                                onChange={(e) => setSelectedTarget(e.target.value)}
-                                style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-                            >
-                                <option value="">Select a user or trainee...</option>
-                                {standardUsers.length > 0 && (
-                                    <optgroup label="Standard Users">
-                                        {standardUsers.map(u => (
-                                            <option key={`user-${u.id}`} value={`user:${u.id}`}>
-                                                {u.username}
-                                            </option>
-                                        ))}
-                                    </optgroup>
-                                )}
-                                {trainees.length > 0 && (
-                                    <optgroup label="Trainees / Personnel">
-                                        {trainees.map(t => (
-                                            <option key={`trainee-${t.id}`} value={`trainee:${t.id}`}>
-                                                {t.rank ? `${t.rank} ` : ''}{t.first_name} {t.last_name}
-                                            </option>
-                                        ))}
-                                    </optgroup>
-                                )}
-                            </select>
-
-                            {isSelectingTrainee && (
-                                <>
-                                    <input
-                                        type="text"
-                                        placeholder="Assign Username for Evaluator account"
-                                        value={promoteUsername}
-                                        onChange={(e) => setPromoteUsername(e.target.value)}
-                                        style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-                                    />
-                                    <input
-                                        type="password"
-                                        placeholder="Assign Password"
-                                        value={promotePassword}
-                                        onChange={(e) => setPromotePassword(e.target.value)}
-                                        style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-                                    />
-                                </>
-                            )}
-
-                            <button type="submit" disabled={promoteLoading || !selectedTarget} className="new-btn">
-                                {promoteLoading ? 'Promoting...' : 'Make Evaluator'}
-                            </button>
-                        </form>
-                    )}
-                </div>
-            )}
-
-            <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-                {evaluators.map(e => (
-                    <li key={e.id} style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
-                        {editingId === e.id ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '8px', backgroundColor: 'var(--list-bg)', borderRadius: '4px' }}>
-                                <strong>Editing: {e.username}</strong>
-                                {editError && <p style={{ color: '#dc2626', fontSize: '0.8rem', margin: 0 }}>{editError}</p>}
-
-                                <div style={{ display: 'flex', gap: '12px', fontSize: '0.85rem' }}>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={editEvaluator}
-                                            onChange={(opt) => setEditEvaluator(opt.target.checked)}
-                                        /> Evaluator
-                                    </label>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={editAdmin}
-                                            onChange={(opt) => setEditAdmin(opt.target.checked)}
-                                        /> Admin
-                                    </label>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={editPlanner}
-                                            onChange={(opt) => setEditPlanner(opt.target.checked)}
-                                        /> Planner
-                                    </label>
-                                </div>
-
-                                <input
-                                    type="password"
-                                    placeholder="Reset Password (optional)"
-                                    value={editPassword}
-                                    onChange={(opt) => setEditPassword(opt.target.value)}
-                                    style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-                                />
-
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    <button onClick={() => handleSaveEdit(e.id)} disabled={editLoading} className="new-btn">
-                                        {editLoading ? 'Saving...' : 'Save'}
-                                    </button>
-                                    <button onClick={() => setEditingId(null)} className="new-btn">
-                                        Cancel
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span>{e.username} | Training Quals | Trainees</span>
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    <button className="new-btn" onClick={() => startEdit(e)}>Edit</button>
-                                    <button
-                                        className="new-btn"
-                                        style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
-                                        onClick={() => handleDeleteEvaluator(e.id)}
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                        )}
                     </li>
                 ))}
             </ul>
+
+            {isFormOpen && (
+                <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    backdropFilter: 'blur(4px)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 10,
+                    borderRadius: '4px'
+                }}>
+                    <div style={{
+                        backgroundColor: 'var(--panel-bg)',
+                        padding: '20px',
+                        borderRadius: '6px',
+                        width: '85%',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                        color: 'var(--text-color)'
+                    }}>
+                        <h4 style={{ marginTop: 0, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+                            Add New Evaluator
+                        </h4>
+
+                        {error && <div style={{ color: '#dc2626', marginBottom: '10px', fontSize: '0.9rem' }}>{error}</div>}
+
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <input type="text" placeholder="Rank (e.g. Sgt)" value={rank} onChange={(e) => setRank(e.target.value)} required style={{ flex: 1, padding: '8px' }} />
+                                <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required style={{ flex: 2, padding: '8px' }} />
+                                <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required style={{ flex: 2, padding: '8px' }} />
+                            </div>
+
+                            <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required style={{ padding: '8px' }} />
+                            <input type="password" placeholder="Temporary Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ padding: '8px' }} />
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                                <button type="button" onClick={() => setIsFormOpen(false)} style={{ padding: '6px 12px', cursor: 'pointer', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-color)' }}>
+                                    Cancel
+                                </button>
+                                <button type="submit" disabled={isLoading} style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: '#215b93', color: 'white', border: 'none', borderRadius: '4px' }}>
+                                    {isLoading ? 'Creating...' : 'Create Record'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
-
-export default EvaluatorsPanel;

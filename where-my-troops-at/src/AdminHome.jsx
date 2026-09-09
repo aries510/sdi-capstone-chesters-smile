@@ -9,7 +9,8 @@ function AdminHome() {
     const [evaluators, setEvaluators] = useState([]);
     const [standardUsers, setStandardUsers] = useState([]);
     const [trainees, setTrainees] = useState([]);
-    const [darkMode, setDarkMode] = useState(false)
+    const [darkMode, setDarkMode] = useState(false);
+    const [selectedDetails, setSelectedDetails] = useState(null);
 
     const toggleDarkMode = () => {
         setDarkMode(!darkMode);
@@ -31,8 +32,8 @@ function AdminHome() {
             .catch(console.error)
     }, [])
 
-    // Delete Trainee / Personnel Record
-    const handleDeleteTrainee = async (id) => {
+    const handleDeleteTrainee = async (id, e) => {
+        e.stopPropagation();
         if (!window.confirm("Are you sure you want to remove this trainee from the unit?")) return;
 
         try {
@@ -50,10 +51,10 @@ function AdminHome() {
 
     return (
         <div className='admin-container'>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <div className='admin-header'>
                     <img src={logo} alt='Space Force Logo' className='admin-logo' />
-                    <span>Admin Dashboard</span>
+                    <div className='admin-title'>Admin Dashboard</div>
                 </div>
                 <button onClick={toggleDarkMode} className='new-btn'>
                     {darkMode ? 'Light Mode' : 'Dark Mode'}
@@ -63,6 +64,7 @@ function AdminHome() {
             <div className='top-row'>
                 <div className='eval-trainee-list'>
                     <h3>Evaluators and Trainees</h3>
+                    <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '0 0 10px 0' }}>Click name to view details</p>
 
                     <div style={{ maxHeight: '250px', overflowY: 'auto', paddingRight: '8px' }}>
                         <div style={{ marginBottom: '1rem' }}>
@@ -71,9 +73,15 @@ function AdminHome() {
                                 <p style={{ fontSize: '0.85rem', color: '#6b7280' }}>No evaluators found.</p>
                             ) : (
                                 <ul style={{ listStyle: 'none', paddingLeft: 0, margin: 0 }}>
-                                    {evaluators.map(e => (
-                                        <li key={e.id} style={{ padding: '4px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span>{e.username}</span>
+                                    {evaluators.map(ev => (
+                                        <li
+                                            key={ev.id}
+                                            onClick={() => setSelectedDetails({ type: 'Evaluator Account', ...ev })}
+                                            style={{ padding: '6px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.2s' }}
+                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
+                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                        >
+                                            <span>{ev.username}</span>
                                             <span style={{ fontSize: '0.75rem', backgroundColor: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: '12px' }}>
                                                 Evaluator
                                             </span>
@@ -90,14 +98,20 @@ function AdminHome() {
                             ) : (
                                 <ul style={{ listStyle: 'none', paddingLeft: 0, margin: 0 }}>
                                     {trainees.map(t => (
-                                        <li key={t.id} style={{ padding: '4px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <li
+                                            key={t.id}
+                                            onClick={() => setSelectedDetails({ type: 'Personnel Record', ...t })}
+                                            style={{ padding: '6px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.2s' }}
+                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
+                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                        >
                                             <span>{t.rank} {t.first_name} {t.last_name}</span>
                                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                                 <span style={{ fontSize: '0.75rem', backgroundColor: '#d1fae5', color: '#065f46', padding: '2px 8px', borderRadius: '12px' }}>
                                                     Trainee
                                                 </span>
                                                 <button
-                                                    onClick={() => handleDeleteTrainee(t.id)}
+                                                    onClick={(e) => handleDeleteTrainee(t.id, e)}
                                                     style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: '0.8rem' }}
                                                 >
                                                     Delete
@@ -156,6 +170,65 @@ function AdminHome() {
             <div className='catalog-wrapper'>
                 <CertificationCatalog />
             </div>
+
+            {selectedDetails && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    backdropFilter: 'blur(5px)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'var(--panel-bg)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid var(--border-color)',
+                        padding: '25px',
+                        borderRadius: '8px',
+                        width: '400px',
+                        maxWidth: '90%',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+                        color: 'var(--text-color)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '15px' }}>
+                            <h3 style={{ margin: 0, fontWeight: 600 }}>{selectedDetails.type} Details</h3>
+                            <button
+                                onClick={() => setSelectedDetails(null)}
+                                style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-color)' }}
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px 0', maxHeight: '300px', overflowY: 'auto' }}>
+                            {Object.entries(selectedDetails)
+                                .filter(([key]) => key !== 'type' && key !== 'pw_hash')
+                                .map(([key, value]) => (
+                                    <li key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-color)', fontSize: '0.9rem' }}>
+                                        <strong style={{ textTransform: 'capitalize', color: 'var(--text-color)', opacity: 0.8 }}>
+                                            {key.replace(/_/g, ' ')}:
+                                        </strong>
+                                        <span style={{ textAlign: 'right', fontWeight: 500 }}>
+                                            {typeof value === 'boolean' ? (value ? 'True' : 'False') : String(value ?? 'N/A')}
+                                        </span>
+                                    </li>
+                                ))}
+                        </ul>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={() => setSelectedDetails(null)}
+                                style={{ backgroundColor: '#215b93', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
