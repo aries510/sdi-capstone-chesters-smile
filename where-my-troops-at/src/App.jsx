@@ -15,8 +15,6 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />}></Route>
 
-        {/* <Route path='/GeneralUser' element={<GeneralUser />}></Route> */}
-
         <Route path="/Admin" element={<AdminHome />}></Route>
         {/* Uncomment below to require a login to the page */}
         {/* <Route element={<ProtectedRoute role="is_admin" />}>
@@ -44,18 +42,8 @@ function App() {
           <Route path="//Evaluator/createpersonnel" element={<CreatePersonnel />}></Route>
         </Route> */}
 
-        <Route
-          path="/Evaluator/createpersonnel"
-          element={<CreatePersonnel />}
-        ></Route>
-        {/* Uncomment below to require a login to the page */}
-        {/* <Route element={<ProtectedRoute role="is_evaluator" />}>
-          <Route path="//Evaluator/createpersonnel" element={<CreatePersonnel />}></Route>
-        </Route> */}
-
         <Route path="/GeneralUser" element={<GenUser />}></Route>
         <Route path="/Admin" element={<AdminHome />}></Route>
-        <Route path="/Evaluator" element={<EvaluatorsPanel />}></Route>
         <Route path="/MPC" element={<MPC />}></Route>
       </Routes>
     </div>
