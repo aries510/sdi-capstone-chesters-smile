@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import TraineeModal from './TraineeModal'
 import './EvaluatorHome.css'
+import logo from './bg-images/spaceforcelogo.png'
 
 function EvaluatorHome() {
     const [trainees, setTrainees] = useState([])
@@ -8,6 +9,7 @@ function EvaluatorHome() {
     const [weaponSystems, setWeaponSystems] = useState([])
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedTrainee, setSelectedTrainee] = useState(null)
+    const [darkMode, setDarkMode] = useState(false)
 
     // Filter States
     const [selectedUnit, setSelectedUnit] = useState('All')
@@ -17,6 +19,11 @@ function EvaluatorHome() {
     // Add Trainee Modal State
     const [showAddModal, setShowAddModal] = useState(false)
     const [newTrainee, setNewTrainee] = useState({ first_name: '', last_name: '', rank: '' })
+
+    const toggleDarkMode = () => {
+        setDarkMode(!darkMode)
+        document.body.classList.toggle('dark-theme', !darkMode)
+    }
 
     const fetchTrainees = () => {
         fetch('http://127.0.0.1:8080/personnel')
@@ -94,12 +101,23 @@ function EvaluatorHome() {
 
     return (
         <div className="evaluator-container" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-            <h1 className="evaluator-title" style={{ textAlign: 'center', marginBottom: '24px' }}>Evaluator</h1>
+            {/* Header with Space Force Logo & Dark/Light Mode Toggle */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                <div className="evaluator-header">
+                    <img src={logo} alt="Space Force Logo" className="evaluator-logo" />
+                    <div className="evaluator-title">Evaluator Dashboard</div>
+                </div>
+                <button onClick={toggleDarkMode} className="new-btn">
+                    {darkMode ? 'Light Mode' : 'Dark Mode'}
+                </button>
+            </div>
 
             {/* Search and Filters Section */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px', maxWidth: '600px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>SEARCH PERSONNEL</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: '#ffffff' }}>
+                        SEARCH PERSONNEL
+                    </span>
                     <input
                         type="text"
                         className="search-bar"
@@ -217,7 +235,7 @@ function EvaluatorHome() {
                 />
             )}
 
-            {/* Add New Trainee Form Modal (Admin Home Style) */}
+            {/* Add New Trainee Form Modal */}
             {showAddModal && (
                 <div style={{
                     position: 'fixed',
