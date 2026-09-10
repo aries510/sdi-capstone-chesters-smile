@@ -1,10 +1,13 @@
-import { useState } from "react";
-import "./MPC.css";
+import { useState, useEffect } from "react";
+import "./MPC.css"
 
 const initialMissions = [
     {
         id: 1,
         name: "Range Support",
+        dates: "03 - 10 SEP 2026",
+        startDate: "2026-09-03",
+        endDate: "2026-09-10",
         dates: "03 - 10 SEP 2026",
         location: "Fort Bragg, NC",
         oic: "CPT Cowardlylion",
@@ -17,6 +20,9 @@ const initialMissions = [
         id: 2,
         name: "Field Exercise",
         dates: "05 - 07 SEP 2026",
+        startDate: "2026-09-05",
+        endDate: "2026-09-07",
+        dates: "05 - 07 SEP 2026",
         location: "Training Area",
         oic: "MAJ Tinman",
         status: "In Planning",
@@ -27,6 +33,8 @@ const initialMissions = [
     {
         id: 3,
         name: "Convoy Operations",
+        startDate: "2026-09-08",
+        endDate: "2026-09-08",
         dates: "08 SEP 2026",
         location: "Fort Bragg, NC",
         oic: "CPT Scarecrow",
@@ -64,17 +72,20 @@ const personnel = [
         id: 3,
         name: "SPC Gandalf",
         role: "Medic",
-        qualified: false,
+        qualified: true,
         available: true,
     },
 ];
 
 function MPC() {
-    const [missions, setMissions] = useState(initialMissions);
+    const [missions, setMissions] = useState([]);
     const [showMissionForm, setShowMissionForm] = useState(false);
     const [selectedMission, setSelectedMission] = useState(null);
     const [assignedPersonnel, setAssignedPersonnel] = useState([]);
     const [viewStage, setViewStage] = useState(null);
+    const [missionViewSection, setMissionViewSection] = useState("mission");
+    const [showAttentionOnly, setShowAttentionOnly] = useState(false);
+    const [showUpcomingOnly, setShowUpcomingOnly] = useState(false);
     const [newMission, setNewMission] = useState({
         name: "",
         type: "",
@@ -94,6 +105,37 @@ function MPC() {
         sustainment: "",
         commandSignal: "",
     });
+
+    useEffect(() => {
+        const fetchMsn = async () => {
+            try {
+                const response = await fetch(
+                    "http://localhost:8080/msnplans"
+                );
+
+                console.log("Response status:", response.status);
+
+                if (!response.ok) {
+                    console.error(
+                        "Failed to fetch mission plans:",
+                        response.status
+                    );
+                    return;
+                }
+
+                const data = await response.json();
+
+                console.log("Backend mission data:", data);
+                console.log("Is array:", Array.isArray(data));
+
+                setMissions(data);
+            } catch (err) {
+                console.error("Error fetching mission plans:", err);
+            }
+        };
+
+        fetchMsn();
+    }, []);
 
     function handleChange(event) {
         const { name, value } = event.target;
@@ -128,6 +170,10 @@ function MPC() {
 
     function handlePersonnelSubmit() {
         if (!selectedMission) {
+            return;
+        }
+
+        if (assignedPersonnel.length === 0) {
             return;
         }
 
@@ -286,6 +332,8 @@ function MPC() {
                     status: "Ready",
                     issue: null,
                     stage: 6,
+                    approvedBy: "Current User",
+                    approvedAt: new Date().toLocaleString(),
                 };
             }
 
@@ -333,6 +381,8 @@ function MPC() {
             id: Date.now(),
             name: newMission.name,
             type: newMission.type,
+            startDate: newMission.startDate,
+            endDate: newMission.endDate,
             dates: `${newMission.startDate} - ${newMission.endDate}`,
             location: newMission.location,
             oic: newMission.oic,
@@ -385,6 +435,9 @@ function MPC() {
         setShowMissionForm(false);
         setSelectedMission(currentMission);
         setViewStage(currentMission.stage);
+        if (currentMission.stage === 6) {
+            setMissionViewSection("mission");
+        }
 
         setAssignedPersonnel(
             currentMission.personnel
@@ -583,6 +636,7 @@ function MPC() {
                         <button
                             type="button"
                             onClick={handlePersonnelSubmit}
+                            disabled={assignedPersonnel.length === 0}
                         >
                             Save & Continue
                         </button>
@@ -788,6 +842,7 @@ function MPC() {
             {selectedMission && viewStage === 6 && (
                 <section className="new-mission-form">
                     <div className="new-mission-header">
+
                         <div>
                             <h2>{selectedMission.name}</h2>
                             <p>Approved Mission</p>
@@ -804,42 +859,284 @@ function MPC() {
                         </button>
                     </div>
 
-                    <div className="readiness-summary">
-                        <h3>Mission Readiness</h3>
-                        <strong>{selectedMission.readiness}% Ready</strong>
+                    <div className="mission-view-tabs">
+                        <button
+                            type="button"
+                            className={missionViewSection === "mission" ? "active" : ""}
+                            onClick={() => setMissionViewSection("mission")}
+                        >
+                            Mission
+                        </button>
+
+                        <button
+                            type="button"
+                            className={missionViewSection === "conop" ? "active" : ""}
+                            onClick={() => setMissionViewSection("conop")}
+                        >
+                            Plan / CONOP
+                        </button>
+
+                        <button
+                            type="button"
+                            className={missionViewSection === "personnel" ? "active" : ""}
+                            onClick={() => setMissionViewSection("personnel")}
+                        >
+                            Personnel
+                        </button>
+
+                        <button
+                            type="button"
+                            className={missionViewSection === "readiness" ? "active" : ""}
+                            onClick={() => setMissionViewSection("readiness")}
+                        >
+                            Readiness
+                        </button>
+
+                        <button
+                            type="button"
+                            className={missionViewSection === "approval" ? "active" : ""}
+                            onClick={() => setMissionViewSection("approval")}
+                        >
+                            Approval
+                        </button>
                     </div>
 
-                    <div className="ready-checks">
-                        <div className="ready-check-row">
-                            <span>Status</span>
-                            <strong>{selectedMission.status}</strong>
-                        </div>
+                    {missionViewSection === "mission" && (
+                        <div className="ready-checks">
+                            <div className="ready-check-row">
+                                <span>Mission Name</span>
+                                <strong>{selectedMission.name}</strong>
+                            </div>
 
-                        <div className="ready-check-row">
-                            <span>Dates</span>
-                            <strong>{selectedMission.dates}</strong>
-                        </div>
+                            <div className="ready-check-row">
+                                <span>Mission Type</span>
+                                <strong>{selectedMission.type}</strong>
+                            </div>
 
-                        <div className="ready-check-row">
-                            <span>Location</span>
-                            <strong>{selectedMission.location}</strong>
-                        </div>
+                            <div className="ready-check-row">
+                                <span>Dates</span>
+                                <strong>{selectedMission.dates}</strong>
+                            </div>
 
-                        <div className="ready-check-row">
-                            <span>OIC</span>
-                            <strong>{selectedMission.oic}</strong>
-                        </div>
+                            <div className="ready-check-row">
+                                <span>Location</span>
+                                <strong>{selectedMission.location}</strong>
+                            </div>
 
-                        <div className="ready-check-row">
-                            <span>Personnel Assigned</span>
-                            <strong>
-                                {selectedMission.personnel?.length || 0}
-                            </strong>
+                            <div className="ready-check-row">
+                                <span>OIC</span>
+                                <strong>{selectedMission.oic}</strong>
+                            </div>
+
+                            <div className="ready-check-row">
+                                <span>Purpose</span>
+                                <strong>{selectedMission.purpose}</strong>
+                            </div>
+
+                            <div className="ready-check-row">
+                                <span>Required Personnel</span>
+                                <strong>{selectedMission.requiredPersonnel}</strong>
+                            </div>
+
+                            <div className="ready-check-row">
+                                <span>Required Roles</span>
+                                <strong>{selectedMission.requiredRoles}</strong>
+                            </div>
                         </div>
-                    </div>
+                    )}
+                    {missionViewSection === "conop" && (
+                        <div className="ready-checks">
+                            <div className="ready-check-row">
+                                <span>Situation</span>
+                                <strong>{selectedMission.conop?.situation}</strong>
+                            </div>
+
+                            <div className="ready-check-row">
+                                <span>Mission Statement</span>
+                                <strong>{selectedMission.conop?.missionStatement}</strong>
+                            </div>
+
+                            <div className="ready-check-row">
+                                <span>Execution</span>
+                                <strong>{selectedMission.conop?.execution}</strong>
+                            </div>
+
+                            <div className="ready-check-row">
+                                <span>Sustainment</span>
+                                <strong>{selectedMission.conop?.sustainment}</strong>
+                            </div>
+
+                            <div className="ready-check-row">
+                                <span>Command & Signal</span>
+                                <strong>{selectedMission.conop?.commandSignal}</strong>
+                            </div>
+                        </div>
+                    )}
+
+                    {missionViewSection === "personnel" && (
+                        <div className="personnel-list">
+                            {selectedMission.personnel?.map((person) => (
+                                <div className="personnel-row" key={person.id}>
+                                    <div>
+                                        <strong>{person.name}</strong>
+                                        <p>{person.role}</p>
+                                    </div>
+
+                                    <div className="personnel-statuses">
+                                        <span
+                                            className={`personnel-status ${person.qualified ? "status-good" : "status-bad"
+                                                }`}
+                                        >
+                                            {person.qualified
+                                                ? "Qualified"
+                                                : "Qualification Gap"}
+                                        </span>
+
+                                        <span
+                                            className={`personnel-status ${person.available ? "status-good" : "status-bad"
+                                                }`}
+                                        >
+                                            {person.available
+                                                ? "Available"
+                                                : "Unavailable"}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {missionViewSection === "readiness" && (
+                        <>
+                            <div className="readiness-overview">
+                                <div>
+                                    <p className="readiness-label">
+                                        Mission Readiness
+                                    </p>
+
+                                    <strong className="readiness-score">
+                                        {selectedMission.readiness}% Ready
+                                    </strong>
+                                </div>
+
+                                <div
+                                    className={`readiness-status ${selectedMission.issue
+                                        ? "not-ready"
+                                        : "ready"
+                                        }`}
+                                >
+                                    {selectedMission.issue
+                                        ? "Not Ready"
+                                        : "Ready"}
+                                </div>
+                            </div>
+
+                            <div className="readiness-progress">
+                                <div
+                                    className="readiness-progress-fill"
+                                    style={{
+                                        width: `${selectedMission.readiness}%`,
+                                    }}
+                                />
+                            </div>
+
+                            <h3 className="readiness-section-title">
+                                Readiness Details
+                            </h3>
+
+                            <div className="ready-checks">
+                                <div className="ready-check-row">
+                                    <span>Personnel Assigned</span>
+                                    <strong>
+                                        {selectedMission.personnel?.length || 0} of{" "}
+                                        {selectedMission.requiredPersonnel || 0}
+                                    </strong>
+                                </div>
+
+                                <div className="ready-check-row">
+                                    <span>Personnel Shortage</span>
+                                    <strong>
+                                        {selectedMission.personnelShortage > 0
+                                            ? selectedMission.personnelShortage
+                                            : "None"}
+                                    </strong>
+                                </div>
+
+                                <div className="ready-check-row">
+                                    <span>Qualification Gaps</span>
+                                    <strong>
+                                        {selectedMission.qualificationGaps > 0
+                                            ? selectedMission.qualificationGaps
+                                            : "None"}
+                                    </strong>
+                                </div>
+
+                                <div className="ready-check-row">
+                                    <span>Availability Conflicts</span>
+                                    <strong>
+                                        {selectedMission.availabilityConflicts > 0
+                                            ? selectedMission.availabilityConflicts
+                                            : "None"}
+                                    </strong>
+                                </div>
+
+                                <div className="ready-check-row">
+                                    <span>Missing Roles</span>
+                                    <strong>
+                                        {selectedMission.missingRoles?.length > 0
+                                            ? selectedMission.missingRoles.join(", ")
+                                            : "None"}
+                                    </strong>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {missionViewSection === "approval" && (
+                        <>
+                            <div className="readiness-summary">
+                                <h3>Mission Approval</h3>
+                                <strong>Approved</strong>
+                            </div>
+
+                            <div className="ready-checks">
+                                <div className="ready-check-row">
+                                    <span>Mission Planning Status</span>
+                                    <strong>{selectedMission.status}</strong>
+                                </div>
+                                <div className="ready-check-row">
+                                    <span>Approved By</span>
+                                    <strong>{selectedMission.approvedBy}</strong>
+                                </div>
+
+                                <div className="ready-check-row">
+                                    <span>Approved At</span>
+                                    <strong>{selectedMission.approvedAt}</strong>
+                                </div>
+
+                                <div className="ready-check-row">
+                                    <span>Mission Readiness</span>
+                                    <strong>{selectedMission.readiness}%</strong>
+                                </div>
+
+                                <div className="ready-check-row">
+                                    <span>Outstanding Issues</span>
+                                    <strong>
+                                        {selectedMission.issue
+                                            ? selectedMission.issue
+                                            : "None"}
+                                    </strong>
+                                </div>
+
+                                <div className="ready-check-row">
+                                    <span>Approval Status</span>
+                                    <strong>Mission Approved</strong>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </section>
             )}
-
             {
                 showMissionForm && (
                     <section className="new-mission-form">
@@ -1001,101 +1298,183 @@ function MPC() {
                 )
             }
             <section className="summary-grid">
-                <div className="summary-card">
-                    <h3>Active Missions</h3>
-                    <span>{missions.length}</span>
-                    <p>Mission Plans</p>
+                <div
+                    className="summary-card summary-active"
+                    onClick={() => {
+                        setShowAttentionOnly(false);
+                        setShowUpcomingOnly(false);
+                    }}
+                >
+                    <div className="summary-card-content">
+                        <div className="summary-icon">☰</div>
+
+                        <div>
+                            <h3>Active Missions</h3>
+                            <span>{missions.length}</span>
+                            <p>Mission Plans</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="summary-card">
-                    <h3>Needs Attention</h3>
-                    <span>{missions.filter((mission) => mission.issue).length}</span>
-                    <p>Items</p>
+                <div
+                    className="summary-card summary-attention"
+                    onClick={() => {
+                        setShowAttentionOnly(true);
+                        setShowUpcomingOnly(false);
+                    }}
+                >
+                    <div className="summary-card-content">
+                        <div className="summary-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                width="26"
+                                height="26"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M12 3L2 21h20L12 3z" />
+                                <line x1="12" y1="9" x2="12" y2="14" />
+                                <line x1="12" y1="18" x2="12.01" y2="18" />
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3>Needs Attention</h3>
+                            <span>
+                                {missions.filter((mission) => mission.issue).length}
+                            </span>
+                            <p>Items</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="summary-card">
-                    <h3>Upcoming Missions</h3>
-                    <span>
-                        {
-                            missions.filter(
-                                (mission) => mission.status !== "Ready"
-                            ).length
-                        }
-                    </span>
-                    <p>Upcoming</p>
+                <div
+                    className="summary-card summary-upcoming"
+                    onClick={() => {
+                        setShowUpcomingOnly(true);
+                        setShowAttentionOnly(false);
+                    }}
+                >
+                    <div className="summary-card-content">
+                        <div className="summary-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                width="26"
+                                height="26"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <rect x="3" y="5" width="18" height="16" rx="2" />
+                                <line x1="16" y1="3" x2="16" y2="7" />
+                                <line x1="8" y1="3" x2="8" y2="7" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3>Upcoming Missions</h3>
+                            <span>
+                                {missions.filter((mission) => mission.status !== "Ready").length}
+                            </span>
+                            <p>Upcoming</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <section className="mission-section">
                 <h2>Active Mission Plans</h2>
+                {showAttentionOnly && (
+                    <p>Displaying missions requiring further action</p>
+                )}
+                {showUpcomingOnly && (
+                    <p>Displaying upcoming missions</p>
+                )}
 
                 <div className="mission-list">
-                    {missions.map((mission) => (
-                        <article className="mission-card" key={mission.id}>
-                            <div>
-                                <h3>{mission.name}</h3>
-                                <p>{mission.dates}</p>
-                                <p>{mission.location}</p>
-                                <p>OIC: {mission.oic}</p>
-                            </div>
+                    {missions
+                        .filter((mission) => {
+                            if (showAttentionOnly) {
+                                return mission.issue;
+                            }
 
-                            {/* Progress Tracker */}
+                            if (showUpcomingOnly) {
+                                return mission.status !== "Ready";
+                            }
 
-                            <div className="mission-progress">
-                                {stages.map((stage, index) => {
-                                    const step = index + 1;
-                                    const completed = step < mission.stage;
-                                    const current = step === mission.stage;
+                            return true;
+                        })
+                        .map((mission) => (
+                            <article className="mission-card" key={mission.id}>
+                                <div>
+                                    <h3>{mission.name}</h3>
+                                    <p>{mission.dates}</p>
+                                    <p>{mission.location}</p>
+                                    <p>OIC: {mission.oic}</p>
+                                </div>
 
-                                    return (
-                                        <div className="progress-wrapper" key={stage}>
-                                            <div className="progress-step">
-                                                <div
-                                                    className={`progress-circle ${completed ? "completed" : current ? "current" : ""
-                                                        }`}
-                                                >
-                                                    {completed ? "✓" : step}
+                                {/* Progress Tracker */}
+
+                                <div className="mission-progress">
+                                    {stages.map((stage, index) => {
+                                        const step = index + 1;
+                                        const completed = step < mission.stage;
+                                        const current = step === mission.stage;
+
+                                        return (
+                                            <div className="progress-wrapper" key={stage}>
+                                                <div className="progress-step">
+                                                    <div
+                                                        className={`progress-circle ${completed ? "completed" : current ? "current" : ""
+                                                            }`}
+                                                    >
+                                                        {completed ? "✓" : step}
+                                                    </div>
+
+                                                    <span className={current ? "current-label" : ""}>
+                                                        {stage}
+                                                    </span>
                                                 </div>
 
-                                                <span className={current ? "current-label" : ""}>
-                                                    {stage}
-                                                </span>
+                                                {index < stages.length - 1 && (
+                                                    <div
+                                                        className={`progress-line ${step < mission.stage ? "completed" : ""
+                                                            }`}
+                                                    />
+                                                )}
                                             </div>
+                                        );
+                                    })}
+                                </div>
 
-                                            {index < stages.length - 1 && (
-                                                <div
-                                                    className={`progress-line ${step < mission.stage ? "completed" : ""
-                                                        }`}
-                                                />
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                {/* Readiness */}
+                                <div className="mission-status">
+                                    <p>Status: {mission.status}</p>
+                                    <p>Readiness: {mission.readiness}%</p>
 
-                            {/* Readiness */}
-                            <div>
-                                <p>Status: {mission.status}</p>
+                                    {mission.issue && (
+                                        <p className="mission-issue">
+                                            Issue: {mission.issue}
+                                        </p>
+                                    )}
+                                </div>
 
-                                {mission.readiness !== null && (
-                                    <strong>{mission.readiness}% Ready</strong>
-                                )}
-
-                                {mission.issue && (
-                                    <p className="mission-issue">{mission.issue}</p>
-                                )}
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() => handleMissionSelect(mission)}
-                            >
-                                {mission.status === "Ready"
-                                    ? "View Mission"
-                                    : "Continue Planning"}
-                            </button>
-                        </article>
-                    ))}
+                                <button
+                                    type="button"
+                                    onClick={() => handleMissionSelect(mission)}
+                                >
+                                    {mission.status === "Ready"
+                                        ? "View Mission"
+                                        : "Continue Planning"}
+                                </button>
+                            </article>
+                        ))}
                 </div>
             </section>
         </main >
