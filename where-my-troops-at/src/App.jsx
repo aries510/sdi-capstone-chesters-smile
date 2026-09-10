@@ -5,15 +5,15 @@ import AdminHome from './AdminHome.jsx';
 import EvaluatorHome from './EvaluatorHome.jsx';
 import CreateAccount from './Login/CreateAccount';
 import CreatePersonnel from './CreatePersonnel';
-import ProtectedRoute from './ProtectedRoute';
+// import ProtectedRoute from './ProtectedRoute';
+import GenUser from './genUser/genUser.jsx';
+import MPC from './planning/MPC';
 
 function App() {
   return (
     <div className="main">
       <Routes>
         <Route path="/" element={<LoginPage />}></Route>
-
-        {/* <Route path='/GeneralUser' element={<GeneralUser />}></Route> */}
 
         <Route path="/Admin" element={<AdminHome />}></Route>
         {/* Uncomment below to require a login to the page */}
@@ -42,7 +42,9 @@ function App() {
           <Route path="//Evaluator/createpersonnel" element={<CreatePersonnel />}></Route>
         </Route> */}
 
-        {/* <Route path='/MPC' element={<Mpc />}></Route> */}
+        <Route path="/GeneralUser" element={<GenUser />}></Route>
+        <Route path="/Admin" element={<AdminHome />}></Route>
+        <Route path="/MPC" element={<MPC />}></Route>
       </Routes>
     </div>
   );

@@ -1,0 +1,253 @@
+
+/*  Globals */
+    :root {
+        --bg: #131b3693;
+        --btn-background: #bebdbd26;
+        --btn-text: #7ca0dd;
+        --btn-background-h: #898585fb;
+        --btn-text-h: #005bb5;
+        --warning-vignette: #dc262659;
+        --warning-border: #dc262699;
+    }
+
+
+    h3 {
+        font-size: 2em;
+        align-self: center;
+        justify-self: center;
+    }
+
+    .genUser-dashboard {
+        height: 80vh;
+        box-sizing: border-box;
+        padding: 0 10px;
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        grid-gap: 10px;
+        color: white;
+    }
+
+    .user-panel {
+        border: solid 2px rgba(76, 103, 209, 0.43);
+        height: 70vh;
+        border-radius: 15px;
+        margin: 5vh 0;
+        padding: 10px;
+        background-color: var(--bg);
+    }
+    button {
+        cursor: pointer;
+    }
+
+
+
+/* ----Components --------------------- */
+    /*semi global-------------------*/
+        .btn-card {
+            background: var(--btn-background);
+            border: solid 1px var(--btn-background);
+            border-radius: 15px;
+            color: var(--btn-text);
+            transition: ease .54s;
+            margin: 5px;
+            padding: 0 2%;
+        }
+        .btn-card:hover {
+            background: var(--btn-background-h);
+            border-color: var(--btn-background-h);
+            color: var(--btn-text-h);
+            cursor: pointer;
+        }
+
+        .view-btn {
+            background-color: rgba(0, 0, 0, 0);
+            border: 1px solid white;
+            border-radius: 15px;
+            transition: ease .54s;
+            color: white;
+            width: 8vw;
+        }
+        .view-btn:hover {
+            background-color: var(--btn-text);
+            color: white;
+        }
+
+
+    /*User Info-------------*/
+        .user-info{
+            display: grid;
+            grid-template-rows: 2fr 1fr 1fr 6fr 2fr;
+        }
+        .header {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            justify-content: space-evenly;
+            margin: 0;
+        }
+        /*status bubble*/
+            #user-status {
+                border: solid 2px white;
+                border-radius: 25px;
+                height: fit-content;
+                width: 82.88px;
+                padding: 5px;
+                text-align: center;
+                align-self: center;
+            }
+
+        .certs {
+            display: grid;
+            grid-template-columns: 4fr repeat(3, minmax(0, 1fr));
+            grid-template-rows: repeat(4, 1fr);
+            gap: 8px;
+            text-align: center;
+            width: 22vw;
+            max-width: 400px;
+            aspect-ratio: 2/1;
+            background-color: rgba(28, 16, 55, 0.187);
+            border-radius: 15px;
+        }
+        .numX-display{
+            border: solid 1px;
+            aspect-ratio: 1/1;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 15px;
+            align-content: center;
+            align-self: center;
+            margin: 0;
+        }
+
+        .user-cert-ready{border:3px solid rgba(0, 128, 0, 0.485);}
+        .user-cert-inprogress{border:3px solid rgba(249, 249, 65, 0.696);}
+        .user-cert-notstarted{border:3px solid rgba(240, 44, 44, 0.496);}
+        .certs-btn {
+            aspect-ratio: 3/1;
+            height: fit-content;
+            align-self: center;
+        }
+        .cert-header {
+            font-size: 1vw;
+            line-height: 1.1;
+            align-self: center;
+            justify-self: center;
+        }
+
+        /*Contact*/
+            .contact div{
+                display: flex;
+                justify-content: space-between;
+                margin:0;
+                padding: 0;
+                height: fit-content;
+            }
+            .contact.btn-card {
+                height: fit-content;
+            }
+
+
+
+
+    /*Mission Panel---------------*/
+        .missionNum {
+            font-size: 2em;
+            width: 5vh;
+            text-align: center;
+        }
+        .mission-not-ready {
+            box-shadow: inset 0 0 20px var(--warning-border);
+            border: 1px solid var(--warning-border);
+        }
+
+
+    /*Next Steps------------------*/
+        .user-tasks-header, .user-task{
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            text-align: center;
+        }
+        .task-date {
+            font-size: 1vw;
+        }
+
+
+
+
+
+
+    /*Modals ----------------------*/
+    .mission-modal-backdrop {
+        position: fixed;
+        justify-self: center;
+        align-self: center;
+        background: rgba(15, 12, 61, 0.594);
+        width: 100%;
+        height: 100%;
+        padding: 5%;
+        
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .mission-modal {
+        background: #0a1220;
+        border: 1px solid rgba(79, 216, 255, 0.25);
+        border-radius: 15px;
+        clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+        box-shadow: 0 0 40px rgba(79, 216, 255, 0.15), 0 20px 60px rgba(0, 0, 0, 0.6);
+        padding: 28px 32px;
+        color: #e8edf5;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        width: 65vw;
+        max-width: 900px;
+        height: 70vh;
+        overflow-y: auto;
+
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-template-rows: minmax(30px, 80px) repeat(4, 1fr);
+        grid-template-areas: 
+        " h2 h2 h2";
+    }
+
+    .modal-header {
+        display: flex;
+    }
+
+    .mission-modal h2 {
+        font-family: Georgia, serif;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        margin: 0 0 20px;
+        padding-bottom: 14px;
+        position: relative;
+    }
+
+    .mission-modal h2::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: #4fd8ff;
+        box-shadow: 0 0 8px #4fd8ff;
+    }
+
+    .mission-modal button {
+        background: transparent;
+        border: 1px solid #4fd8ff;
+        color: #4fd8ff;
+        padding: 8px 24px;
+        border-radius: 2px;
+        font-size: 0.85em;
+        letter-spacing: 1px;
+        transition: background 0.2s ease;
+    }
+
+
+    .mission-modal button:hover {
+        background: rgba(79, 216, 255, 0.12);
+    }
