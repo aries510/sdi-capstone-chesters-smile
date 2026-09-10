@@ -1,0 +1,382 @@
+/* Light Theme Variables */
+:root {
+    --bg-color: #ffffff;
+    --panel-bg: rgba(255, 255, 255, 0.55);
+    --text-color: #222222;
+    --border-color: #dcdcdc;
+    --list-bg: rgba(253, 245, 230, 0.55);
+    --catalog-bg: rgba(234, 241, 248, 0.55);
+    --button-text: #ffffff;
+    --scrollbar-thumb: #cbd5e1;
+}
+
+/* Dark Theme Variables */
+.dark-theme {
+    --bg-color: #001026;
+    --panel-bg: rgba(30, 30, 30, 0.55);
+    --text-color: #c0c0c0;
+    --border-color: #333333;
+    --list-bg: rgba(17, 30, 56, 0.55);
+    --catalog-bg: rgba(22, 34, 44, 0.55);
+    --button-text: #ffffff;
+    --scrollbar-thumb: #334155;
+}
+
+/* Global Theme Transitions & Background Image */
+body {
+    background-image: url('./bg-images/admin-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.evaluator-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: sans-serif;
+    color: var(--text-color);
+}
+
+.evaluator-title {
+    text-align: center;
+    font-weight: 500;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--text-color);
+    background-color: var(--panel-bg);
+    backdrop-filter: blur(6px);
+    padding: 10px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Header and Logo Layout (matches Admin Home) */
+.evaluator-header {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.evaluator-logo {
+    height: 100px;
+    width: auto;
+}
+
+.evaluator-title {
+    text-align: center;
+    font-weight: 500;
+    font-size: 1.5rem;
+    margin: 0;
+    color: var(--text-color);
+    background-color: var(--panel-bg);
+    backdrop-filter: blur(6px);
+    padding: 10px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Search bar */
+.search-label {
+    font-size: 0.85rem;
+    font-weight: bold;
+    white-space: nowrap;
+    color: #ffffff;
+}
+
+.search-bar {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px;
+    font-size: 1rem;
+    background-color: var(--panel-bg);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-color);
+    margin-bottom: 16px;
+}
+
+.search-bar::placeholder {
+    color: var(--text-color);
+    opacity: 0.6;
+}
+
+/* Filters bar */
+.filters-bar {
+    background-color: var(--panel-bg);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.filters-bar>span {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 10px;
+    letter-spacing: 0.05em;
+}
+
+.filter-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.filter-row label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-color);
+}
+
+.filter-row select {
+    background-color: var(--panel-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px 8px;
+}
+
+/* Top row: trainees panel + action buttons */
+.evaluator-top-row {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+    margin-bottom: 20px;
+}
+
+/* Trainees panel */
+.trainees-panel {
+    flex: 1;
+    background-color: var(--list-bg);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    min-height: 250px;
+}
+
+.trainees-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.trainees-header h3 {
+    margin: 0;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.add-new-btn {
+    background-color: var(--panel-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 4px 20px;
+    cursor: pointer;
+}
+
+.trainees-list-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0.8;
+    padding: 0 4px 8px 4px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 8px;
+}
+
+.trainees-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    max-height: 320px;
+}
+
+.trainees-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.trainees-list li:last-child {
+    border-bottom: none;
+}
+
+.trainees-list button {
+    background-color: var(--panel-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px 12px;
+    cursor: pointer;
+}
+
+/* Custom scrollbar */
+.trainees-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.trainees-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.trainees-list::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+
+/* Action buttons (Upload / Bulk Import) */
+.evaluator-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 320px;
+}
+
+.upload-button {
+    background-color: #215b93;
+    color: white;
+    padding: 16px;
+    text-align: center;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.import-button {
+    background-color: var(--panel-bg);
+    backdrop-filter: blur(6px);
+    color: var(--text-color);
+    padding: 16px;
+    text-align: center;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 30px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h2 {
+    text-align: center;
+    font-weight: 500;
+    margin-top: 0;
+}
+
+.modal-name {
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.systems-training {
+    border-left: 2px solid var(--border-color);
+    padding-left: 16px;
+    margin-bottom: 24px;
+}
+
+.systems-training h4 {
+    margin: 0 0 6px 0;
+    font-weight: 500;
+}
+
+.systems-header {
+    font-size: 0.85rem;
+    opacity: 0.75;
+    margin: 0 0 8px 0;
+}
+
+.systems-training ul {
+    list-style: none;
+    margin: 0 0 12px 0;
+    padding: 0;
+}
+
+.systems-training li {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.add-training-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.add-training-row select {
+    background-color: var(--panel-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 6px 10px;
+    flex: 1;
+}
+
+.add-training-row button {
+    background-color: var(--panel-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 6px 20px;
+    cursor: pointer;
+}
+
+.modal-close-btn {
+    background-color: var(--panel-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px 20px;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto;
+}
