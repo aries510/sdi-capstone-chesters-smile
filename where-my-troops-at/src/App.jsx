@@ -5,8 +5,9 @@ import AdminHome from './AdminHome.jsx';
 import EvaluatorsPanel from './EvaluatorsPanel';
 import CreateAccount from './Login/CreateAccount';
 import CreatePersonnel from './CreatePersonnel';
-import ProtectedRoute from './ProtectedRoute';
+// import ProtectedRoute from './ProtectedRoute';
 import GenUser from './genUser/genUser.jsx';
+import MPC from './planning/MPC';
 
 function App() {
   return (
@@ -52,15 +53,13 @@ function App() {
           <Route path="//Evaluator/createpersonnel" element={<CreatePersonnel />}></Route>
         </Route> */}
 
-        <Route path='/GeneralUser' element={<GenUser />}></Route>
-        <Route path='/Admin' element={<AdminHome />}></Route>
-        <Route path='/Evaluator' element={<EvaluatorsPanel />}></Route>
-        {/* <Route path='/MPC' element={<Mpc />}></Route> */}
+        <Route path="/GeneralUser" element={<GenUser />}></Route>
+        <Route path="/Admin" element={<AdminHome />}></Route>
+        <Route path="/Evaluator" element={<EvaluatorsPanel />}></Route>
+        <Route path="/MPC" element={<MPC />}></Route>
       </Routes>
     </div>
   );
-  );
 }
 
-export default App;
 export default App;
