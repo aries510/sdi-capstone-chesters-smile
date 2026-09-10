@@ -38,7 +38,7 @@ function GenUser() {
         {role: 'Demo Role B', system: 'Demo System B', is_current: false}
     ])
     const [ certs, setCerts] = useState([
-        { certification: 'Demo Cert A', is_current: true },
+        { certification: 'Cyber Security', is_current: true },
         { certification: 'Demo Cert B', is_current: false },
         { certification: 'Demo Cert C', is_current: true }
     ]);
@@ -52,7 +52,7 @@ function GenUser() {
             location: 'Fort Bragg, NC',
             oic: 'CPT Demo',
             purpose: 'Short description...',
-            requiredCerts: ['Cyber Security']
+            requiredCerts: ['CompTIA Security+']
         },
         {
             id: 2,
@@ -65,7 +65,7 @@ function GenUser() {
             requiredCerts: ['Comms']
         }
     ]);
-    const [selectedMission, setSelectedMission] = useState(null);
+    const [openModal, setOpenModal] = useState(null);
 
     
     
@@ -96,7 +96,7 @@ function GenUser() {
 
         
     /**---- Sub Functions ------------------------ */
-    //used for Weapons Systems quick info in User Info Panel
+    //Used for Weapons Systems quick info in User Info Panel
     function getDistinctSystems(qualsArray) {
         const systemsMap = {};
         qualsArray.forEach((qual) => {
@@ -104,21 +104,63 @@ function GenUser() {
             systemsMap[qual.systemId] = {
                 systemId: qual.systemId,
                 system: qual.system,
-                is_current: qual.is_current
+                is_current: qual.is_current,
+                qualified_date: qual.qualified_date
             };
         } else {
             systemsMap[qual.systemId].is_current = systemsMap[qual.systemId].is_current && qual.is_current;
+            if (qual.qualified_date > systemsMap[qual.systemId].qualified_date) {
+                systemsMap[qual.systemId].qualified_date = qual.qualified_date;
+            }
         }
     });
     return Object.values(systemsMap);
     }
+
     const distinctSystems = getDistinctSystems(quals);
+    console.log(distinctSystems);
     
     const isReady = distinctSystems.every(system => system.is_current)
         && quals.every(qual => qual.is_current)
         && certs.every(cert => cert.is_current);
 
+    function getModalContent(type) {
+        if (type === 'systems') {
+            return {
+                title: 'Weapon Systems',
+                items: distinctSystems.map((system) => ({
+                    label: system.system,
+                    date: system.qualified_date,
+                    isCurrent: system.is_current
+                }))
+            };
+        }
+        if (type === 'quals') {
+            return {
+                title: 'Crew Quals',
+                items: quals.map((qual) => ({
+                    label: `${qual.role} - ${qual.system}`,
+                    date: qual.qualified_date,
+                    isCurrent: qual.is_current
+                }))
+            };
+        }
+        if (type === 'certs') {
+            return {
+                title: 'Certifications',
+                items: certs.map((cert) => ({
+                    label: cert.certification,
+                    date: cert.expiry_date,
+                    isCurrent: cert.is_current
+                }))
+            };
+        }
+        return null;
+    }
 
+
+
+    //Used for Mission's readiness logic
     function meetsRequirements(mission, certsArray) {
         return mission.requiredCerts.every((required) =>
             certsArray.some((cert) => cert.certification === required && cert.is_current)
@@ -126,9 +168,25 @@ function GenUser() {
     }
 
 
-    /**################
+
+    //Tasks
+    //Cert Tasks
+    const certTasks = certs
+        .filter((cert) => !cert.is_current)
+        .map((cert) => ({
+            date: cert.expiry_date,
+            task: `Renew ${cert.certification}`
+        }));
+
+
+
+    const modalContent = openModal && ['systems', 'quals', 'certs'].includes(openModal.type)
+        ? getModalContent(openModal.type)
+        : null;
+
+    /**##########################
      * Return
-     ##################*/
+     #############################*/
     return (
 
         /**-----Dashboard/Home view-=------------------------ */
@@ -153,19 +211,40 @@ function GenUser() {
                     <p className="cert-header">Expired</p>
 
                     {/**Weapon Systems Certified on */}
-                    <button className="btn-card certs-btn">Weapon Systems</button>
+                    <button className="btn-card certs-btn" onClick={() => setOpenModal(
+                        openModal?.type === 'systems' 
+                            ? null
+                            : { type: 'systems', systems: distinctSystems }
+                        )}
+                    >
+                        Weapon Systems
+                    </button>
                     <p className="user-cert-ready numX-display">{distinctSystems.filter(system => system.is_current).length}</p>
                     <p className="user-cert-inprogress numX-display">0</p>
                     <p className="user-cert-notstarted numX-display">{distinctSystems.filter(system => !system.is_current).length}</p>
 
                     {/**Qualifications held */}
-                    <button className="btn-card certs-btn">Qualifications</button>
+                    <button className="btn-card certs-btn" onClick={() => setOpenModal(
+                        openModal?.type === 'quals'
+                            ? null
+                            : { type: 'quals', quals }
+                        )}
+                    >
+                        Crew Quals
+                    </button>
                     <p className="user-cert-ready numX-display">{quals.filter(qual => qual.is_current).length}</p>
                     <p className="user-cert-inprogress numX-display">0</p>
                     <p className="user-cert-notstarted numX-display">{quals.filter(qual => !qual.is_current).length}</p>
 
                     {/**Certifications Held */}
-                    <button className="btn-card certs-btn">Certifications</button>
+                    <button className="btn-card certs-btn" onClick={() => setOpenModal(
+                        openModal?.type === 'certs'
+                            ? null
+                            : { type: 'certs', certs }
+                        )}
+                    >
+                        Certifications
+                    </button>
                     <p className="user-cert-ready numX-display">{certs.filter(cert => cert.is_current).length}</p>
                     <p className="user-cert-inprogress numX-display">0</p>
                     <p className="user-cert-notstarted numX-display">{certs.filter(cert => !cert.is_current).length}</p>
@@ -197,7 +276,11 @@ function GenUser() {
                         >
                             <h2>{mission.name} - {mission.purpose}</h2>
                             <button className="view-btn" 
-                            onClick={() => setSelectedMission(selectedMission?.id === mission.id ? null : mission)}
+                            onClick={() => setOpenModal(
+                                openModal?.type === 'mission' && openModal.mission.id === mission.id 
+                                    ? null 
+                                    : { type: 'mission', mission }
+                                )}
                             >
                                 view
                             </button>
@@ -206,21 +289,6 @@ function GenUser() {
 
                     <button className="view-btn">Mission Records</button>
                 </div>
-                {/**Selected Mission Modal */}
-                {selectedMission && (
-                    <div className="mission-modal-backdrop" onClick={() => setSelectedMission(null)}>
-                        <div className="mission-modal" onClick={(event) => event.stopPropagation()}>
-                            <h2>{selectedMission.name}</h2>
-                            <p>{selectedMission.type}</p>
-                            <p>{selectedMission.dates}</p>
-                            <p>{selectedMission.location}</p>
-                            <p>{selectedMission.oic}</p>
-                            <p>{selectedMission.purpose}</p>
-                            <p>Required: {selectedMission.requiredCerts.join(', ')}</p>
-                            <button onClick={() => setSelectedMission(null)}>Close</button>
-                        </div>
-                    </div>
-                )}
             </div>
 
 
@@ -229,30 +297,70 @@ function GenUser() {
                 <h3>Next Steps</h3>
                 <div className="user-tasks-content">
                     <div className="user-tasks-header">
-                    <p>Date Due</p>
-                    <p>Task</p>
+                        <p>Date Due</p>
+                        <p>Task</p>
                     </div>
 
-                    <div className="user-task btn-card">
-                        <p className="task-date">YYYY/MM/DD</p> <p>Renew Weapon 1 Cert</p> <button className="view-btn">View</button>
-                    </div>
-
-                    <div className="user-task btn-card">
-                        <p className="task-date">YYYY/MM/DD</p> <p>Renew Weapon 1 Cert</p> <button className="view-btn">View</button>
-                    </div>
-
-                    <div className="user-task btn-card">
-                        <p className="task-date">YYYY/MM/DD</p> <p>Renew Weapon 1 Cert</p> <button className="view-btn">View</button>
-                    </div>
+                    {certTasks.map((item, index) => (
+                        <div className="user-task btn-card" key={index}>
+                            <p className="task-date">{item.date}</p>
+                            <p>{item.task}</p>
+                            <button className="view-btn">View</button>
+                        </div>
+                    ))}
+                    
                 </div>
             </div>
             
             
+            {/** MODALS ################################### */}
+            {/**Selected Mission Modal */}
+            {openModal?.type === 'mission' && (
+                <div className="mission-modal-backdrop" onClick={() => setOpenModal(null)}>
+                    <div className="mission-modal" onClick={(event) => event.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>{openModal.mission.name}</h2>
+                            <button onClick={() => setOpenModal(null)}>Close</button>
+                        </div>
+                        <p>Type: {openModal.mission.type}</p>
+                        <p>Dates: {openModal.mission.dates}</p>
+                        <p>Location: {openModal.mission.location}</p>
+                        <p>OIC: {openModal.mission.oic}</p>
+                        <p>Purpose: {openModal.mission.purpose}</p>
+                        <p>Requirements: {openModal.mission.requiredCerts.join(', ')}</p>
+                    </div>
+                </div>
+            )}
+
+            {/**Certs/Quals/Systems Modal */}
+            {modalContent && (
+                <div className="mission-modal-backdrop" onClick={() => setOpenModal(null)}>
+                    <div className="mission-modal" onClick={(event) => event.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>{modalContent.title}</h2>
+                            <button onClick={() => setOpenModal(null)}>Close</button>
+                        </div>
+                        {modalContent.items.map((item, index) => (
+                            <p key={index} className={item.isCurrent ? '' : 'mission-not-ready'}>
+                                {item.label} - {item.date}
+                                <span className={item.isCurrent ? 'status-pill-ready' : 'status-pill-expired'}>
+                                    {item.isCurrent ? 'Ready' : 'Expired'}
+                                </span>
+                            </p>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+
         </div>
 
 
 
-    )
+
+
+
+    )//Closes return
 }
 
 

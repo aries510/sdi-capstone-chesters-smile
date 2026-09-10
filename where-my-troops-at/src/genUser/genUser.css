@@ -4,8 +4,10 @@
         --bg: #131b3693;
         --btn-background: #bebdbd26;
         --btn-text: #7ca0dd;
-        --btn-background-h: #bebdbd8e;
-        --btn-text-h: #063d9b;
+        --btn-background-h: #898585fb;
+        --btn-text-h: #005bb5;
+        --warning-vignette: #dc262659;
+        --warning-border: #dc262699;
     }
 
 
@@ -14,8 +16,6 @@
         align-self: center;
         justify-self: center;
     }
-
-
 
     .genUser-dashboard {
         height: 80vh;
@@ -36,6 +36,9 @@
         padding: 10px;
         background-color: var(--bg);
     }
+    button {
+        cursor: pointer;
+    }
 
 
 
@@ -54,6 +57,7 @@
             background: var(--btn-background-h);
             border-color: var(--btn-background-h);
             color: var(--btn-text-h);
+            cursor: pointer;
         }
 
         .view-btn {
@@ -152,6 +156,10 @@
             width: 5vh;
             text-align: center;
         }
+        .mission-not-ready {
+            box-shadow: inset 0 0 20px var(--warning-border);
+            border: 1px solid var(--warning-border);
+        }
 
 
     /*Next Steps------------------*/
@@ -163,3 +171,83 @@
         .task-date {
             font-size: 1vw;
         }
+
+
+
+
+
+
+    /*Modals ----------------------*/
+    .mission-modal-backdrop {
+        position: fixed;
+        justify-self: center;
+        align-self: center;
+        background: rgba(15, 12, 61, 0.594);
+        width: 100%;
+        height: 100%;
+        padding: 5%;
+        
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .mission-modal {
+        background: #0a1220;
+        border: 1px solid rgba(79, 216, 255, 0.25);
+        border-radius: 15px;
+        clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+        box-shadow: 0 0 40px rgba(79, 216, 255, 0.15), 0 20px 60px rgba(0, 0, 0, 0.6);
+        padding: 28px 32px;
+        color: #e8edf5;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        width: 65vw;
+        max-width: 900px;
+        height: 70vh;
+        overflow-y: auto;
+
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-template-rows: minmax(30px, 80px) repeat(4, 1fr);
+        grid-template-areas: 
+        " h2 h2 h2";
+    }
+
+    .modal-header {
+        display: flex;
+    }
+
+    .mission-modal h2 {
+        font-family: Georgia, serif;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        margin: 0 0 20px;
+        padding-bottom: 14px;
+        position: relative;
+    }
+
+    .mission-modal h2::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: #4fd8ff;
+        box-shadow: 0 0 8px #4fd8ff;
+    }
+
+    .mission-modal button {
+        background: transparent;
+        border: 1px solid #4fd8ff;
+        color: #4fd8ff;
+        padding: 8px 24px;
+        border-radius: 2px;
+        font-size: 0.85em;
+        letter-spacing: 1px;
+        transition: background 0.2s ease;
+    }
+
+
+    .mission-modal button:hover {
+        background: rgba(79, 216, 255, 0.12);
+    }
