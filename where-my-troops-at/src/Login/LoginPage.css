@@ -1,0 +1,117 @@
+.dark-theme {
+  --bg-color: #001026;
+  --panel-bg: rgba(30, 30, 30, 0.55);
+  --text-color: #c0c0c0;
+  --muted-text: #9ca3af;
+  --border-color: #333333;
+  --input-bg: rgba(17, 30, 56, 0.55);
+  --button-bg: #215b93;
+  --button-text: #ffffff;
+  --error-bg: rgba(220, 38, 38, 0.15);
+  --error-text: #f87171;
+}
+
+body {
+  background-image: url('../bg-images/admin-bg.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-color);
+  transition: color 0.3s ease;
+  margin: 0;
+  min-height: 100vh;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+  padding: 20px;
+  font-family: sans-serif;
+  color: var(--text-color);
+}
+
+.login-card {
+  background-color: var(--panel-bg);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.login-title {
+  text-align: center;
+  font-weight: 500;
+  font-size: 1.75rem;
+  margin: 0 0 8px 0;
+  color: var(--text-color);
+}
+
+.login-subtitle {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--muted-text);
+  margin: 0 0 24px 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.login-input {
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 1rem;
+  outline: none;
+}
+
+.login-button {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  padding: 12px;
+  text-align: center;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.2s ease;
+}
+
+.login-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.login-error {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+  text-align: center;
+}
