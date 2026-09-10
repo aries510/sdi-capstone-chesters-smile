@@ -2,11 +2,7 @@ import { useState, useEffect } from 'react'
 
 const API_BASE = 'http://localhost:8080'
 
-// Shared modal for viewing + assigning a trainee's qualifications and
-// certifications. Used identically by AdminHome and EvaluatorHome — both
-// just need to pass: trainee, weaponSystems, crewRoles, certifications,
-// onClose, onQualAdded. The modal fetches the trainee's *current* data
-// itself, so parents don't need to pre-filter anything person-specific.
+
 function TraineeModal({
     trainee,
     weaponSystems,
@@ -22,18 +18,18 @@ function TraineeModal({
     const safeCerts = Array.isArray(certifications) ? certifications : []
     const safeTrainee = trainee || {}
 
-    // Add-form states
     const [selectedRole, setSelectedRole] = useState('')
     const [selectedSystem, setSelectedSystem] = useState('')
     const [selectedCert, setSelectedCert] = useState('')
     const [expiryDate, setExpiryDate] = useState('')
 
-    // Current-data states (self-fetched per trainee)
     const [currentQuals, setCurrentQuals] = useState([])
     const [currentCerts, setCurrentCerts] = useState([])
     const [loadingCurrent, setLoadingCurrent] = useState(true)
 
-    // Inline edit state for a cert's expiry date
+
+    const [editingQualKey, setEditingQualKey] = useState(null)
+    const [editQualDate, setEditQualDate] = useState('')
     const [editingCertName, setEditingCertName] = useState(null)
     const [editExpiryDate, setEditExpiryDate] = useState('')
 
@@ -46,36 +42,27 @@ function TraineeModal({
         return item.name || item.role || item.title || item.certification || item.system || ''
     }
 
-    const getRoleName = (roleId) => {
-        const role = safeRoles.find(r => r.id === roleId)
-        return role ? role.name : `Role #${roleId}`
-    }
-
-    const getSystemName = (systemId) => {
-        const sys = safeSystems.find(s => s.id === systemId)
-        return sys ? sys.name : `System #${systemId}`
-    }
-
     const getCertId = (certName) => {
         const cert = safeCerts.find(c => c.name === certName)
         return cert ? cert.id : null
     }
 
     const fetchCurrentData = () => {
-        if (!safeTrainee.id || !memberName) return
+        if (!safeTrainee.id) return
         setLoadingCurrent(true)
 
-        // Weapon system quals: /quals doesn't support filtering by person as
-        // far as confirmed, so fetch all and filter client-side by personnel_id.
-        const qualsPromise = fetch(`${API_BASE}/quals`)
+
+        const qualsPromise = fetch(`${API_BASE}/quals/${safeTrainee.id}`)
             .then(res => res.json())
-            .then(data => data.filter(q => q.personnel_id === safeTrainee.id))
+            .then(data => {
+                const record = Array.isArray(data) ? data[0] : data
+                return record?.qualifications || []
+            })
             .catch(err => {
                 console.error(err)
                 return []
             })
 
-        // Personnel certs: /perscerts supports a ?member= filter directly.
         const certsPromise = fetch(`${API_BASE}/perscerts?member=${encodeURIComponent(memberName)}`)
             .then(res => res.json())
             .then(data => {
@@ -96,7 +83,6 @@ function TraineeModal({
 
     useEffect(() => {
         fetchCurrentData()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [safeTrainee.id])
 
     const handleResponse = async (res) => {
@@ -119,7 +105,6 @@ function TraineeModal({
         if (onQualAdded) onQualAdded()
     }
 
-    // Tab 1: Weapon Systems Qualification
     const handleAddSystemQual = async (e) => {
         e.preventDefault()
         if (!selectedRole || !selectedSystem) return alert('Select Crew Role and Weapon System.')
@@ -147,7 +132,7 @@ function TraineeModal({
         }
     }
 
-    // Tab 2: Personnel Certifications
+
     const handleAddPersCert = async (e) => {
         e.preventDefault()
         if (!selectedCert || !expiryDate) return alert('Select a Certification and an expiry date.')
@@ -172,7 +157,6 @@ function TraineeModal({
         }
     }
 
-    // Tab 3: Crew Role Certifications (role-wide, not person-specific)
     const handleAddCrewCert = async (e) => {
         e.preventDefault()
         if (!selectedRole || !selectedCert) return alert('Select Crew Role and Certification.')
@@ -193,7 +177,41 @@ function TraineeModal({
         }
     }
 
-    // Edit an existing cert's expiry date
+    const handleStartEditQual = (qual) => {
+        setEditingQualKey(`${qual.roleId}-${qual.systemId}`)
+        setEditQualDate(qual.qualified_date ? qual.qualified_date.slice(0, 10) : '')
+    }
+
+    const handleSaveQualEdit = async (qual) => {
+        try {
+            const res = await fetch(`${API_BASE}/quals/${safeTrainee.id}/${qual.roleId}/${qual.systemId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ qualified_date: editQualDate })
+            })
+            await handleResponse(res)
+            setEditingQualKey(null)
+            refreshAll()
+        } catch (err) {
+            alert('Failed to update qualification:\n' + err.message)
+        }
+    }
+
+    const handleRemoveQual = async (qual) => {
+        if (!window.confirm(`Remove ${qual.system} (${qual.role}) from ${memberName}?`)) return
+
+        try {
+            const res = await fetch(`${API_BASE}/quals/${safeTrainee.id}/${qual.roleId}/${qual.systemId}`, {
+                method: 'DELETE'
+            })
+            if (!res.ok && res.status !== 204) await handleResponse(res)
+            refreshAll()
+        } catch (err) {
+            alert('Failed to remove qualification:\n' + err.message)
+        }
+    }
+
+
     const handleStartEditCert = (cert) => {
         setEditingCertName(cert.certification)
         setEditExpiryDate(cert.expiry_date ? cert.expiry_date.slice(0, 10) : '')
@@ -277,17 +295,42 @@ function TraineeModal({
                                 <p style={{ fontSize: '0.8rem', opacity: 0.6, marginBottom: '12px' }}>None yet.</p>
                             ) : (
                                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0' }}>
-                                    {currentQuals.map((q, i) => (
-                                        <li key={i} style={{ fontSize: '0.85rem', padding: '4px 0', borderBottom: '1px solid #334155' }}>
-                                            {getSystemName(q.system_id)} — {getRoleName(q.crew_role_id)} ({q.qualified_date})
-                                        </li>
-                                    ))}
+                                    {currentQuals.map((q) => {
+                                        const key = `${q.roleId}-${q.systemId}`
+                                        return (
+                                            <li key={key} style={{ fontSize: '0.85rem', padding: '6px 0', borderBottom: '1px solid #334155' }}>
+                                                {editingQualKey === key ? (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span>{q.system} — {q.role} — qualified:</span>
+                                                        <input
+                                                            type="date"
+                                                            value={editQualDate}
+                                                            onChange={(e) => setEditQualDate(e.target.value)}
+                                                            style={{ padding: '4px', background: '#1e293b', color: '#fff', border: '1px solid #334155', borderRadius: '4px' }}
+                                                        />
+                                                        <button onClick={() => handleSaveQualEdit(q)} style={{ padding: '4px 10px', background: '#215b93', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Save</button>
+                                                        <button onClick={() => setEditingQualKey(null)} style={{ padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Cancel</button>
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span>
+                                                            {q.system} — {q.role} — qualified {q.qualified_date}
+                                                            {' '}
+                                                            <span style={{ color: q.is_current ? '#22c55e' : '#ef4444' }}>
+                                                                ({q.is_current ? 'current' : 'expired'})
+                                                            </span>
+                                                        </span>
+                                                        <span style={{ display: 'flex', gap: '8px' }}>
+                                                            <button onClick={() => handleStartEditQual(q)} style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
+                                                            <button onClick={() => handleRemoveQual(q)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </li>
+                                        )
+                                    })}
                                 </ul>
                             )}
-                            <p style={{ fontSize: '0.75rem', opacity: 0.5, marginTop: '-8px', marginBottom: '12px' }}>
-                                Editing/removing weapon qualifications isn't wired up yet — pending confirmation of a
-                                PATCH/DELETE route for crew_qualifications from the backend team.
-                            </p>
 
                             <p style={{ fontSize: '0.8rem', fontWeight: 'bold', margin: '0 0 6px 0', color: '#94a3b8' }}>
                                 Certifications

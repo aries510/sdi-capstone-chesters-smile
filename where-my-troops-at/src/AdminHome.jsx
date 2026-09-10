@@ -7,12 +7,16 @@ import TraineeModal from './TraineeModal';
 import logo from './bg-images/spaceforcelogo.png';
 import Navbar from './Navbar';
 
+const API_BASE = 'http://127.0.0.1:8080';
+
 function AdminHome() {
     const [evaluators, setEvaluators] = useState([]);
     const [standardUsers, setStandardUsers] = useState([]);
     const [trainees, setTrainees] = useState([]);
     const [qualifications, setQualifications] = useState([]);
     const [weaponSystems, setWeaponSystems] = useState([]);
+    const [crewRoles, setCrewRoles] = useState([]);
+    const [certifications, setCertifications] = useState([]);
     const [darkMode, setDarkMode] = useState(false);
 
     const [selectedDetails, setSelectedDetails] = useState(null); // Evaluators detail modal
@@ -24,14 +28,14 @@ function AdminHome() {
     };
 
     const fetchQuals = () => {
-        fetch('http://127.0.0.1:8080/quals')
+        fetch(`${API_BASE}/quals`)
             .then((res) => res.json())
             .then(setQualifications)
             .catch(console.error);
     };
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:8080/users`)
+        fetch(`${API_BASE}/users`)
             .then((res) => res.json())
             .then((users) => {
                 setEvaluators(users.filter((u) => u.is_evaluator));
@@ -39,26 +43,28 @@ function AdminHome() {
             })
             .catch(console.error);
 
-        fetch('http://127.0.0.1:8080/personnel')
+        fetch(`${API_BASE}/personnel`)
             .then((res) => res.json())
             .then(setTrainees)
             .catch(console.error);
 
         fetchQuals();
 
-        fetch('http://127.0.0.1:8080/weaponsystems')
+        fetch(`${API_BASE}/weaponsystems`)
             .then((res) => res.json())
             .then(setWeaponSystems)
             .catch(console.error);
+
+        fetch(`${API_BASE}/crewroles`)
+            .then((res) => res.json())
+            .then(setCrewRoles)
+            .catch(console.error);
+
+        fetch(`${API_BASE}/certs`)
+            .then((res) => res.json())
+            .then(setCertifications)
+            .catch(console.error);
     }, []);
-
-    const getQualsForTrainee = (personnelId) =>
-        qualifications.filter((q) => q.personnel_id === personnelId);
-
-    const getSystemName = (systemId) => {
-        const sys = weaponSystems.find((s) => s.id === systemId);
-        return sys ? sys.name : `System #${systemId}`;
-    };
 
     const handleDeleteTrainee = async (id, e) => {
         e.stopPropagation();
@@ -70,7 +76,7 @@ function AdminHome() {
             return;
 
         try {
-            const res = await fetch(`http://127.0.0.1:8080/personnel/${id}`, {
+            const res = await fetch(`${API_BASE}/personnel/${id}`, {
                 method: 'DELETE',
             });
 
@@ -307,9 +313,9 @@ function AdminHome() {
                 {selectedTrainee && (
                     <TraineeModal
                         trainee={selectedTrainee}
-                        quals={getQualsForTrainee(selectedTrainee.id)}
                         weaponSystems={weaponSystems}
-                        getSystemName={getSystemName}
+                        crewRoles={crewRoles}
+                        certifications={certifications}
                         onClose={() => setSelectedTrainee(null)}
                         onQualAdded={fetchQuals}
                     />
