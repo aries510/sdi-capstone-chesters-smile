@@ -24,7 +24,7 @@
 
 /* Global Theme Transitions & Background Image */
 body {
-    background-image: url('./bg-images/admin-bg.jpeg');
+    background-image: url('../bg-images/admin-bg.jpeg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -36,7 +36,7 @@ body {
 }
 
 .admin-container {
-    max-width: 1200px;
+    max-width: 70%;
     margin: 0 auto;
     padding: 20px;
     font-family: sans-serif;

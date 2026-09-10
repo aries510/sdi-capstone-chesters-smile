@@ -1,0 +1,118 @@
+:root {
+  --panel-bg: rgba(255, 255, 255, 0.55);
+  --text-color: #222222;
+  --border-color: #dcdcdc;
+}
+
+.dark-theme {
+  --panel-bg: rgba(30, 30, 30, 0.55);
+  --text-color: #c0c0c0;
+  --border-color: #333333;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  max-width: 70%;
+  margin: 20px auto 0 auto;
+  padding: 10px 20px;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background-color: var(--panel-bg);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: var(--text-color);
+  position: relative;
+}
+
+.navbar-page-name {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.navbar-logo {
+  height: 55px;
+  width: auto;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.navbar-link {
+  text-decoration: none;
+  color: var(--text-color);
+  font-size: 0.9rem;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.navbar-link:hover {
+  border-color: var(--border-color);
+  background-color: var(--panel-bg);
+}
+
+.navbar-link.active {
+  background-color: #215b93;
+  color: #ffffff;
+  border-color: #215b93;
+}
+
+.navbar-theme-btn {
+  background-color: var(--panel-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 6px 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .navbar-page-name {
+    position: static;
+    transform: none;
+    flex-basis: 100%;
+    text-align: center;
+  }
+
+  .navbar-links {
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .navbar-link,
+  .navbar-theme-btn {
+    text-align: center;
+  }
+}
+
+.title {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: larger;
+}
+
+.title span {
+  padding-left: 10px;
+}

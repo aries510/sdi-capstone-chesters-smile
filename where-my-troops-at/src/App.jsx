@@ -1,13 +1,13 @@
 import { Routes, Route } from 'react-router-dom';
-import './App.css';
-import LoginPage from './Login/LoginPage.jsx';
-import AdminHome from './AdminHome.jsx';
-import EvaluatorsPanel from './EvaluatorsPanel';
-import CreateAccount from './Login/CreateAccount';
-import CreatePersonnel from './CreatePersonnel';
-// import ProtectedRoute from './ProtectedRoute';
-import GenUser from './genUser/genUser.jsx';
-import MPC from './planning/MPC';
+import './styles/App.css';
+import LoginPage from './components/LoginPage.jsx';
+import AdminHome from './components/AdminHome.jsx';
+import EvaluatorsPanel from './components/EvaluatorsPanel';
+import CreateAccount from './components/CreateAccount';
+import CreatePersonnel from './components/CreatePersonnel';
+// import ProtectedRoute from './components/ProtectedRoute';
+import GenUser from './components/genUser.jsx';
+import MPC from './components/MPC';
 
 function App() {
   return (
