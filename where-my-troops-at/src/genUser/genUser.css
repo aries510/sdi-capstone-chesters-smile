@@ -1,13 +1,34 @@
 
 /*  Globals */
     :root {
-        --bg: #131b3693;
-        --btn-background: #bebdbd26;
-        --btn-text: #7ca0dd;
+        --btn-background: #0f1b56c1;
+        --btn-text: #fcfcfd;
         --btn-background-h: #898585fb;
         --btn-text-h: #005bb5;
-        --warning-vignette: #dc262659;
         --warning-border: #dc262699;
+        --radius-pill: 15px;
+
+        --status-good-bg: rgba(107, 122, 61, 0.14);
+        --status-good-text: #53612f;
+        --status-good-border: rgba(107, 122, 61, 0.35);
+        --status-warn-bg: rgba(212, 175, 55, 0.16);
+        --status-warn-text: #8a6d1a;
+        --status-warn-border: rgba(212, 175, 55, 0.4);
+        --status-bad-bg: rgba(180, 35, 24, 0.12);
+        --status-bad-text: #b42318;
+        --status-bad-border: rgba(180, 35, 24, 0.3);
+    }
+
+    .dark-theme {
+        --status-good-bg: rgba(107, 122, 61, 0.25);
+        --status-good-text: #8fd98f;
+        --status-good-border: rgba(143, 217, 143, 0.4);
+        --status-warn-bg: rgba(212, 175, 55, 0.22);
+        --status-warn-text: #ffd966;
+        --status-warn-border: rgba(255, 217, 102, 0.4);
+        --status-bad-bg: rgba(180, 35, 24, 0.25);
+        --status-bad-text: #ff8a80;
+        --status-bad-border: rgba(255, 138, 128, 0.4);
     }
 
 
@@ -29,12 +50,13 @@
     }
 
     .user-panel {
-        border: solid 2px rgba(76, 103, 209, 0.43);
+        border: solid 1px var(--border-color);
+        border-radius: 4px;
         height: 70vh;
-        border-radius: 15px;
         margin: 5vh 0;
         padding: 10px;
-        background-color: var(--bg);
+        background-color: var(--list-bg);
+        backdrop-filter: blur(6px);
     }
     button {
         cursor: pointer;
@@ -47,31 +69,46 @@
         .btn-card {
             background: var(--btn-background);
             border: solid 1px var(--btn-background);
-            border-radius: 15px;
+            border-radius: var(--radius-pill);
             color: var(--btn-text);
             transition: ease .54s;
             margin: 5px;
             padding: 0 2%;
         }
         .btn-card:hover {
-            background: var(--btn-background-h);
             border-color: var(--btn-background-h);
-            color: var(--btn-text-h);
             cursor: pointer;
         }
 
-        .view-btn {
-            background-color: rgba(0, 0, 0, 0);
-            border: 1px solid white;
-            border-radius: 15px;
-            transition: ease .54s;
-            color: white;
-            width: 8vw;
+        .btn-toggle {
+            background-color: var(--panel-bg);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-color);
+            padding: 4px 20px;
+            margin: 5px;
+            cursor: pointer;
         }
-        .view-btn:hover {
-            background-color: var(--btn-text);
-            color: white;
+        .btn-toggle:hover {
+            opacity: 0.8;
         }
+
+        .btn-primary {
+            background-color: #215b93;
+            color: var(--button-text);
+            border: none;
+            border-radius: 4px;
+            padding: 10px 18px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+
 
 
     /*User Info-------------*/
@@ -107,27 +144,42 @@
             max-width: 400px;
             aspect-ratio: 2/1;
             background-color: rgba(28, 16, 55, 0.187);
-            border-radius: 15px;
+            border-radius: var(--radius-pill);
         }
         .numX-display{
-            border: solid 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid;
             aspect-ratio: 1/1;
             width: 100%;
             box-sizing: border-box;
-            border-radius: 15px;
-            align-content: center;
-            align-self: center;
+            border-radius: 4px;
+            font-weight: 600;
             margin: 0;
         }
 
-        .user-cert-ready{border:3px solid rgba(0, 128, 0, 0.485);}
-        .user-cert-inprogress{border:3px solid rgba(249, 249, 65, 0.696);}
-        .user-cert-notstarted{border:3px solid rgba(240, 44, 44, 0.496);}
+        .user-cert-ready {
+            background-color: var(--status-good-bg);
+            color: var(--status-good-text);
+            border-color: var(--status-good-border);
+        }
+        .user-cert-inprogress {
+            background-color: var(--status-warn-bg);
+            color: var(--status-warn-text);
+            border-color: var(--status-warn-border);
+        }
+        .user-cert-notstarted {
+            background-color: var(--status-bad-bg);
+            color: var(--status-bad-text);
+            border-color: var(--status-bad-border);
+        }
         .certs-btn {
             aspect-ratio: 3/1;
             height: fit-content;
             align-self: center;
         }
+
         .cert-header {
             font-size: 1vw;
             line-height: 1.1;
@@ -152,13 +204,47 @@
 
     /*Mission Panel---------------*/
         .missionNum {
-            font-size: 2em;
+            font-size: 1.3em;
             width: 5vh;
             text-align: center;
+            background-color: var(--panel-bg);
+            border-color: var(--border-color) !important;
+            color: var(--text-color);
+            align-self: center;
         }
         .mission-not-ready {
-            box-shadow: inset 0 0 20px var(--warning-border);
-            border: 1px solid var(--warning-border);
+            position: relative;
+        }
+        .mission-not-ready-pill {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--status-bad-bg);
+            color: var(--status-bad-text);
+            border: 1px solid var(--status-bad-border);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 5px 9px;
+            border-radius: 4px;
+        }
+        .mission-card-item {
+            display: grid;
+            position: relative;
+            background-color: var(--panel-bg);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px 20px;
+            margin: 8px 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            color: var(--text-color);
+        }
+        .mission-info-btn {
+            background-color: rgba(255, 255, 255, 0);
+        }
+        .mission-info-btn:hover {
+            color: var(--btn-text-h);
+            transition: ease .3s;
         }
 
 
@@ -180,26 +266,25 @@
     /*Modals ----------------------*/
     .mission-modal-backdrop {
         position: fixed;
-        justify-self: center;
-        align-self: center;
-        background: rgba(15, 12, 61, 0.594);
-        width: 100%;
-        height: 100%;
-        padding: 5%;
-        
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
         display: flex;
         justify-content: center;
         align-items: center;
+        z-index: 1000;
     }
     .mission-modal {
-        background: #0a1220;
-        border: 1px solid rgba(79, 216, 255, 0.25);
-        border-radius: 15px;
-        clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
-        box-shadow: 0 0 40px rgba(79, 216, 255, 0.15), 0 20px 60px rgba(0, 0, 0, 0.6);
-        padding: 28px 32px;
-        color: #e8edf5;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        background-color: var(--panel-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        padding: 25px;
+        color: var(--text-color);
         width: 65vw;
         max-width: 900px;
         height: 70vh;
@@ -214,40 +299,72 @@
 
     .modal-header {
         display: flex;
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
     }
 
     .mission-modal h2 {
-        font-family: Georgia, serif;
-        font-weight: 400;
-        letter-spacing: 0.5px;
-        margin: 0 0 20px;
-        padding-bottom: 14px;
-        position: relative;
-    }
-
-    .mission-modal h2::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 60px;
-        height: 2px;
-        background: #4fd8ff;
-        box-shadow: 0 0 8px #4fd8ff;
+        font-weight: 600;
+        margin: 0;
     }
 
     .mission-modal button {
-        background: transparent;
-        border: 1px solid #4fd8ff;
-        color: #4fd8ff;
-        padding: 8px 24px;
-        border-radius: 2px;
-        font-size: 0.85em;
-        letter-spacing: 1px;
-        transition: background 0.2s ease;
+        background-color: #215b93;
+        color: var(--button-text);
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        font-weight: 500;
+        cursor: pointer;
     }
 
-
     .mission-modal button:hover {
-        background: rgba(79, 216, 255, 0.12);
+        opacity: 0.9;
+    }
+
+    .mission-view-modal {
+        display: grid;
+        gap: 5px;
+        grid-template-areas:
+        "mv-header mv-header mv-header"
+        "mv-type mv-dates mv-location"
+        "mv-oic mv-purpose mv-purpose"
+        "mv-requriements mv-purpose mv-purpose";
+    }
+    #mv-header {grid-area: mv-header}
+    #mv-type {grid-area: mv-type}
+    #mv-dates {grid-area: mv-dates}
+    #mv-location {grid-area: mv-location}
+    #mv-oic {grid-area: mv-oic}
+    #mv-purpose {grid-area: mv-purpose}
+    #mv-requirements {grid-area: mv-requriements}
+
+
+    .mission-view-modal > p {
+        border-left: 1px solid var(--border-color);
+        padding: 5%;
+    }
+
+    .status-pill-ready,
+    .status-pill-expired {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 5px 9px;
+        border-radius: 4px;
+        margin-left: 10px;
+    }
+    .status-pill-ready {
+        background-color: var(--status-good-bg);
+        color: var(--status-good-text);
+        border: 1px solid var(--status-good-border);
+    }
+    .status-pill-expired {
+        background-color: var(--status-bad-bg);
+        color: var(--status-bad-text);
+        border: 1px solid var(--status-bad-border);
     }
