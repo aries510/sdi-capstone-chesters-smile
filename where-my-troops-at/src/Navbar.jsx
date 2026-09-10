@@ -4,6 +4,7 @@ import './Navbar.css';
 import logo from './bg-images/spaceforcelogo.png';
 
 const links = [
+  { to: '/GeneralUser', label: 'My Info' },
   { to: '/Admin', label: 'Admin Dashboard' },
   { to: '/Evaluator', label: 'Evaluator Dashboard' },
   { to: '/MPC', label: 'MPC Dashboard' },

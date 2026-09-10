@@ -1,5 +1,6 @@
 import './genUser.css';
 import { useState, useEffect } from 'react';
+import Navbar from '../Navbar';
 
 
 
@@ -12,7 +13,16 @@ function fetchCatch(message){
 }
 //server routes
 const serverUrl = 'localhost:8080';
-    // personnel link | replace with personnel_id after table is updated
+
+    /**
+     * PERSONNEL LINK
+     * Hardcoded to personnel id 1 for demo
+     * 
+     * Production Solution:
+     * 1. POST /login needs personnel_id added to its response
+     *  - currently exists on users, just isn't returned
+     * 2. Some sort of AuthContext wrapper for persistent access
+    */
     const personnelId = 1;
 
     const personnelUrl = `http://${serverUrl}/personnel/${personnelId}`;
@@ -26,7 +36,7 @@ const serverUrl = 'localhost:8080';
 function GenUser() {
 
 
-    //UseStates | Tracked information
+    /**----------UseStates | Tracked information----------------*/
      //--User Info Panel
     const [person, setPerson] = useState({
         rank: '1st Lt',
@@ -78,6 +88,8 @@ function GenUser() {
             .then((data) => setPerson(data))
             .catch(fetchCatch('Could not load live personnel data, using demo:'));
     }, []);
+
+
     //Fetch Qualifications
     useEffect(() => {
         fetch(qualificationsUrl)
@@ -190,8 +202,9 @@ function GenUser() {
     return (
 
         /**-----Dashboard/Home view-=------------------------ */
+        <>
+        <Navbar />
         <div className="genUser-dashboard">
-
             {/**------------User Info Panel---------------- */}
             <div className="user-info user-panel">
                 <div className="header">
@@ -199,7 +212,7 @@ function GenUser() {
                     <p id="user-status">{isReady ? 'FMC' : 'NMC'}</p>{/**pmc fmc nmc    Not Mission  */}
                 </div>
                 <p id="rank-name">{person.rank} | {person.last_name}, {person.first_name}</p>
-                <div id="domain-unit-crew">Cyber | Unit | <button className="btn-card">Alpha</button></div>
+                <div id="domain-unit-crew">Cyber | Unit | <button className="btn-toggle">Alpha</button></div>
                 
                 {/**Personal Data Panel */}
                 <div className="certs">
@@ -211,7 +224,7 @@ function GenUser() {
                     <p className="cert-header">Expired</p>
 
                     {/**Weapon Systems Certified on */}
-                    <button className="btn-card certs-btn" onClick={() => setOpenModal(
+                    <button className="btn-toggle certs-btn" onClick={() => setOpenModal(
                         openModal?.type === 'systems' 
                             ? null
                             : { type: 'systems', systems: distinctSystems }
@@ -224,7 +237,7 @@ function GenUser() {
                     <p className="user-cert-notstarted numX-display">{distinctSystems.filter(system => !system.is_current).length}</p>
 
                     {/**Qualifications held */}
-                    <button className="btn-card certs-btn" onClick={() => setOpenModal(
+                    <button className="btn-toggle certs-btn" onClick={() => setOpenModal(
                         openModal?.type === 'quals'
                             ? null
                             : { type: 'quals', quals }
@@ -237,7 +250,7 @@ function GenUser() {
                     <p className="user-cert-notstarted numX-display">{quals.filter(qual => !qual.is_current).length}</p>
 
                     {/**Certifications Held */}
-                    <button className="btn-card certs-btn" onClick={() => setOpenModal(
+                    <button className="btn-toggle certs-btn" onClick={() => setOpenModal(
                         openModal?.type === 'certs'
                             ? null
                             : { type: 'certs', certs }
@@ -253,7 +266,7 @@ function GenUser() {
                 <div className="contact">
                     <div>
                         <h4>Contact Info:</h4>
-                        <button className="btn-card">Edit</button>
+                        <button className="btn-toggle">Edit</button>
                     </div>
                     <p>Email@example.com</p>
                     <p>Comm:(000)000-0000</p>
@@ -268,26 +281,28 @@ function GenUser() {
                     <p className="numX-display missionNum">{missions.length}</p>
                 </div>
 
-                <div className="user-missions">
+                <div className="user-missions" >
                     {missions.map((mission) => (
                         <div 
-                            className={`mission-name-desc btn-card ${meetsRequirements(mission, certs) ? '' : 'mission-not-ready'}`} 
+                            className={`mission-card-item ${meetsRequirements(mission, certs) ? '' : 'mission-not-ready'}`} 
                             key={mission.id}
-                        >
-                            <h2>{mission.name} - {mission.purpose}</h2>
-                            <button className="view-btn" 
                             onClick={() => setOpenModal(
                                 openModal?.type === 'mission' && openModal.mission.id === mission.id 
                                     ? null 
                                     : { type: 'mission', mission }
                                 )}
-                            >
-                                view
+                        >
+                            {!meetsRequirements(mission, certs) && (
+                                <span className="mission-not-ready-pill">Not Ready</span>
+                            )}
+                            <h2>{mission.name} - {mission.purpose}</h2>
+                            <button className="btn-primary mission-info-btn">
+                                More Info
                             </button>
                         </div>
                     ))}
 
-                    <button className="view-btn">Mission Records</button>
+                    <button className="btn-primary">Mission Records</button>
                 </div>
             </div>
 
@@ -305,7 +320,7 @@ function GenUser() {
                         <div className="user-task btn-card" key={index}>
                             <p className="task-date">{item.date}</p>
                             <p>{item.task}</p>
-                            <button className="view-btn">View</button>
+                            <button className="btn-primary">View</button>
                         </div>
                     ))}
                     
@@ -317,24 +332,24 @@ function GenUser() {
             {/**Selected Mission Modal */}
             {openModal?.type === 'mission' && (
                 <div className="mission-modal-backdrop" onClick={() => setOpenModal(null)}>
-                    <div className="mission-modal" onClick={(event) => event.stopPropagation()}>
-                        <div className="modal-header">
+                    <div className="mission-modal mission-view-modal" onClick={(event) => event.stopPropagation()}>
+                        <div className="modal-header" id="mv-header">
                             <h2>{openModal.mission.name}</h2>
                             <button onClick={() => setOpenModal(null)}>Close</button>
                         </div>
-                        <p>Type: {openModal.mission.type}</p>
-                        <p>Dates: {openModal.mission.dates}</p>
-                        <p>Location: {openModal.mission.location}</p>
-                        <p>OIC: {openModal.mission.oic}</p>
-                        <p>Purpose: {openModal.mission.purpose}</p>
-                        <p>Requirements: {openModal.mission.requiredCerts.join(', ')}</p>
+                        <p id="mv-type">Type: {openModal.mission.type}</p>
+                        <p id="mv-dates">Dates: {openModal.mission.dates}</p>
+                        <p id="mv-location">Location: {openModal.mission.location}</p>
+                        <p id="mv-oic">OIC: {openModal.mission.oic}</p>
+                        <p id="mv-purpose">Purpose: {openModal.mission.purpose}</p>
+                        <p id="mv-requirements">Requirements: {openModal.mission.requiredCerts.join(', ')}</p>
                     </div>
                 </div>
             )}
 
             {/**Certs/Quals/Systems Modal */}
             {modalContent && (
-                <div className="mission-modal-backdrop" onClick={() => setOpenModal(null)}>
+                <div className="mission-modal-backdrop cert-qual-modal" onClick={() => setOpenModal(null)}>
                     <div className="mission-modal" onClick={(event) => event.stopPropagation()}>
                         <div className="modal-header">
                             <h2>{modalContent.title}</h2>
@@ -360,6 +375,7 @@ function GenUser() {
 
 
 
+    </>
     )//Closes return
 }
 
