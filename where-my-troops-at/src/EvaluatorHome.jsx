@@ -7,8 +7,8 @@ const API_BASE = 'http://127.0.0.1:8080'
 
 function EvaluatorHome() {
     const [trainees, setTrainees] = useState([])
-    const [qualifications, setQualifications] = useState([]) // flat rows from /quals (crew_qualifications)
-    const [personnelCerts, setPersonnelCerts] = useState([]) // grouped rows from /perscerts
+    const [qualifications, setQualifications] = useState([])
+    const [personnelCerts, setPersonnelCerts] = useState([])
     const [weaponSystems, setWeaponSystems] = useState([])
     const [crewRoles, setCrewRoles] = useState([])
     const [certifications, setCertifications] = useState([])
@@ -74,7 +74,7 @@ function EvaluatorHome() {
 
     const getTraineeName = (t) => `${t.first_name || ''} ${t.last_name || ''}`.trim()
 
-    // /quals returns flat crew_qualifications rows: personnel_id, crew_role_id, system_id, qualified_date
+
     const getQualsForTrainee = (personnelId) =>
         qualifications.filter(q => q.personnel_id === personnelId)
 
@@ -83,8 +83,7 @@ function EvaluatorHome() {
         return sys ? sys.name : `System #${systemId}`
     }
 
-    // /perscerts returns rows grouped by member name, each with a nested certifications array —
-    // match by name since that endpoint doesn't return personnel_id directly.
+
     const getCertsForTrainee = (trainee) => {
         const name = getTraineeName(trainee).toLowerCase()
         const record = personnelCerts.find(
@@ -93,11 +92,11 @@ function EvaluatorHome() {
         return record?.certifications || []
     }
 
-    // Dynamic dropdown lists derived from dataset
+
     const uniqueUnits = ['All', ...new Set(trainees.map(t => t.unit).filter(Boolean))]
     const uniqueStatuses = ['All', ...new Set(trainees.map(t => t.status).filter(Boolean))]
 
-    // Filter Logic
+
     const filteredTrainees = trainees.filter(t => {
         const term = searchQuery.toLowerCase()
         const fullName = getTraineeName(t).toLowerCase()
