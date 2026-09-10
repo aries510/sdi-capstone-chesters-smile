@@ -2,20 +2,32 @@ import { useState, useEffect } from 'react'
 import './AdminHome.css'
 import EvaluatorsPanel from './EvaluatorsPanel';
 import CertQualRenewalPanel from './CertQualRenewalPanel';
-import CertificationCatalog from './CertificationCatalog'
+import CertificationCatalog from './CertificationCatalog';
+import TraineeModal from './TraineeModal';
 import logo from './bg-images/spaceforcelogo.png';
 
 function AdminHome() {
     const [evaluators, setEvaluators] = useState([]);
     const [standardUsers, setStandardUsers] = useState([]);
     const [trainees, setTrainees] = useState([]);
+    const [qualifications, setQualifications] = useState([]);
+    const [weaponSystems, setWeaponSystems] = useState([]);
     const [darkMode, setDarkMode] = useState(false);
-    const [selectedDetails, setSelectedDetails] = useState(null);
+
+    const [selectedDetails, setSelectedDetails] = useState(null); // Evaluators detail modal
+    const [selectedTrainee, setSelectedTrainee] = useState(null);   // Trainee qualification modal
 
     const toggleDarkMode = () => {
         setDarkMode(!darkMode);
         document.body.classList.toggle('dark-theme', !darkMode);
     }
+
+    const fetchQuals = () => {
+        fetch('http://127.0.0.1:8080/quals')
+            .then(res => res.json())
+            .then(setQualifications)
+            .catch(console.error);
+    };
 
     useEffect(() => {
         fetch(`http://127.0.0.1:8080/users`)
@@ -24,13 +36,28 @@ function AdminHome() {
                 setEvaluators(users.filter(u => u.is_evaluator));
                 setStandardUsers(users.filter(u => !u.is_evaluator));
             })
-            .catch(console.error)
+            .catch(console.error);
 
         fetch('http://127.0.0.1:8080/personnel')
             .then(res => res.json())
             .then(setTrainees)
-            .catch(console.error)
-    }, [])
+            .catch(console.error);
+
+        fetchQuals();
+
+        fetch('http://127.0.0.1:8080/weaponsystems')
+            .then(res => res.json())
+            .then(setWeaponSystems)
+            .catch(console.error);
+    }, []);
+
+    const getQualsForTrainee = (personnelId) =>
+        qualifications.filter(q => q.personnel_id === personnelId);
+
+    const getSystemName = (systemId) => {
+        const sys = weaponSystems.find(s => s.id === systemId);
+        return sys ? sys.name : `System #${systemId}`;
+    };
 
     const handleDeleteTrainee = async (id, e) => {
         e.stopPropagation();
@@ -100,7 +127,7 @@ function AdminHome() {
                                     {trainees.map(t => (
                                         <li
                                             key={t.id}
-                                            onClick={() => setSelectedDetails({ type: 'Personnel Record', ...t })}
+                                            onClick={() => setSelectedTrainee(t)}
                                             style={{ padding: '6px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.2s' }}
                                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
                                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -171,6 +198,19 @@ function AdminHome() {
                 <CertificationCatalog />
             </div>
 
+            {/* Trainee Modal for qualifications/training */}
+            {selectedTrainee && (
+                <TraineeModal
+                    trainee={selectedTrainee}
+                    quals={getQualsForTrainee(selectedTrainee.id)}
+                    weaponSystems={weaponSystems}
+                    getSystemName={getSystemName}
+                    onClose={() => setSelectedTrainee(null)}
+                    onQualAdded={fetchQuals}
+                />
+            )}
+
+            {/* Evaluator generic details modal */}
             {selectedDetails && (
                 <div style={{
                     position: 'fixed',
