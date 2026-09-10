@@ -3,10 +3,15 @@ import TraineeModal from './TraineeModal'
 import './EvaluatorHome.css'
 import logo from './bg-images/spaceforcelogo.png'
 
+const API_BASE = 'http://127.0.0.1:8080'
+
 function EvaluatorHome() {
     const [trainees, setTrainees] = useState([])
-    const [qualifications, setQualifications] = useState([])
+    const [qualifications, setQualifications] = useState([]) // flat rows from /quals (crew_qualifications)
+    const [personnelCerts, setPersonnelCerts] = useState([]) // grouped rows from /perscerts
     const [weaponSystems, setWeaponSystems] = useState([])
+    const [crewRoles, setCrewRoles] = useState([])
+    const [certifications, setCertifications] = useState([])
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedTrainee, setSelectedTrainee] = useState(null)
     const [darkMode, setDarkMode] = useState(false)
@@ -26,32 +31,66 @@ function EvaluatorHome() {
     }
 
     const fetchTrainees = () => {
-        fetch('http://127.0.0.1:8080/personnel')
+        fetch(`${API_BASE}/personnel`)
             .then(res => res.json())
             .then(setTrainees)
             .catch(console.error)
     }
 
-    useEffect(() => {
-        fetchTrainees()
-
-        fetch('http://127.0.0.1:8080/quals')
+    const fetchQualifications = () => {
+        fetch(`${API_BASE}/quals`)
             .then(res => res.json())
             .then(setQualifications)
             .catch(console.error)
+    }
 
-        fetch('http://127.0.0.1:8080/weaponsystems')
+    const fetchPersonnelCerts = () => {
+        fetch(`${API_BASE}/perscerts`)
+            .then(res => res.json())
+            .then(setPersonnelCerts)
+            .catch(console.error)
+    }
+
+    useEffect(() => {
+        fetchTrainees()
+        fetchQualifications()
+        fetchPersonnelCerts()
+
+        fetch(`${API_BASE}/weaponsystems`)
             .then(res => res.json())
             .then(setWeaponSystems)
             .catch(console.error)
+
+        fetch(`${API_BASE}/crewroles`)
+            .then(res => res.json())
+            .then(setCrewRoles)
+            .catch(console.error)
+
+        fetch(`${API_BASE}/certs`)
+            .then(res => res.json())
+            .then(setCertifications)
+            .catch(console.error)
     }, [])
 
+    const getTraineeName = (t) => `${t.first_name || ''} ${t.last_name || ''}`.trim()
+
+    // /quals returns flat crew_qualifications rows: personnel_id, crew_role_id, system_id, qualified_date
     const getQualsForTrainee = (personnelId) =>
         qualifications.filter(q => q.personnel_id === personnelId)
 
     const getSystemName = (systemId) => {
         const sys = weaponSystems.find(s => s.id === systemId)
         return sys ? sys.name : `System #${systemId}`
+    }
+
+    // /perscerts returns rows grouped by member name, each with a nested certifications array —
+    // match by name since that endpoint doesn't return personnel_id directly.
+    const getCertsForTrainee = (trainee) => {
+        const name = getTraineeName(trainee).toLowerCase()
+        const record = personnelCerts.find(
+            (p) => (p.member || '').trim().toLowerCase() === name
+        )
+        return record?.certifications || []
     }
 
     // Dynamic dropdown lists derived from dataset
@@ -61,7 +100,7 @@ function EvaluatorHome() {
     // Filter Logic
     const filteredTrainees = trainees.filter(t => {
         const term = searchQuery.toLowerCase()
-        const fullName = `${t.first_name || ''} ${t.last_name || ''}`.toLowerCase()
+        const fullName = getTraineeName(t).toLowerCase()
         const matchesSearch = fullName.includes(term) || t.rank?.toLowerCase().includes(term)
 
         const matchesUnit = selectedUnit === 'All' || t.unit === selectedUnit
@@ -81,7 +120,7 @@ function EvaluatorHome() {
         }
 
         try {
-            const res = await fetch('http://127.0.0.1:8080/personnel', {
+            const res = await fetch(`${API_BASE}/personnel`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newTrainee),
@@ -183,7 +222,7 @@ function EvaluatorHome() {
                     </div>
 
                     <div className="trainees-list-header">
-                        <span>• name | Quals | Qual date</span>
+                        <span>• name | Quals | Certs</span>
                         <span>Add/edit/remove</span>
                     </div>
 
@@ -193,6 +232,7 @@ function EvaluatorHome() {
                         ) : (
                             filteredTrainees.map(t => {
                                 const quals = getQualsForTrainee(t.id)
+                                const certs = getCertsForTrainee(t)
                                 return (
                                     <li key={t.id}>
                                         <span>
@@ -202,7 +242,9 @@ function EvaluatorHome() {
                                                 ? quals.map(q => getSystemName(q.system_id)).join(', ')
                                                 : 'No quals'}
                                             {' | '}
-                                            {quals.length > 0 ? quals[0].qualified_date : '—'}
+                                            {certs.length > 0
+                                                ? certs.map(c => c.certification).join(', ')
+                                                : 'No certs'}
                                         </span>
                                         <button onClick={() => setSelectedTrainee(t)}>Edit</button>
                                     </li>
@@ -222,15 +264,13 @@ function EvaluatorHome() {
             {selectedTrainee && (
                 <TraineeModal
                     trainee={selectedTrainee}
-                    quals={getQualsForTrainee(selectedTrainee.id)}
                     weaponSystems={weaponSystems}
-                    getSystemName={getSystemName}
+                    crewRoles={crewRoles}
+                    certifications={certifications}
                     onClose={() => setSelectedTrainee(null)}
                     onQualAdded={() => {
-                        fetch('http://127.0.0.1:8080/quals')
-                            .then(res => res.json())
-                            .then(setQualifications)
-                            .catch(console.error)
+                        fetchQualifications()
+                        fetchPersonnelCerts()
                     }}
                 />
             )}
