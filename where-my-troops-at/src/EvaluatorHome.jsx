@@ -70,63 +70,75 @@ function EvaluatorHome() {
     }
 
     return (
-        <div className="evaluator-container">
-            <h1 className="evaluator-title">Evaluator</h1>
+        <div className="evaluator-container" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+            <h1 className="evaluator-title" style={{ textAlign: 'center', marginBottom: '24px' }}>Evaluator</h1>
 
-            <input
-                type="text"
-                className="search-bar"
-                placeholder="Name, MOS, unit, or certification"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-            />
-
-            <div className="filters-bar">
-                <span>FILTERS</span>
-                <div className="filter-row">
-                    <label>Unit: <select disabled><option>All</option></select></label>
-                    <label>Status: <select disabled><option>All</option></select></label>
-                    <label>Certification: <select disabled><option>Any</option></select></label>
+            {/* Search and Filters Section */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px', maxWidth: '520px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>SEARCH PERSONNEL</span>
+                    <input
+                        type="text"
+                        className="search-bar"
+                        placeholder="Name, MOS, unit, or certification"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{ flex: 1, padding: '8px 12px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--panel-bg)', color: 'var(--text-color)' }}
+                    />
                 </div>
-                {/* Unit / Status / Certification filters are UI placeholders —
-            no matching columns exist on `personnel` yet. */}
+
+                <div className="filters-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem' }}>
+                    <span style={{ fontWeight: 'bold' }}>FILTERS</span>
+                    <div className="filter-row" style={{ display: 'flex', gap: '12px' }}>
+                        <label>Unit: <select disabled style={{ background: 'transparent', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px' }}><option>All ▼</option></select></label>
+                        <label>Status: <select disabled style={{ background: 'transparent', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px' }}><option>All ▼</option></select></label>
+                        <label>Certification: <select disabled style={{ background: 'transparent', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px' }}><option>Any ▼</option></select></label>
+                    </div>
+                </div>
             </div>
 
-            <div className="trainees-panel">
-                <div className="trainees-header">
-                    <h3>Trainees</h3>
-                    <button className="add-new-btn" onClick={handleAddNew}>Add new</button>
+            {/* Side-by-Side Main Layout: Trainees Panel & Actions */}
+            <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+                <div className="trainees-panel">
+                    <div className="trainees-header">
+                        <h3>Trainees</h3>
+                        <button className="add-new-btn" onClick={handleAddNew}>Add new</button>
+                    </div>
+
+                    <div className="trainees-list-header">
+                        <span>• name | Quals | Qual date</span>
+                        <span>Add/edit/remove</span>
+                    </div>
+
+                    <ul className="trainees-list">
+                        {filteredTrainees.length === 0 ? (
+                            <li style={{ fontSize: '0.85rem', opacity: 0.7, padding: '12px 4px' }}>No trainees found.</li>
+                        ) : (
+                            filteredTrainees.map(t => {
+                                const quals = getQualsForTrainee(t.id)
+                                return (
+                                    <li key={t.id}>
+                                        <span>
+                                            {t.rank} {t.first_name} {t.last_name}
+                                            {' | '}
+                                            {quals.length > 0
+                                                ? quals.map(q => getSystemName(q.system_id)).join(', ')
+                                                : 'No quals'}
+                                            {' | '}
+                                            {quals.length > 0 ? quals[0].qualified_date : '—'}
+                                        </span>
+                                        <button onClick={() => setSelectedTrainee(t)}>Edit</button>
+                                    </li>
+                                )
+                            })
+                        )}
+                    </ul>
                 </div>
 
-                <div className="trainees-list-header">
-                    <span>name | Quals | Qual date</span>
-                    <span>Add/edit/remove</span>
+                <div className="evaluator-actions">
+                    <div className="upload-button">UPLOAD DOCUMENT</div>
+                    <div className="import-button">+ BULK IMPORT • PDF / CSV</div>
                 </div>
-
-                <ul className="trainees-list">
-                    {filteredTrainees.map(t => {
-                        const quals = getQualsForTrainee(t.id)
-                        return (
-                            <li key={t.id}>
-                                <span>
-                                    {t.rank} {t.first_name} {t.last_name}
-                                    {' | '}
-                                    {quals.length > 0
-                                        ? quals.map(q => getSystemName(q.system_id)).join(', ')
-                                        : 'No quals'}
-                                    {' | '}
-                                    {quals.length > 0 ? quals[0].qualified_date : '—'}
-                                </span>
-                                <button onClick={() => setSelectedTrainee(t)}>Edit</button>
-                            </li>
-                        )
-                    })}
-                </ul>
-            </div>
-
-            <div className="evaluator-actions">
-                <div className="upload-button">UPLOAD DOCUMENT</div>
-                <div className="import-button">+ BULK IMPORT · PDF / CSV</div>
             </div>
 
             {selectedTrainee && (
