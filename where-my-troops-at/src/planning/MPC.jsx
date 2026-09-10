@@ -785,6 +785,61 @@ function MPC() {
                 )
             }
 
+            {selectedMission && viewStage === 6 && (
+                <section className="new-mission-form">
+                    <div className="new-mission-header">
+                        <div>
+                            <h2>{selectedMission.name}</h2>
+                            <p>Approved Mission</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSelectedMission(null);
+                                setViewStage(null);
+                            }}
+                        >
+                            Back
+                        </button>
+                    </div>
+
+                    <div className="readiness-summary">
+                        <h3>Mission Readiness</h3>
+                        <strong>{selectedMission.readiness}% Ready</strong>
+                    </div>
+
+                    <div className="ready-checks">
+                        <div className="ready-check-row">
+                            <span>Status</span>
+                            <strong>{selectedMission.status}</strong>
+                        </div>
+
+                        <div className="ready-check-row">
+                            <span>Dates</span>
+                            <strong>{selectedMission.dates}</strong>
+                        </div>
+
+                        <div className="ready-check-row">
+                            <span>Location</span>
+                            <strong>{selectedMission.location}</strong>
+                        </div>
+
+                        <div className="ready-check-row">
+                            <span>OIC</span>
+                            <strong>{selectedMission.oic}</strong>
+                        </div>
+
+                        <div className="ready-check-row">
+                            <span>Personnel Assigned</span>
+                            <strong>
+                                {selectedMission.personnel?.length || 0}
+                            </strong>
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {
                 showMissionForm && (
                     <section className="new-mission-form">
