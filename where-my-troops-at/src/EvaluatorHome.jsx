@@ -9,8 +9,17 @@ function EvaluatorHome() {
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedTrainee, setSelectedTrainee] = useState(null)
 
+    // Filter States
+    const [selectedUnit, setSelectedUnit] = useState('All')
+    const [selectedStatus, setSelectedStatus] = useState('All')
+    const [selectedCert, setSelectedCert] = useState('Any')
+
+    // Add Trainee Modal State
+    const [showAddModal, setShowAddModal] = useState(false)
+    const [newTrainee, setNewTrainee] = useState({ first_name: '', last_name: '', rank: '' })
+
     const fetchTrainees = () => {
-        fetch(`http://127.0.0.1/personnel`)
+        fetch('http://127.0.0.1:8080/personnel')
             .then(res => res.json())
             .then(setTrainees)
             .catch(console.error)
@@ -19,12 +28,12 @@ function EvaluatorHome() {
     useEffect(() => {
         fetchTrainees()
 
-        fetch(`http://127.0.0.1/quals`)
+        fetch('http://127.0.0.1:8080/quals')
             .then(res => res.json())
             .then(setQualifications)
             .catch(console.error)
 
-        fetch(`http://127.0.0.1/weaponsystems`)
+        fetch('http://127.0.0.1:8080/weaponsystems')
             .then(res => res.json())
             .then(setWeaponSystems)
             .catch(console.error)
@@ -38,25 +47,37 @@ function EvaluatorHome() {
         return sys ? sys.name : `System #${systemId}`
     }
 
+    // Dynamic dropdown lists derived from dataset
+    const uniqueUnits = ['All', ...new Set(trainees.map(t => t.unit).filter(Boolean))]
+    const uniqueStatuses = ['All', ...new Set(trainees.map(t => t.status).filter(Boolean))]
+
+    // Filter Logic
     const filteredTrainees = trainees.filter(t => {
         const term = searchQuery.toLowerCase()
-        const fullName = `${t.first_name} ${t.last_name}`.toLowerCase()
-        return fullName.includes(term) || t.rank?.toLowerCase().includes(term)
+        const fullName = `${t.first_name || ''} ${t.last_name || ''}`.toLowerCase()
+        const matchesSearch = fullName.includes(term) || t.rank?.toLowerCase().includes(term)
+
+        const matchesUnit = selectedUnit === 'All' || t.unit === selectedUnit
+        const matchesStatus = selectedStatus === 'All' || t.status === selectedStatus
+
+        const quals = getQualsForTrainee(t.id)
+        const matchesCert = selectedCert === 'Any' || quals.some(q => String(q.system_id) === String(selectedCert))
+
+        return matchesSearch && matchesUnit && matchesStatus && matchesCert
     })
 
-    const handleAddNew = async () => {
-        const firstName = prompt('First name:')
-        if (!firstName) return
-        const lastName = prompt('Last name:')
-        if (!lastName) return
-        const rank = prompt('Rank:')
-        if (!rank) return
+    const handleAddSubmit = async (e) => {
+        e.preventDefault()
+        if (!newTrainee.first_name || !newTrainee.last_name || !newTrainee.rank) {
+            alert('Please fill out all required fields.')
+            return
+        }
 
         try {
-            const res = await fetch(`http://127.0.0.1/personnel`, {
+            const res = await fetch('http://127.0.0.1:8080/personnel', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ first_name: firstName, last_name: lastName, rank }),
+                body: JSON.stringify(newTrainee),
             })
             if (!res.ok) {
                 const err = await res.json()
@@ -64,6 +85,8 @@ function EvaluatorHome() {
                 return
             }
             fetchTrainees()
+            setShowAddModal(false)
+            setNewTrainee({ first_name: '', last_name: '', rank: '' })
         } catch (err) {
             console.error(err)
         }
@@ -74,7 +97,7 @@ function EvaluatorHome() {
             <h1 className="evaluator-title" style={{ textAlign: 'center', marginBottom: '24px' }}>Evaluator</h1>
 
             {/* Search and Filters Section */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px', maxWidth: '520px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px', maxWidth: '600px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>SEARCH PERSONNEL</span>
                     <input
@@ -90,9 +113,45 @@ function EvaluatorHome() {
                 <div className="filters-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem' }}>
                     <span style={{ fontWeight: 'bold' }}>FILTERS</span>
                     <div className="filter-row" style={{ display: 'flex', gap: '12px' }}>
-                        <label>Unit: <select disabled style={{ background: 'transparent', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px' }}><option>All ▼</option></select></label>
-                        <label>Status: <select disabled style={{ background: 'transparent', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px' }}><option>All ▼</option></select></label>
-                        <label>Certification: <select disabled style={{ background: 'transparent', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px' }}><option>Any ▼</option></select></label>
+                        <label>
+                            Unit:{' '}
+                            <select
+                                value={selectedUnit}
+                                onChange={(e) => setSelectedUnit(e.target.value)}
+                                style={{ background: 'var(--panel-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px', padding: '2px 4px' }}
+                            >
+                                {uniqueUnits.map(unit => (
+                                    <option key={unit} value={unit} style={{ color: '#000' }}>{unit}</option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label>
+                            Status:{' '}
+                            <select
+                                value={selectedStatus}
+                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                style={{ background: 'var(--panel-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px', padding: '2px 4px' }}
+                            >
+                                {uniqueStatuses.map(status => (
+                                    <option key={status} value={status} style={{ color: '#000' }}>{status}</option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label>
+                            Certification:{' '}
+                            <select
+                                value={selectedCert}
+                                onChange={(e) => setSelectedCert(e.target.value)}
+                                style={{ background: 'var(--panel-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px', padding: '2px 4px' }}
+                            >
+                                <option value="Any" style={{ color: '#000' }}>Any</option>
+                                {weaponSystems.map(sys => (
+                                    <option key={sys.id} value={sys.id} style={{ color: '#000' }}>{sys.name}</option>
+                                ))}
+                            </select>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -102,7 +161,7 @@ function EvaluatorHome() {
                 <div className="trainees-panel">
                     <div className="trainees-header">
                         <h3>Trainees</h3>
-                        <button className="add-new-btn" onClick={handleAddNew}>Add new</button>
+                        <button className="add-new-btn" onClick={() => setShowAddModal(true)}>Add new</button>
                     </div>
 
                     <div className="trainees-list-header">
@@ -141,6 +200,7 @@ function EvaluatorHome() {
                 </div>
             </div>
 
+            {/* Trainee Details / Qualification Modal */}
             {selectedTrainee && (
                 <TraineeModal
                     trainee={selectedTrainee}
@@ -149,12 +209,101 @@ function EvaluatorHome() {
                     getSystemName={getSystemName}
                     onClose={() => setSelectedTrainee(null)}
                     onQualAdded={() => {
-                        fetch(`${import.meta.env.VITE_API_URL}/quals`)
+                        fetch('http://127.0.0.1:8080/quals')
                             .then(res => res.json())
                             .then(setQualifications)
                             .catch(console.error)
                     }}
                 />
+            )}
+
+            {/* Add New Trainee Form Modal (Admin Home Style) */}
+            {showAddModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    backdropFilter: 'blur(5px)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'var(--panel-bg, #1e293b)',
+                        border: '1px solid var(--border-color, #334155)',
+                        padding: '25px',
+                        borderRadius: '8px',
+                        width: '400px',
+                        maxWidth: '90%',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+                        color: 'var(--text-color, #f8fafc)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '15px' }}>
+                            <h3 style={{ margin: 0, fontWeight: 600 }}>Add New Trainee</h3>
+                            <button
+                                onClick={() => setShowAddModal(false)}
+                                style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-color)' }}
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem' }}>
+                                Rank:
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Sgt, Capt, Spc"
+                                    value={newTrainee.rank}
+                                    onChange={(e) => setNewTrainee({ ...newTrainee, rank: e.target.value })}
+                                    style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--panel-bg)', color: 'var(--text-color)' }}
+                                    required
+                                />
+                            </label>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem' }}>
+                                First Name:
+                                <input
+                                    type="text"
+                                    placeholder="First Name"
+                                    value={newTrainee.first_name}
+                                    onChange={(e) => setNewTrainee({ ...newTrainee, first_name: e.target.value })}
+                                    style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--panel-bg)', color: 'var(--text-color)' }}
+                                    required
+                                />
+                            </label>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem' }}>
+                                Last Name:
+                                <input
+                                    type="text"
+                                    placeholder="Last Name"
+                                    value={newTrainee.last_name}
+                                    onChange={(e) => setNewTrainee({ ...newTrainee, last_name: e.target.value })}
+                                    style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--panel-bg)', color: 'var(--text-color)' }}
+                                    required
+                                />
+                            </label>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '15px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddModal(false)}
+                                    style={{ backgroundColor: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-color)', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    style={{ backgroundColor: '#215b93', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
+                                >
+                                    Add Trainee
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
         </div>
     )
