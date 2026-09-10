@@ -64,7 +64,7 @@ router.post('/', (req, res) => {
           start_date: startDate,
           end_date: endDate,
           location: locationName,
-          personnel_id: member,
+          personnel_id: member.id,
           description: descriptionText,
         })
         .then(() => res.status(201).json({ message: 'Successfully created' }));
@@ -98,7 +98,7 @@ router.patch('/:id', (request, response) => {
   knex('personnel')
     .where({ rank: personnelRank, last_name: lastName })
     .first()
-    .then((member) => {
+    .then(([member]) => {
       if (!memeber) {
         return response.status(404).json({ error: 'Personnel not found.' });
       }

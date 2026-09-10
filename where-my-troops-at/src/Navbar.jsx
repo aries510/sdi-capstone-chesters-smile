@@ -31,7 +31,9 @@ function Navbar() {
     <nav className="navbar">
       <div className="title">
         <img src={logo} alt="Space Force Logo" className="navbar-logo" />
-        <span>Where My Troops At</span>
+        <div className="wmta-brand-title">
+          WHERE MY TROOPS AT
+        </div>
       </div>
 
       {/* {currentPage && (
