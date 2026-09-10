@@ -13,7 +13,16 @@ function fetchCatch(message){
 }
 //server routes
 const serverUrl = 'localhost:8080';
-    // personnel link | replace with personnel_id after table is updated
+
+    /**
+     * PERSONNEL LINK
+     * Hardcoded to personnel id 1 for demo
+     * 
+     * Production Solution:
+     * 1. POST /login needs personnel_id added to its response
+     *  - currently exists on users, just isn't returned
+     * 2. Some sort of AuthContext wrapper for persistent access
+    */
     const personnelId = 1;
 
     const personnelUrl = `http://${serverUrl}/personnel/${personnelId}`;
@@ -79,6 +88,8 @@ function GenUser() {
             .then((data) => setPerson(data))
             .catch(fetchCatch('Could not load live personnel data, using demo:'));
     }, []);
+
+
     //Fetch Qualifications
     useEffect(() => {
         fetch(qualificationsUrl)
