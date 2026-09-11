@@ -9,12 +9,14 @@ router.get('/', (req, res) => {
   const { member } = req.query;
 
   const query = knex('personnel_certifications')
+    .select('personnel.id as personId')
     .select('personnel.rank')
     .select(
       knex.raw("personnel.first_name || ' ' || personnel.last_name as member"),
     )
     .select(
       knex.raw(`json_agg(json_build_object(
+        'certId', certifications.id,
         'certification', certifications.name,
         'date_earned', personnel_certifications.date_earned,
         'expiry_date', personnel_certifications.expiry_date,
@@ -57,12 +59,14 @@ router.get('/:personId', (req, res) => {
   }
 
   knex('personnel_certifications')
+    .select('personnel.id as personId')
     .select('personnel.rank')
     .select(
       knex.raw("personnel.first_name || ' ' || personnel.last_name as member"),
     )
     .select(
       knex.raw(`json_agg(json_build_object(
+        'certId', certifications.id,
         'certification', certifications.name,
         'date_earned', personnel_certifications.date_earned,
         'expiry_date', personnel_certifications.expiry_date,
@@ -86,7 +90,14 @@ router.get('/:personId', (req, res) => {
     .then((data) =>
       res
         .status(200)
-        .json(data[0] || { rank: null, member: null, certifications: [] }),
+        .json(
+          data[0] || {
+            personId: null,
+            rank: null,
+            member: null,
+            certifications: [],
+          },
+        ),
     )
     .catch((error) => res.status(500).json({ error: error.message }));
 });
