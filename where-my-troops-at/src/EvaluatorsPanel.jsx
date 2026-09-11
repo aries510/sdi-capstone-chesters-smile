@@ -125,13 +125,13 @@ export default function EvaluatorsPanel({ evaluators, standardUsers, trainees, o
 
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             <div style={{ display: 'flex', gap: '10px' }}>
-                                <input type="text" placeholder="Rank (e.g. Sgt)" value={rank} onChange={(e) => setRank(e.target.value)} required style={{ flex: 1, padding: '8px' }} />
-                                <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required style={{ flex: 2, padding: '8px' }} />
-                                <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required style={{ flex: 2, padding: '8px' }} />
+                                <input type="text" placeholder="Rank" value={rank} onChange={(e) => setRank(e.target.value)} required style={{ flex: 1, minWidth: 0, padding: '8px', boxSizing: 'border-box' }} />
+                                <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required style={{ flex: 2, minWidth: 0, padding: '8px', boxSizing: 'border-box' }} />
+                                <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required style={{ flex: 2, minWidth: 0, padding: '8px', boxSizing: 'border-box' }} />
                             </div>
 
-                            <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required style={{ padding: '8px' }} />
-                            <input type="password" placeholder="Temporary Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ padding: '8px' }} />
+                            <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+                            <input type="password" placeholder="Temporary Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
 
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
                                 <button type="button" onClick={() => setIsFormOpen(false)} style={{ padding: '6px 12px', cursor: 'pointer', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-color)' }}>

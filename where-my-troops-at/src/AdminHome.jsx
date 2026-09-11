@@ -4,7 +4,6 @@ import EvaluatorsPanel from './EvaluatorsPanel';
 import CertQualRenewalPanel from './CertQualRenewalPanel';
 import CertificationCatalog from './CertificationCatalog';
 import TraineeModal from './TraineeModal';
-import logo from './bg-images/spaceforcelogo.png';
 import Navbar from './Navbar';
 
 const API_BASE = 'http://127.0.0.1:8080';
@@ -17,15 +16,9 @@ function AdminHome() {
     const [weaponSystems, setWeaponSystems] = useState([]);
     const [crewRoles, setCrewRoles] = useState([]);
     const [certifications, setCertifications] = useState([]);
-    const [darkMode, setDarkMode] = useState(false);
 
-    const [selectedDetails, setSelectedDetails] = useState(null); // Evaluators detail modal
-    const [selectedTrainee, setSelectedTrainee] = useState(null); // Trainee qualification modal
-
-    const toggleDarkMode = () => {
-        setDarkMode(!darkMode);
-        document.body.classList.toggle('dark-theme', !darkMode);
-    };
+    const [selectedDetails, setSelectedDetails] = useState(null);
+    const [selectedTrainee, setSelectedTrainee] = useState(null);
 
     const fetchQuals = () => {
         fetch(`${API_BASE}/quals`)
@@ -95,70 +88,34 @@ function AdminHome() {
                 <div className="top-row">
                     <div className="eval-trainee-list">
                         <h3>Evaluators and Trainees</h3>
-                        <p
-                            style={{
-                                fontSize: '0.8rem',
-                                color: '#6b7280',
-                                margin: '0 0 10px 0',
-                            }}
-                        >
+                        <p className="eval-trainee-subtitle">
                             Click name to view details
                         </p>
 
-                        <div
-                            style={{
-                                maxHeight: '250px',
-                                overflowY: 'auto',
-                                paddingRight: '8px',
-                            }}
-                        >
-                            <div style={{ marginBottom: '1rem' }}>
-                                <h4 style={{ margin: '0.5rem 0', color: '#2563eb' }}>
+                        <div className="eval-trainee-scroll">
+                            <div className="personnel-group">
+                                <h4 className="group-title title-evaluator">
                                     Evaluators
                                 </h4>
                                 {evaluators.length === 0 ? (
-                                    <p style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                                    <p className="no-records-msg">
                                         No evaluators found.
                                     </p>
                                 ) : (
-                                    <ul style={{ listStyle: 'none', paddingLeft: 0, margin: 0 }}>
+                                    <ul className="personnel-list">
                                         {evaluators.map((ev) => (
                                             <li
                                                 key={ev.id}
+                                                className="personnel-item"
                                                 onClick={() =>
                                                     setSelectedDetails({
                                                         type: 'Evaluator Account',
                                                         ...ev,
                                                     })
                                                 }
-                                                style={{
-                                                    padding: '6px 8px',
-                                                    display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    alignItems: 'center',
-                                                    cursor: 'pointer',
-                                                    borderRadius: '4px',
-                                                    transition: 'background 0.2s',
-                                                }}
-                                                onMouseEnter={(e) =>
-                                                (e.currentTarget.style.backgroundColor =
-                                                    'rgba(0,0,0,0.05)')
-                                                }
-                                                onMouseLeave={(e) =>
-                                                (e.currentTarget.style.backgroundColor =
-                                                    'transparent')
-                                                }
                                             >
                                                 <span>{ev.username}</span>
-                                                <span
-                                                    style={{
-                                                        fontSize: '0.75rem',
-                                                        backgroundColor: '#dbeafe',
-                                                        color: '#1e40af',
-                                                        padding: '2px 8px',
-                                                        borderRadius: '12px',
-                                                    }}
-                                                >
+                                                <span className="badge badge-evaluator">
                                                     Evaluator
                                                 </span>
                                             </li>
@@ -167,68 +124,32 @@ function AdminHome() {
                                 )}
                             </div>
 
-                            <div>
-                                <h4 style={{ margin: '0.5rem 0', color: '#059669' }}>
+                            <div className="personnel-group">
+                                <h4 className="group-title title-trainee">
                                     Trainees
                                 </h4>
                                 {trainees.length === 0 ? (
-                                    <p style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                                    <p className="no-records-msg">
                                         No trainees found.
                                     </p>
                                 ) : (
-                                    <ul style={{ listStyle: 'none', paddingLeft: 0, margin: 0 }}>
+                                    <ul className="personnel-list">
                                         {trainees.map((t) => (
                                             <li
                                                 key={t.id}
+                                                className="personnel-item"
                                                 onClick={() => setSelectedTrainee(t)}
-                                                style={{
-                                                    padding: '6px 8px',
-                                                    display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    alignItems: 'center',
-                                                    cursor: 'pointer',
-                                                    borderRadius: '4px',
-                                                    transition: 'background 0.2s',
-                                                }}
-                                                onMouseEnter={(e) =>
-                                                (e.currentTarget.style.backgroundColor =
-                                                    'rgba(0,0,0,0.05)')
-                                                }
-                                                onMouseLeave={(e) =>
-                                                (e.currentTarget.style.backgroundColor =
-                                                    'transparent')
-                                                }
                                             >
                                                 <span>
                                                     {t.rank} {t.first_name} {t.last_name}
                                                 </span>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        gap: '8px',
-                                                        alignItems: 'center',
-                                                    }}
-                                                >
-                                                    <span
-                                                        style={{
-                                                            fontSize: '0.75rem',
-                                                            backgroundColor: '#d1fae5',
-                                                            color: '#065f46',
-                                                            padding: '2px 8px',
-                                                            borderRadius: '12px',
-                                                        }}
-                                                    >
+                                                <div className="trainee-item-actions">
+                                                    <span className="badge badge-trainee">
                                                         Trainee
                                                     </span>
                                                     <button
+                                                        className="btn-delete-trainee"
                                                         onClick={(e) => handleDeleteTrainee(t.id, e)}
-                                                        style={{
-                                                            background: 'none',
-                                                            border: 'none',
-                                                            color: '#dc2626',
-                                                            cursor: 'pointer',
-                                                            fontSize: '0.8rem',
-                                                        }}
                                                     >
                                                         Delete
                                                     </button>
@@ -323,93 +244,27 @@ function AdminHome() {
 
                 {/* Evaluator generic details modal */}
                 {selectedDetails && (
-                    <div
-                        style={{
-                            position: 'fixed',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                            backdropFilter: 'blur(5px)',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            zIndex: 1000,
-                        }}
-                    >
-                        <div
-                            style={{
-                                backgroundColor: 'var(--panel-bg)',
-                                backdropFilter: 'blur(10px)',
-                                border: '1px solid var(--border-color)',
-                                padding: '25px',
-                                borderRadius: '8px',
-                                width: '400px',
-                                maxWidth: '90%',
-                                boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-                                color: 'var(--text-color)',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    borderBottom: '1px solid var(--border-color)',
-                                    paddingBottom: '10px',
-                                    marginBottom: '15px',
-                                }}
-                            >
-                                <h3 style={{ margin: 0, fontWeight: 600 }}>
-                                    {selectedDetails.type} Details
-                                </h3>
+                    <div className="modal-overlay blur-bg">
+                        <div className="details-modal">
+                            <div className="details-modal-header">
+                                <h3>{selectedDetails.type} Details</h3>
                                 <button
+                                    className="close-icon-btn"
                                     onClick={() => setSelectedDetails(null)}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        fontSize: '1.2rem',
-                                        cursor: 'pointer',
-                                        color: 'var(--text-color)',
-                                    }}
                                 >
                                     &times;
                                 </button>
                             </div>
 
-                            <ul
-                                style={{
-                                    listStyle: 'none',
-                                    padding: 0,
-                                    margin: '0 0 20px 0',
-                                    maxHeight: '300px',
-                                    overflowY: 'auto',
-                                }}
-                            >
+                            <ul className="details-list">
                                 {Object.entries(selectedDetails)
                                     .filter(([key]) => key !== 'type' && key !== 'pw_hash')
                                     .map(([key, value]) => (
-                                        <li
-                                            key={key}
-                                            style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                padding: '8px 0',
-                                                borderBottom: '1px solid var(--border-color)',
-                                                fontSize: '0.9rem',
-                                            }}
-                                        >
-                                            <strong
-                                                style={{
-                                                    textTransform: 'capitalize',
-                                                    color: 'var(--text-color)',
-                                                    opacity: 0.8,
-                                                }}
-                                            >
+                                        <li key={key} className="details-item">
+                                            <strong className="details-label">
                                                 {key.replace(/_/g, ' ')}:
                                             </strong>
-                                            <span style={{ textAlign: 'right', fontWeight: 500 }}>
+                                            <span className="details-value">
                                                 {typeof value === 'boolean'
                                                     ? value
                                                         ? 'True'
@@ -420,18 +275,10 @@ function AdminHome() {
                                     ))}
                             </ul>
 
-                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <div className="details-modal-actions">
                                 <button
+                                    className="btn-close"
                                     onClick={() => setSelectedDetails(null)}
-                                    style={{
-                                        backgroundColor: '#215b93',
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '8px 16px',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontWeight: 500,
-                                    }}
                                 >
                                     Close
                                 </button>

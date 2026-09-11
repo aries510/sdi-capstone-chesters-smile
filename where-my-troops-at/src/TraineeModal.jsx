@@ -27,6 +27,8 @@ function TraineeModal({
     const [currentCerts, setCurrentCerts] = useState([])
     const [loadingCurrent, setLoadingCurrent] = useState(true)
 
+    const [roleCertRequirements, setRoleCertRequirements] = useState([])
+    const [loadingRoleCerts, setLoadingRoleCerts] = useState(false)
 
     const [editingQualKey, setEditingQualKey] = useState(null)
     const [editQualDate, setEditQualDate] = useState('')
@@ -84,6 +86,27 @@ function TraineeModal({
     useEffect(() => {
         fetchCurrentData()
     }, [safeTrainee.id])
+
+
+    useEffect(() => {
+        if (activeTab !== 'crewcert' || !selectedRole) {
+            setRoleCertRequirements([])
+            return
+        }
+
+        setLoadingRoleCerts(true)
+        fetch(`${API_BASE}/crewcerts?role=${encodeURIComponent(selectedRole)}`)
+            .then(res => res.json())
+            .then(data => {
+                const record = Array.isArray(data) ? data[0] : data
+                setRoleCertRequirements(record?.certifications || [])
+            })
+            .catch(err => {
+                console.error(err)
+                setRoleCertRequirements([])
+            })
+            .finally(() => setLoadingRoleCerts(false))
+    }, [selectedRole, activeTab])
 
     const handleResponse = async (res) => {
         const contentType = res.headers.get("content-type")
@@ -154,26 +177,6 @@ function TraineeModal({
             refreshAll()
         } catch (err) {
             alert('Failed to assign personnel certification:\n' + err.message)
-        }
-    }
-
-    const handleAddCrewCert = async (e) => {
-        e.preventDefault()
-        if (!selectedRole || !selectedCert) return alert('Select Crew Role and Certification.')
-
-        try {
-            const res = await fetch(`${API_BASE}/crewcerts`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    crewRole: selectedRole,
-                    certification: selectedCert
-                })
-            })
-            await handleResponse(res)
-            refreshAll()
-        } catch (err) {
-            alert('Failed to link crew certification:\n' + err.message)
         }
     }
 
@@ -382,14 +385,16 @@ function TraineeModal({
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
                     {['system', 'perscert', 'crewcert'].map(tab => (
                         <button key={tab} type="button" onClick={() => setActiveTab(tab)} style={{ padding: '6px 12px', background: activeTab === tab ? '#215b93' : 'transparent', color: '#fff', border: '1px solid #334155', borderRadius: '4px', cursor: 'pointer' }}>
-                            {tab === 'system' ? 'Weapon System' : tab === 'perscert' ? 'Personnel Cert' : 'Crew Role Cert'}
+                            {tab === 'system' ? 'Weapon System' : tab === 'perscert' ? 'Personnel Cert' : 'Crew Role Requirements'}
                         </button>
                     ))}
                 </div>
 
                 {(activeTab === 'system' || activeTab === 'crewcert') && (
                     <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px' }}>Target Crew Role:</label>
+                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px' }}>
+                            {activeTab === 'crewcert' ? 'Crew Role:' : 'Target Crew Role:'}
+                        </label>
                         <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} style={{ width: '100%', padding: '8px', background: '#0f172a', color: '#fff', border: '1px solid #334155', borderRadius: '4px' }}>
                             <option value="">-- Select Crew Role --</option>
                             {safeRoles.map((role, i) => <option key={i} value={getItemName(role)}>{getItemName(role)}</option>)}
@@ -439,20 +444,47 @@ function TraineeModal({
                 )}
 
                 {activeTab === 'crewcert' && (
-                    <form onSubmit={handleAddCrewCert}>
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px' }}>Certification:</label>
-                            <select value={selectedCert} onChange={(e) => setSelectedCert(e.target.value)} style={{ width: '100%', padding: '8px', background: '#0f172a', color: '#fff', border: '1px solid #334155', borderRadius: '4px' }}>
-                                <option value="">-- Select Certification --</option>
-                                {safeCerts.map((cert, i) => <option key={i} value={getItemName(cert)}>{getItemName(cert)}</option>)}
-                            </select>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                            <button type="submit" style={{ padding: '8px 16px', background: '#215b93', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                                Link Role Cert
-                            </button>
-                        </div>
-                    </form>
+                    <div>
+                        {!selectedRole ? (
+                            <p style={{ fontSize: '0.85rem', opacity: 0.7 }}>
+                                Select a crew role above to see its required certifications.
+                            </p>
+                        ) : loadingRoleCerts ? (
+                            <p style={{ fontSize: '0.85rem', opacity: 0.7 }}>Loading requirements...</p>
+                        ) : roleCertRequirements.length === 0 ? (
+                            <p style={{ fontSize: '0.85rem', opacity: 0.7 }}>
+                                No certifications are required for {selectedRole}.
+                            </p>
+                        ) : (
+                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                {roleCertRequirements.map((c) => {
+                                    const held = currentCerts.some(
+                                        cc => cc.certification.toLowerCase() === c.certification.toLowerCase() && cc.is_current
+                                    )
+                                    return (
+                                        <li
+                                            key={c.certId}
+                                            style={{
+                                                fontSize: '0.85rem',
+                                                padding: '8px 10px',
+                                                marginBottom: '6px',
+                                                borderRadius: '4px',
+                                                backgroundColor: '#0f172a',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <span>{c.certification}</span>
+                                            <span style={{ color: held ? '#22c55e' : '#ef4444', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                                {held ? 'HELD' : 'MISSING'}
+                                            </span>
+                                        </li>
+                                    )
+                                })}
+                            </ul>
+                        )}
+                    </div>
                 )}
             </div>
         </div>

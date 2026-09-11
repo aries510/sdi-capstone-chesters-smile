@@ -29,6 +29,8 @@ router.post('/', async (req, res) => {
       is_admin: user.is_admin,
       is_evaluator: user.is_evaluator,
       is_planner: user.is_planner,
+      role: user.role,
+      personnel_id: user.personnel_id,
     });
   } catch (error) {
     return res.status(500).json({ error: error.message });
