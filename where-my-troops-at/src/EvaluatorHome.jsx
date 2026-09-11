@@ -85,12 +85,17 @@ function EvaluatorHome() {
     const filteredTrainees = trainees.filter(t => {
         const term = searchQuery.toLowerCase()
         const fullName = getTraineeName(t).toLowerCase()
-        const matchesSearch = fullName.includes(term) || t.rank?.toLowerCase().includes(term)
+        const quals = getQualsForTrainee(t.id)
+        const certs = getCertsForTrainee(t)
+
+        const matchesName = fullName.includes(term) || t.rank?.toLowerCase().includes(term)
+        const matchesSystem = quals.some(q => (q.system || '').toLowerCase().includes(term))
+        const matchesCertName = certs.some(c => (c.certification || '').toLowerCase().includes(term))
+        const matchesSearch = term === '' || matchesName || matchesSystem || matchesCertName
 
         const matchesUnit = selectedUnit === 'All' || t.unit === selectedUnit
         const matchesStatus = selectedStatus === 'All' || t.status === selectedStatus
 
-        const quals = getQualsForTrainee(t.id)
         const matchesCert = selectedCert === 'Any' || quals.some(q => String(q.systemId) === String(selectedCert))
 
         return matchesSearch && matchesUnit && matchesStatus && matchesCert
@@ -135,7 +140,7 @@ function EvaluatorHome() {
                         <input
                             type="text"
                             className="search-bar"
-                            placeholder="Name, AFSC, unit, or certification"
+                            placeholder="Name, AFSC, Weapons System, or Certification"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -198,7 +203,7 @@ function EvaluatorHome() {
                                     return (
                                         <li key={t.id}>
                                             <span>
-                                                {t.rank} {t.first_name} {t.last_name}
+                                                <strong>{t.rank} {t.first_name} {t.last_name}</strong>
                                                 {' | '}
                                                 {quals.length > 0
                                                     ? quals.map(q => q.system).join(', ')
