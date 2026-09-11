@@ -138,6 +138,26 @@ function MPC() {
                     location: mission.location,
                     purpose: mission.description,
                     personnel: mission.personnel,
+                    oic: mission.personnel,
+
+                    status: mission.status,
+                    readiness: mission.readiness,
+                    stage: mission.stage,
+                    issue: mission.issue,
+
+                    requiredPersonnel: mission.required_personnel,
+                    requiredRoles: mission.required_roles,
+
+                    approvedBy: mission.approved_by,
+                    approvedAt: mission.approved_at,
+
+                    conop: {
+                        situation: mission.situation || "",
+                        missionStatement: mission.mission_statement || "",
+                        execution: mission.execution || "",
+                        sustainment: mission.sustainment || "",
+                        commandSignal: mission.command_signal || "",
+                    },
                 }));
 
                 setMissions(mappedMissions);
@@ -193,7 +213,7 @@ function MPC() {
         }
     }
 
-    function handlePersonnelSubmit() {
+    async function handlePersonnelSubmit() {
         if (!selectedMission) {
             return;
         }
@@ -370,33 +390,64 @@ function MPC() {
         setSelectedMission(null);
     }
 
-    function handleConopSubmit(event) {
+    async function handleConopSubmit(event) {
         event.preventDefault();
 
         if (!selectedMission) {
             return;
         }
 
-        const updatedMissions = missions.map((mission) => {
-            if (mission.id === selectedMission.id) {
-                return {
-                    ...mission,
-                    conop: conop,
-                    stage: 3,
-                };
+        try {
+            const response = await fetch(
+                `http://localhost:8080/msnplans/${selectedMission.id}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        updates: {
+                            situation: conop.situation,
+                            mission_statement: conop.missionStatement,
+                            execution: conop.execution,
+                            sustainment: conop.sustainment,
+                            command_signal: conop.commandSignal,
+                            stage: 3,
+                        },
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Failed to save CONOP:", errorData);
+                return;
             }
 
-            return mission;
-        });
+            const updatedMissions = missions.map((mission) => {
+                if (mission.id === selectedMission.id) {
+                    return {
+                        ...mission,
+                        conop: conop,
+                        stage: 3,
+                    };
+                }
 
-        setMissions(updatedMissions);
+                return mission;
+            });
 
-        setSelectedMission({
-            ...selectedMission,
-            conop: conop,
-            stage: 3,
-        });
-        setViewStage(3);
+            setMissions(updatedMissions);
+
+            setSelectedMission({
+                ...selectedMission,
+                conop: conop,
+                stage: 3,
+            });
+
+            setViewStage(3);
+        } catch (error) {
+            console.error("Error saving CONOP:", error);
+        }
     }
     async function handleSubmit(event) {
         event.preventDefault();
@@ -447,6 +498,26 @@ function MPC() {
                 location: mission.location,
                 purpose: mission.description,
                 personnel: mission.personnel,
+                oic: mission.personnel,
+
+                status: mission.status,
+                readiness: mission.readiness,
+                stage: mission.stage,
+                issue: mission.issue,
+
+                requiredPersonnel: mission.required_personnel,
+                requiredRoles: mission.required_roles,
+
+                approvedBy: mission.approved_by,
+                approvedAt: mission.approved_at,
+
+                conop: {
+                    situation: mission.situation || "",
+                    missionStatement: mission.mission_statement || "",
+                    execution: mission.execution || "",
+                    sustainment: mission.sustainment || "",
+                    commandSignal: mission.command_signal || "",
+                },
             }));
 
             setMissions(mappedMissions);
@@ -459,22 +530,38 @@ function MPC() {
             );
 
             if (createdMission) {
+                const patchResponse = await fetch(
+                    `http://localhost:8080/msnplans/${createdMission.id}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            updates: {
+                                required_personnel: Number(newMission.requiredPersonnel),
+                                required_roles: newMission.requiredRoles,
+                                stage: 2,
+                            },
+                        }),
+                    }
+                );
+
+                if (!patchResponse.ok) {
+                    const errorData = await patchResponse.json();
+                    console.error(
+                        "Failed to update mission requirements:",
+                        errorData
+                    );
+                    return;
+                }
+
                 const missionForPlanning = {
                     ...createdMission,
                     oic: newMission.oic,
                     requiredPersonnel: Number(newMission.requiredPersonnel),
                     requiredRoles: newMission.requiredRoles,
-                    status: "In Planning",
                     stage: 2,
-                    readiness: 0,
-                    issue: null,
-                    conop: {
-                        situation: "",
-                        missionStatement: "",
-                        execution: "",
-                        sustainment: "",
-                        commandSignal: "",
-                    },
                 };
 
                 setSelectedMission(missionForPlanning);
@@ -510,13 +597,15 @@ function MPC() {
 
         setShowMissionForm(false);
         setSelectedMission(currentMission);
-        setViewStage(currentMission.stage);
-        if (currentMission.stage === 6) {
+        if (currentMission.status === "Ready") {
+            setViewStage(6);
             setMissionViewSection("mission");
+        } else {
+            setViewStage(currentMission.stage || 1);
         }
 
         setAssignedPersonnel(
-            currentMission.personnel
+            Array.isArray(currentMission.personnel)
                 ? currentMission.personnel.map((person) => person.id)
                 : []
         );

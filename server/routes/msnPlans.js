@@ -12,12 +12,25 @@ router.get('/', (request, response) => {
       'msn_plans.msn_name',
       'msn_plans.msn_type',
       knex.raw("to_char(msn_plans.start_date, 'YYYY-MM-DD') AS start_date"),
-      knex.raw("to_char(msn_plans.end_date, 'YYYY-MM-DD')AS end_date"),
+      knex.raw("to_char(msn_plans.end_date, 'YYYY-MM-DD') AS end_date"),
       'msn_plans.location',
       knex.raw(
         "CONCAT(personnel.rank, ' ', personnel.last_name, ', ', personnel.first_name) AS personnel",
       ),
       'msn_plans.description',
+      'msn_plans.status',
+      'msn_plans.readiness',
+      'msn_plans.stage',
+      'msn_plans.issue',
+      'msn_plans.required_personnel',
+      'msn_plans.required_roles',
+      'msn_plans.approved_by',
+      'msn_plans.approved_at',
+      'msn_plans.situation',
+      'msn_plans.mission_statement',
+      'msn_plans.execution',
+      'msn_plans.sustainment',
+      'msn_plans.command_signal',
     )
     .then((plans) => response.json(plans));
 });
@@ -99,8 +112,8 @@ router.patch('/:id', (request, response) => {
     .where({ rank: personnelRank, last_name: lastName })
     .first()
     .then(([member]) => {
-      if (!memeber) {
-        return response.status(404).json({ error: 'Personnel not found.' });
+      if (!member) {
+        return response.status(404).json({ error: 'Personnel not found' });
       }
       return knex('msn_plans')
         .where({ personnel_id: member.id })
@@ -110,11 +123,11 @@ router.patch('/:id', (request, response) => {
       if (updated === 0) {
         return response.status(404).json({ error: 'Mission plan not found' });
       }
-      response.status(500).json({ message: 'Mission plan updated.' });
+      response.status(200).json({ message: 'Mission plan updated' });
     })
     .catch((error) => {
       console.log('Error occurred:', error);
-      response.status(500).json({ error: 'Update failed.' });
+      response.status(500).json({ error: 'Update failed' });
     });
 });
 
