@@ -68,12 +68,10 @@ function EvaluatorHome() {
 
     const getTraineeName = (t) => `${t.first_name || ''} ${t.last_name || ''}`.trim()
 
-
     const getQualsForTrainee = (personnelId) => {
         const record = qualifications.find(q => q.personId === personnelId)
         return record?.qualifications || []
     }
-
 
     const getCertsForTrainee = (trainee) => {
         const name = getTraineeName(trainee).toLowerCase()
@@ -83,10 +81,8 @@ function EvaluatorHome() {
         return record?.certifications || []
     }
 
-
     const uniqueUnits = ['All', ...new Set(trainees.map(t => t.unit).filter(Boolean))]
     const uniqueStatuses = ['All', ...new Set(trainees.map(t => t.status).filter(Boolean))]
-
 
     const filteredTrainees = trainees.filter(t => {
         const term = searchQuery.toLowerCase()
@@ -131,11 +127,11 @@ function EvaluatorHome() {
     return (
         <>
             <Navbar />
-            <div className="evaluator-container" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+            <div className="evaluator-container">
                 {/* Search and Filters Section */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px', maxWidth: '600px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: 'var(--text-color)' }}>
+                <div className="search-filter-section">
+                    <div className="search-bar-container">
+                        <span className="search-label">
                             SEARCH PERSONNEL
                         </span>
                         <input
@@ -144,49 +140,36 @@ function EvaluatorHome() {
                             placeholder="Name, MOS, unit, or certification"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ flex: 1, padding: '8px 12px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--panel-bg)', color: 'var(--text-color)' }}
                         />
                     </div>
 
-                    <div className="filters-bar" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem' }}>
-                        <span style={{ fontWeight: 'bold' }}>FILTERS</span>
-                        <div className="filter-row" style={{ display: 'flex', gap: '12px' }}>
+                    <div className="filters-bar">
+                        <span>FILTERS</span>
+                        <div className="filter-row">
                             <label>
                                 Unit:{' '}
-                                <select
-                                    value={selectedUnit}
-                                    onChange={(e) => setSelectedUnit(e.target.value)}
-                                    style={{ background: 'var(--panel-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px', padding: '2px 4px' }}
-                                >
+                                <select value={selectedUnit} onChange={(e) => setSelectedUnit(e.target.value)}>
                                     {uniqueUnits.map(unit => (
-                                        <option key={unit} value={unit} style={{ color: '#000' }}>{unit}</option>
+                                        <option key={unit} value={unit}>{unit}</option>
                                     ))}
                                 </select>
                             </label>
 
                             <label>
                                 Status:{' '}
-                                <select
-                                    value={selectedStatus}
-                                    onChange={(e) => setSelectedStatus(e.target.value)}
-                                    style={{ background: 'var(--panel-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px', padding: '2px 4px' }}
-                                >
+                                <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
                                     {uniqueStatuses.map(status => (
-                                        <option key={status} value={status} style={{ color: '#000' }}>{status}</option>
+                                        <option key={status} value={status}>{status}</option>
                                     ))}
                                 </select>
                             </label>
 
                             <label>
                                 Certification:{' '}
-                                <select
-                                    value={selectedCert}
-                                    onChange={(e) => setSelectedCert(e.target.value)}
-                                    style={{ background: 'var(--panel-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '3px', padding: '2px 4px' }}
-                                >
-                                    <option value="Any" style={{ color: '#000' }}>Any</option>
+                                <select value={selectedCert} onChange={(e) => setSelectedCert(e.target.value)}>
+                                    <option value="Any">Any</option>
                                     {weaponSystems.map(sys => (
-                                        <option key={sys.id} value={sys.id} style={{ color: '#000' }}>{sys.name}</option>
+                                        <option key={sys.id} value={sys.id}>{sys.name}</option>
                                     ))}
                                 </select>
                             </label>
@@ -195,7 +178,7 @@ function EvaluatorHome() {
                 </div>
 
                 {/* Side-by-Side Main Layout: Trainees Panel & Actions */}
-                <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+                <div className="evaluator-top-row">
                     <div className="trainees-panel">
                         <div className="trainees-header">
                             <h3>Trainees</h3>
@@ -209,7 +192,7 @@ function EvaluatorHome() {
 
                         <ul className="trainees-list">
                             {filteredTrainees.length === 0 ? (
-                                <li style={{ fontSize: '0.85rem', opacity: 0.7, padding: '12px 4px' }}>No trainees found.</li>
+                                <li className="no-trainees-msg">No trainees found.</li>
                             ) : (
                                 filteredTrainees.map(t => {
                                     const quals = getQualsForTrainee(t.id)
@@ -258,85 +241,57 @@ function EvaluatorHome() {
 
                 {/* Add New Trainee Form Modal */}
                 {showAddModal && (
-                    <div style={{
-                        position: 'fixed',
-                        top: 0, left: 0, right: 0, bottom: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                        backdropFilter: 'blur(5px)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 1000
-                    }}>
-                        <div style={{
-                            backgroundColor: 'var(--panel-bg, #1e293b)',
-                            border: '1px solid var(--border-color, #334155)',
-                            padding: '25px',
-                            borderRadius: '8px',
-                            width: '400px',
-                            maxWidth: '90%',
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-                            color: 'var(--text-color, #f8fafc)'
-                        }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '15px' }}>
-                                <h3 style={{ margin: 0, fontWeight: 600 }}>Add New Trainee</h3>
-                                <button
-                                    onClick={() => setShowAddModal(false)}
-                                    style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-color)' }}
-                                >
+                    <div className="modal-overlay blur-bg">
+                        <div className="add-trainee-modal">
+                            <div className="add-modal-header">
+                                <h3>Add New Trainee</h3>
+                                <button className="close-icon-btn" onClick={() => setShowAddModal(false)}>
                                     &times;
                                 </button>
                             </div>
 
-                            <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem' }}>
+                            <form className="add-trainee-form" onSubmit={handleAddSubmit}>
+                                <label className="form-label">
                                     Rank:
                                     <input
+                                        className="form-input"
                                         type="text"
-                                        placeholder="e.g. Sgt, Capt, Spc"
+                                        placeholder="e.g. TSgt, Capt, Spc"
                                         value={newTrainee.rank}
                                         onChange={(e) => setNewTrainee({ ...newTrainee, rank: e.target.value })}
-                                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--panel-bg)', color: 'var(--text-color)' }}
                                         required
                                     />
                                 </label>
 
-                                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem' }}>
+                                <label className="form-label">
                                     First Name:
                                     <input
+                                        className="form-input"
                                         type="text"
                                         placeholder="First Name"
                                         value={newTrainee.first_name}
                                         onChange={(e) => setNewTrainee({ ...newTrainee, first_name: e.target.value })}
-                                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--panel-bg)', color: 'var(--text-color)' }}
                                         required
                                     />
                                 </label>
 
-                                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem' }}>
+                                <label className="form-label">
                                     Last Name:
                                     <input
+                                        className="form-input"
                                         type="text"
                                         placeholder="Last Name"
                                         value={newTrainee.last_name}
                                         onChange={(e) => setNewTrainee({ ...newTrainee, last_name: e.target.value })}
-                                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--panel-bg)', color: 'var(--text-color)' }}
                                         required
                                     />
                                 </label>
 
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '15px' }}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowAddModal(false)}
-                                        style={{ backgroundColor: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-color)', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}
-                                    >
+                                <div className="form-actions">
+                                    <button type="button" className="btn-cancel" onClick={() => setShowAddModal(false)}>
                                         Cancel
                                     </button>
-                                    <button
-                                        type="submit"
-                                        style={{ backgroundColor: '#215b93', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
-                                    >
+                                    <button type="submit" className="btn-submit">
                                         Add Trainee
                                     </button>
                                 </div>

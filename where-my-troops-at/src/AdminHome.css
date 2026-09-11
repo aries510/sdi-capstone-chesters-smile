@@ -58,7 +58,7 @@ body {
 .admin-header span {
     color: #ffffff;
     font-size: 2.5rem;
-    font-family: Verdana, Geneva, Tahoma, sans-serif
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 .admin-title {
@@ -95,21 +95,115 @@ body {
 }
 
 .eval-trainee-list h3 {
-    margin: 0 0 12px 0;
+    margin: 0 0 4px 0;
     font-weight: 500;
     color: var(--text-color);
 }
 
+.eval-trainee-subtitle {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin: 0 0 10px 0;
+}
+
+.eval-trainee-scroll {
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.personnel-group {
+    margin-bottom: 1rem;
+}
+
+.group-title {
+    margin: 0.5rem 0;
+    font-weight: 600;
+}
+
+.title-evaluator {
+    color: #2563eb;
+}
+
+.title-trainee {
+    color: #059669;
+}
+
+.no-records-msg {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.personnel-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.personnel-item {
+    padding: 6px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.personnel-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark-theme .personnel-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.badge-evaluator {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-trainee {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.trainee-item-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-delete-trainee {
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0;
+}
+
+.btn-delete-trainee:hover {
+    text-decoration: underline;
+}
+
 /* Custom Scrollbar Styles for the Inner List */
-.eval-trainee-list ::-webkit-scrollbar {
+.eval-trainee-scroll::-webkit-scrollbar {
     width: 6px;
 }
 
-.eval-trainee-list ::-webkit-scrollbar-track {
+.eval-trainee-scroll::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.eval-trainee-list ::-webkit-scrollbar-thumb {
+.eval-trainee-scroll::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: 4px;
 }
@@ -205,4 +299,98 @@ body {
     text-align: left;
     color: var(--text-color);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Modals --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-overlay.blur-bg {
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+}
+
+.details-modal {
+    background-color: var(--panel-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    padding: 25px;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    color: var(--text-color);
+}
+
+.details-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.details-modal-header h3 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.close-icon-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+.details-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.details-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.details-label {
+    text-transform: capitalize;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+.details-value {
+    text-align: right;
+    font-weight: 500;
+}
+
+.details-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-close {
+    background-color: #215b93;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
 }
