@@ -135,7 +135,7 @@ function EvaluatorHome() {
                         <input
                             type="text"
                             className="search-bar"
-                            placeholder="Name, MOS, unit, or certification"
+                            placeholder="Name, AFSC, unit, or certification"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -184,7 +184,7 @@ function EvaluatorHome() {
                         </div>
 
                         <div className="trainees-list-header">
-                            <span>• name | Quals | Certs</span>
+                            <span>Name | Quals | Certs</span>
                             <span>Add/edit/remove</span>
                         </div>
 
