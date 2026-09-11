@@ -17,8 +17,8 @@ function AdminHome() {
     const [crewRoles, setCrewRoles] = useState([]);
     const [certifications, setCertifications] = useState([]);
 
-    const [selectedDetails, setSelectedDetails] = useState(null); // Evaluators detail modal
-    const [selectedTrainee, setSelectedTrainee] = useState(null); // Trainee qualification modal
+    const [selectedDetails, setSelectedDetails] = useState(null);
+    const [selectedTrainee, setSelectedTrainee] = useState(null);
 
     const fetchQuals = () => {
         fetch(`${API_BASE}/quals`)

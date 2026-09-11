@@ -152,12 +152,12 @@ body {
     overflow: hidden;
 }
 
-/* Ensure <option> tags are readable regardless of OS dark mode overriding */
+
 .filter-row select option {
     color: #000;
 }
 
-/* --- Top Row: Trainees Panel + Action Buttons --- */
+
 .evaluator-top-row {
     display: flex;
     gap: 24px;
@@ -165,7 +165,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* Trainees panel */
+
 .trainees-panel {
     flex: 1;
     background-color: var(--list-bg);

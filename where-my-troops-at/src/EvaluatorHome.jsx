@@ -15,12 +15,10 @@ function EvaluatorHome() {
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedTrainee, setSelectedTrainee] = useState(null)
 
-    // Filter States
     const [selectedUnit, setSelectedUnit] = useState('All')
     const [selectedStatus, setSelectedStatus] = useState('All')
     const [selectedCert, setSelectedCert] = useState('Any')
 
-    // Add Trainee Modal State
     const [showAddModal, setShowAddModal] = useState(false)
     const [newTrainee, setNewTrainee] = useState({ first_name: '', last_name: '', rank: '' })
 
