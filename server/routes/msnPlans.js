@@ -50,19 +50,19 @@ router.get('/', (request, response) => {
         ) AS roles
       `),
       'msn_plans.description',
-      'msn_plans.status',
-      'msn_plans.readiness',
-      'msn_plans.stage',
-      'msn_plans.issue',
-      'msn_plans.required_personnel',
-      'msn_plans.required_roles',
-      'msn_plans.approved_by',
-      'msn_plans.approved_at',
-      'msn_plans.situation',
-      'msn_plans.mission_statement',
-      'msn_plans.execution',
-      'msn_plans.sustainment',
-      'msn_plans.command_signal',
+      // 'msn_plans.status',
+      // 'msn_plans.readiness',
+      // 'msn_plans.stage',
+      // 'msn_plans.issue',
+      // 'msn_plans.required_personnel',
+      // 'msn_plans.required_roles',
+      // 'msn_plans.approved_by',
+      // 'msn_plans.approved_at',
+      // 'msn_plans.situation',
+      // 'msn_plans.mission_statement',
+      // 'msn_plans.execution',
+      // 'msn_plans.sustainment',
+      // 'msn_plans.command_signal',
     );
 
   if (msnName) {
@@ -147,17 +147,9 @@ router.patch('/:plansId', (request, response) => {
   const { plansId } = request.params;
   const { updates } = request.body;
 
-  knex('personnel')
-    .where({ rank: personnelRank, last_name: lastName })
-    .first()
-    .then(([member]) => {
-      if (!member) {
-        return response.status(404).json({ error: 'Personnel not found' });
-      }
-      return knex('msn_plans')
-        .where({ personnel_id: member.id })
-        .update(updates);
-    })
+  knex('msn_plans')
+    .where({ id: plansId })
+    .update(updates)
     .then((updated) => {
       if (updated === 0) {
         return response.status(404).json({ error: 'Mission plan not found' });
@@ -248,16 +240,15 @@ router.post('/:plansId/roles', (request, response) => {
         .then(({ assigned }) => {
           if (Number(assigned) >= mission.num_personnel_req) {
             return response.status(400).json({
-              error: 'Mission already has the required number of roles assigned.',
+              error:
+                'Mission already has the required number of roles assigned.',
             });
           }
 
           return knex('msn_roles')
             .insert({ msn_id: plansId, crew_role_id: crewRoleId })
             .then(() =>
-              response
-                .status(201)
-                .json({ message: 'Role added to mission.' }),
+              response.status(201).json({ message: 'Role added to mission.' }),
             );
         });
     })
