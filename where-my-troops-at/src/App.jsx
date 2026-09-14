@@ -8,10 +8,12 @@ import CreatePersonnel from './Admin/CreatePersonnel';
 // import ProtectedRoute from './components/ProtectedRoute';
 import GenUser from './genUser/genUser.jsx';
 import MPC from './planning/MPC';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
     <div className="main">
+      <Navbar />
       <Routes>
         <Route path="/" element={<LoginPage />}></Route>
 
@@ -47,7 +49,7 @@ function App() {
       </Routes>
 
       <footer>
-        <a className="support-footer" href="https://github.com/aries510/sdi-capstone-chesters-smile" alt="Github Link">Support the Project</a>
+        <a target="_blank" rel="nofollow noreferrer noopener" className="support-footer" href="https://github.com/aries510/sdi-capstone-chesters-smile" alt="Github Link">Support the Project</a>
       </footer>
     </div>
   );

@@ -39,7 +39,7 @@ function CertQualRenewalPanel() {
 
     return (
         <div className="panel">
-            <h3>Upcoming Cert Renewals & Quals</h3>
+            <h3 style={{ marginTop: '0px' }}>Upcoming Cert Renewals & Quals</h3>
             {renewals.length === 0 ? (
                 <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: '10px' }}>
                     No certifications expiring in the next 30 days.

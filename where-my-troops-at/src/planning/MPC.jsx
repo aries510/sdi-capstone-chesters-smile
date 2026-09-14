@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import './MPC.css';
-import Navbar from "../components/Navbar";
 
 const stages = [
     'Mission',
@@ -686,10 +685,7 @@ function MPC() {
     }
 
     return (
-        <>
-            <Navbar />
-
-            <main className="mpc-page">
+        <main className="mpc-page">
                 <header className="mpc-header">
                     <div>
                         <h1>Planning</h1>
@@ -1716,7 +1712,6 @@ function MPC() {
                     </div>
                 </section>
             </main>
-        </>
     );
 }
 
