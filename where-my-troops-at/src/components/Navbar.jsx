@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import './Navbar.css';
 import logo from '../bg-images/WMTA.png';
@@ -23,6 +23,8 @@ const logoff = () => {
 export default function Navbar() {
   const [darkMode, setDarkMode] = useState(true);
   const { pathname } = useLocation();
+  const [ menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   const currentPage = pages.find(
     (page) => page.url.toLowerCase() === pathname.toLowerCase(),
@@ -31,6 +33,18 @@ export default function Navbar() {
   useEffect(() => {
     document.body.classList.toggle('dark-theme', darkMode);
   }, [darkMode]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
 
   if (pathname === '/') { 
@@ -60,16 +74,28 @@ export default function Navbar() {
             {link.label}
           </NavLink>
         ))}
-
+       <div className="menu-wrapper" ref={menuRef}>
         <button
-          onClick={() => setDarkMode((mode) => !mode)}
-          className="navbar-theme-btn"
+            className="hamburger-icon"
+            onClick={() => setMenuOpen((open) => !open)}
         >
-          {darkMode ? 'Light Mode' : 'Dark Mode'}
+            {menuOpen ? '✕' : '☰'}
         </button>
-        <button className="navbar-theme-btn" onClick={() => logoff()}>
-          Logoff
-        </button>
+
+        {menuOpen && (
+            <div className="menu-dropdown">
+                <button
+                    className="navbar-theme-btn"
+                    onClick={() => setDarkMode((mode) => !mode)}
+                >
+                    {darkMode ? 'Light Mode' : 'Dark Mode'}
+                </button>
+                <button className="navbar-theme-btn" onClick={() => logoff()}>
+                    Logoff
+                </button>
+            </div>
+        )}
+        </div>
       </div>
     </nav>
   );
