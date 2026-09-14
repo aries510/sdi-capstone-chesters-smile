@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import TraineeModal from '../components/TraineeModal'
 import './EvaluatorHome.css'
 // Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
@@ -21,6 +22,9 @@ function EvaluatorHome() {
     const [showAddModal, setShowAddModal] = useState(false)
     const [newTrainee, setNewTrainee] = useState({ first_name: '', last_name: '', rank: '' })
 
+    // Mission staffing (read-only summary; editing happens in MPC)
+    const [missions, setMissions] = useState([])
+
     const fetchTrainees = () => {
         fetch(`${API_BASE}/personnel`)
             .then(res => res.json())
@@ -42,10 +46,32 @@ function EvaluatorHome() {
             .catch(console.error)
     }
 
+    const fetchMissions = () => {
+        fetch(`${API_BASE}/msnplans`)
+            .then(res => res.json())
+            .then(data => {
+                const mapped = data.map(m => ({
+                    id: m.id,
+                    name: m.msn_name,
+                    type: m.msn_type,
+                    startDate: m.start_date,
+                    endDate: m.end_date,
+                    location: m.location,
+                    status: m.status,
+                    requiredPersonnel: m.num_personnel_req,
+                    personnel: Array.isArray(m.personnel) ? m.personnel : [],
+                    roles: Array.isArray(m.roles) ? m.roles : [],
+                }))
+                setMissions(mapped)
+            })
+            .catch(console.error)
+    }
+
     useEffect(() => {
         fetchTrainees()
         fetchQualifications()
         fetchPersonnelCerts()
+        fetchMissions()
 
         fetch(`${API_BASE}/weaponsystems`)
             .then(res => res.json())
@@ -128,178 +154,246 @@ function EvaluatorHome() {
 
     return (
         <div className="evaluator-container">
-                {/* Search and Filters Section */}
-                <div className="search-filter-section">
-                    <div className="search-bar-container">
-                        <span className="search-label">
-                            SEARCH PERSONNEL
-                        </span>
-                        <input
-                            type="text"
-                            className="search-bar"
-                            placeholder="Name, AFSC, Weapons System, or Certification"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="filters-bar">
-                        <span>FILTERS</span>
-                        <div className="filter-row">
-                            <label>
-                                Unit:{' '}
-                                <select value={selectedUnit} onChange={(e) => setSelectedUnit(e.target.value)}>
-                                    {uniqueUnits.map(unit => (
-                                        <option key={unit} value={unit}>{unit}</option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <label>
-                                Status:{' '}
-                                <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
-                                    {uniqueStatuses.map(status => (
-                                        <option key={status} value={status}>{status}</option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <label>
-                                Certification:{' '}
-                                <select value={selectedCert} onChange={(e) => setSelectedCert(e.target.value)}>
-                                    <option value="Any">Any</option>
-                                    {weaponSystems.map(sys => (
-                                        <option key={sys.id} value={sys.id}>{sys.name}</option>
-                                    ))}
-                                </select>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Side-by-Side Main Layout: Trainees Panel & Actions */}
-                <div className="evaluator-top-row">
-                    <div className="trainees-panel">
-                        <div className="trainees-header">
-                            <h3>Trainees</h3>
-                            <button className="add-new-btn" onClick={() => setShowAddModal(true)}>Add new</button>
-                        </div>
-
-                        <div className="trainees-list-header">
-                            <span>Name | Quals | Certs</span>
-                            <span>Add/edit/remove</span>
-                        </div>
-
-                        <ul className="trainees-list">
-                            {filteredTrainees.length === 0 ? (
-                                <li className="no-trainees-msg">No trainees found.</li>
-                            ) : (
-                                filteredTrainees.map(t => {
-                                    const quals = getQualsForTrainee(t.id)
-                                    const certs = getCertsForTrainee(t)
-                                    return (
-                                        <li key={t.id}>
-                                            <span>
-                                                <strong>{t.rank} {t.first_name} {t.last_name}</strong>
-                                                {' | '}
-                                                {quals.length > 0
-                                                    ? quals.map(q => q.system).join(', ')
-                                                    : 'No quals'}
-                                                {' | '}
-                                                {certs.length > 0
-                                                    ? certs.map(c => c.certification).join(', ')
-                                                    : 'No certs'}
-                                            </span>
-                                            <button onClick={() => setSelectedTrainee(t)}>Edit</button>
-                                        </li>
-                                    )
-                                })
-                            )}
-                        </ul>
-                    </div>
-
-                    <div className="evaluator-actions">
-                        <div className="upload-button">UPLOAD DOCUMENT</div>
-                        <div className="import-button">+ BULK IMPORT • PDF / CSV</div>
-                    </div>
-                </div>
-
-                {/* Trainee Details / Qualification Modal */}
-                {selectedTrainee && (
-                    <TraineeModal
-                        trainee={selectedTrainee}
-                        weaponSystems={weaponSystems}
-                        crewRoles={crewRoles}
-                        certifications={certifications}
-                        onClose={() => setSelectedTrainee(null)}
-                        onQualAdded={() => {
-                            fetchQualifications()
-                            fetchPersonnelCerts()
-                        }}
+            {/* Search and Filters Section */}
+            <div className="search-filter-section">
+                <div className="search-bar-container">
+                    <span className="search-label">
+                        SEARCH PERSONNEL
+                    </span>
+                    <input
+                        type="text"
+                        className="search-bar"
+                        placeholder="Name, AFSC, Weapons System, or Certification"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                )}
+                </div>
 
-                {/* Add New Trainee Form Modal */}
-                {showAddModal && (
-                    <div className="modal-overlay blur-bg">
-                        <div className="add-trainee-modal">
-                            <div className="add-modal-header">
-                                <h3>Add New Trainee</h3>
-                                <button className="close-icon-btn" onClick={() => setShowAddModal(false)}>
-                                    &times;
-                                </button>
-                            </div>
+                <div className="filters-bar">
+                    <span>FILTERS</span>
+                    <div className="filter-row">
+                        <label>
+                            Unit:{' '}
+                            <select value={selectedUnit} onChange={(e) => setSelectedUnit(e.target.value)}>
+                                {uniqueUnits.map(unit => (
+                                    <option key={unit} value={unit}>{unit}</option>
+                                ))}
+                            </select>
+                        </label>
 
-                            <form className="add-trainee-form" onSubmit={handleAddSubmit}>
-                                <label className="form-label">
-                                    Rank:
-                                    <input
-                                        className="form-input"
-                                        type="text"
-                                        placeholder="e.g. TSgt, Capt, Spc"
-                                        value={newTrainee.rank}
-                                        onChange={(e) => setNewTrainee({ ...newTrainee, rank: e.target.value })}
-                                        required
-                                    />
-                                </label>
+                        <label>
+                            Status:{' '}
+                            <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+                                {uniqueStatuses.map(status => (
+                                    <option key={status} value={status}>{status}</option>
+                                ))}
+                            </select>
+                        </label>
 
-                                <label className="form-label">
-                                    First Name:
-                                    <input
-                                        className="form-input"
-                                        type="text"
-                                        placeholder="First Name"
-                                        value={newTrainee.first_name}
-                                        onChange={(e) => setNewTrainee({ ...newTrainee, first_name: e.target.value })}
-                                        required
-                                    />
-                                </label>
-
-                                <label className="form-label">
-                                    Last Name:
-                                    <input
-                                        className="form-input"
-                                        type="text"
-                                        placeholder="Last Name"
-                                        value={newTrainee.last_name}
-                                        onChange={(e) => setNewTrainee({ ...newTrainee, last_name: e.target.value })}
-                                        required
-                                    />
-                                </label>
-
-                                <div className="form-actions">
-                                    <button type="button" className="btn-cancel" onClick={() => setShowAddModal(false)}>
-                                        Cancel
-                                    </button>
-                                    <button type="submit" className="btn-submit">
-                                        Add Trainee
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                        <label>
+                            Certification:{' '}
+                            <select value={selectedCert} onChange={(e) => setSelectedCert(e.target.value)}>
+                                <option value="Any">Any</option>
+                                {weaponSystems.map(sys => (
+                                    <option key={sys.id} value={sys.id}>{sys.name}</option>
+                                ))}
+                            </select>
+                        </label>
                     </div>
+                </div>
+            </div>
+
+            {/* Side-by-Side Main Layout: Trainees Panel & Actions */}
+            <div className="evaluator-top-row">
+                <div className="trainees-panel">
+                    <div className="trainees-header">
+                        <h3>Trainees</h3>
+                        <button className="add-new-btn" onClick={() => setShowAddModal(true)}>Add new</button>
+                    </div>
+
+                    <div className="trainees-list-header">
+                        <span>Name | Quals | Certs</span>
+                        <span>Add/edit/remove</span>
+                    </div>
+
+                    <ul className="trainees-list">
+                        {filteredTrainees.length === 0 ? (
+                            <li className="no-trainees-msg">No trainees found.</li>
+                        ) : (
+                            filteredTrainees.map(t => {
+                                const quals = getQualsForTrainee(t.id)
+                                const certs = getCertsForTrainee(t)
+                                return (
+                                    <li key={t.id}>
+                                        <span>
+                                            <strong>{t.rank} {t.first_name} {t.last_name}</strong>
+                                            {' | '}
+                                            {quals.length > 0
+                                                ? quals.map(q => q.system).join(', ')
+                                                : 'No quals'}
+                                            {' | '}
+                                            {certs.length > 0
+                                                ? certs.map(c => c.certification).join(', ')
+                                                : 'No certs'}
+                                        </span>
+                                        <button onClick={() => setSelectedTrainee(t)}>Edit</button>
+                                    </li>
+                                )
+                            })
+                        )}
+                    </ul>
+                </div>
+
+                <div className="evaluator-actions">
+                    <div className="upload-button">UPLOAD DOCUMENT</div>
+                    <div className="import-button">+ BULK IMPORT • PDF / CSV</div>
+                </div>
+            </div>
+
+            {/* Mission Staffing Panel: read-only summary of who's assigned where, links to MPC to edit */}
+            <div className="trainees-panel" style={{ marginTop: '24px' }}>
+                <div className="trainees-header">
+                    <h3>Mission Task Organization: Somethin' To Do</h3>
+                    <Link to="/MPC" className="add-new-btn" style={{ textDecoration: 'none' }}>
+                        Open Planning
+                    </Link>
+                </div>
+
+                {missions.length === 0 ? (
+                    <p style={{ fontSize: '0.85rem', opacity: 0.7, padding: '12px 4px' }}>No missions found.</p>
+                ) : (
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        {missions.map(m => {
+                            const assignedCount = m.personnel.length
+                            const openSlots = Math.max((m.requiredPersonnel || 0) - assignedCount, 0)
+
+                            return (
+                                <li
+                                    key={m.id}
+                                    style={{
+                                        borderBottom: '1px solid var(--border-color, #334155)',
+                                        padding: '10px 4px'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                                        <div>
+                                            <strong>{m.name}</strong>
+                                            <span style={{ opacity: 0.7 }}> — {m.location} — {m.startDate} to {m.endDate}</span>
+
+                                            <div style={{ fontSize: '0.85rem', marginTop: '4px' }}>
+                                                Assigned:{' '}
+                                                {assignedCount > 0
+                                                    ? m.personnel.map(p => p.name).join(', ')
+                                                    : 'No one assigned yet'}
+                                            </div>
+
+                                            {m.roles.length > 0 && (
+                                                <div style={{ fontSize: '0.85rem', marginTop: '2px', opacity: 0.85 }}>
+                                                    Roles needed: {m.roles.map(r => `${r.role} (${r.required})`).join(', ')}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                            <div
+                                                style={{
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 'bold',
+                                                    color: openSlots > 0 ? '#f59e0b' : '#22c55e'
+                                                }}
+                                            >
+                                                {openSlots > 0
+                                                    ? `${openSlots} open slot${openSlots === 1 ? '' : 's'}`
+                                                    : 'Fully staffed'}
+                                            </div>
+                                            <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>
+                                                {assignedCount} of {m.requiredPersonnel || 0} assigned
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            )
+                        })}
+                    </ul>
                 )}
             </div>
+
+            {/* Trainee Details / Qualification Modal */}
+            {selectedTrainee && (
+                <TraineeModal
+                    trainee={selectedTrainee}
+                    weaponSystems={weaponSystems}
+                    crewRoles={crewRoles}
+                    certifications={certifications}
+                    onClose={() => setSelectedTrainee(null)}
+                    onQualAdded={() => {
+                        fetchQualifications()
+                        fetchPersonnelCerts()
+                    }}
+                />
+            )}
+
+            {/* Add New Trainee Form Modal */}
+            {showAddModal && (
+                <div className="modal-overlay blur-bg">
+                    <div className="add-trainee-modal">
+                        <div className="add-modal-header">
+                            <h3>Add New Trainee</h3>
+                            <button className="close-icon-btn" onClick={() => setShowAddModal(false)}>
+                                &times;
+                            </button>
+                        </div>
+
+                        <form className="add-trainee-form" onSubmit={handleAddSubmit}>
+                            <label className="form-label">
+                                Rank:
+                                <input
+                                    className="form-input"
+                                    type="text"
+                                    placeholder="e.g. TSgt, Capt, Spc"
+                                    value={newTrainee.rank}
+                                    onChange={(e) => setNewTrainee({ ...newTrainee, rank: e.target.value })}
+                                    required
+                                />
+                            </label>
+
+                            <label className="form-label">
+                                First Name:
+                                <input
+                                    className="form-input"
+                                    type="text"
+                                    placeholder="First Name"
+                                    value={newTrainee.first_name}
+                                    onChange={(e) => setNewTrainee({ ...newTrainee, first_name: e.target.value })}
+                                    required
+                                />
+                            </label>
+
+                            <label className="form-label">
+                                Last Name:
+                                <input
+                                    className="form-input"
+                                    type="text"
+                                    placeholder="Last Name"
+                                    value={newTrainee.last_name}
+                                    onChange={(e) => setNewTrainee({ ...newTrainee, last_name: e.target.value })}
+                                    required
+                                />
+                            </label>
+
+                            <div className="form-actions">
+                                <button type="button" className="btn-cancel" onClick={() => setShowAddModal(false)}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn-submit">
+                                    Add Trainee
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
     )
 }
 
