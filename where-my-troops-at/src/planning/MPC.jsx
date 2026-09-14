@@ -1,132 +1,60 @@
-import { useState, useEffect } from "react";
-import "./MPC.css"
-import Navbar from "../Navbar";
-
-const initialMissions = [
-    {
-        id: 1,
-        name: "Range Support",
-        dates: "03 - 10 SEP 2026",
-        startDate: "2026-09-03",
-        endDate: "2026-09-10",
-        dates: "03 - 10 SEP 2026",
-        location: "Fort Bragg, NC",
-        oic: "CPT Cowardlylion",
-        status: "In Planning",
-        stage: 3,
-        readiness: 78,
-        issue: "2 Personnel Gaps",
-    },
-    {
-        id: 2,
-        name: "Field Exercise",
-        dates: "05 - 07 SEP 2026",
-        startDate: "2026-09-05",
-        endDate: "2026-09-07",
-        dates: "05 - 07 SEP 2026",
-        location: "Training Area",
-        oic: "MAJ Tinman",
-        status: "In Planning",
-        stage: 4,
-        readiness: 92,
-        issue: "1 Qualification Issue",
-    },
-    {
-        id: 3,
-        name: "Convoy Operations",
-        startDate: "2026-09-08",
-        endDate: "2026-09-08",
-        dates: "08 SEP 2026",
-        location: "Fort Bragg, NC",
-        oic: "CPT Scarecrow",
-        status: "Ready",
-        stage: 5,
-        readiness: 100,
-        issue: null,
-    },
-];
+import { useState, useEffect } from 'react';
+import './MPC.css';
+import Navbar from "../components/Navbar";
 
 const stages = [
-    "Mission",
-    "Plan / CONOP",
-    "Personnel",
-    "Readiness",
-    "Approval",
-];
-
-const personnel = [
-    {
-        id: 1,
-        name: "CPT Aragorn",
-        role: "OIC",
-        qualified: true,
-        available: true,
-    },
-    {
-        id: 2,
-        name: "SGT Legolas",
-        role: "Team Leader",
-        qualified: true,
-        available: true,
-    },
-    {
-        id: 3,
-        name: "SPC Gandalf",
-        role: "Medic",
-        qualified: true,
-        available: true,
-    },
+    'Mission',
+    'Plan / CONOP',
+    'Personnel',
+    'Readiness',
+    'Approval',
 ];
 
 function MPC() {
     const [missions, setMissions] = useState([]);
+    const [personnel, setPersonnel] = useState([]);
     const [showMissionForm, setShowMissionForm] = useState(false);
     const [selectedMission, setSelectedMission] = useState(null);
     const [assignedPersonnel, setAssignedPersonnel] = useState([]);
     const [viewStage, setViewStage] = useState(null);
-    const [missionViewSection, setMissionViewSection] = useState("mission");
+    const [missionViewSection, setMissionViewSection] = useState('mission');
     const [showAttentionOnly, setShowAttentionOnly] = useState(false);
     const [showUpcomingOnly, setShowUpcomingOnly] = useState(false);
     const [newMission, setNewMission] = useState({
-        name: "",
-        type: "",
-        startDate: "",
-        endDate: "",
-        location: "",
-        oic: "",
-        purpose: "",
-        requiredPersonnel: "",
-        requiredRoles: "",
+        name: '',
+        type: '',
+        startDate: '',
+        endDate: '',
+        location: '',
+        oic: '',
+        purpose: '',
+        requiredPersonnel: '',
+        requiredRoles: '',
     });
 
     const [conop, setConop] = useState({
-        situation: "",
-        missionStatement: "",
-        execution: "",
-        sustainment: "",
-        commandSignal: "",
+        situation: '',
+        missionStatement: '',
+        execution: '',
+        sustainment: '',
+        commandSignal: '',
     });
 
     useEffect(() => {
         const fetchMsn = async () => {
             try {
-                const response = await fetch(
-                    "http://localhost:8080/msnplans"
-                );
+                const response = await fetch('http://localhost:8080/msnplans');
 
-                console.log("Response status:", response.status);
+                console.log('Response status:', response.status);
 
                 if (!response.ok) {
-                    console.error(
-                        "Failed to fetch mission plans:",
-                        response.status
-                    );
+                    console.error('Failed to fetch mission plans:', response.status);
                     return;
                 }
 
                 const data = await response.json();
 
-                console.log("Backend mission data:", data);
+                console.log('Backend mission data:', data);
 
                 const mappedMissions = data.map((mission) => ({
                     id: mission.id,
@@ -138,7 +66,7 @@ function MPC() {
                     location: mission.location,
                     purpose: mission.description,
                     personnel: mission.personnel,
-                    oic: mission.personnel,
+                    // oic: mission.personnel,
 
                     status: mission.status,
                     readiness: mission.readiness,
@@ -152,21 +80,50 @@ function MPC() {
                     approvedAt: mission.approved_at,
 
                     conop: {
-                        situation: mission.situation || "",
-                        missionStatement: mission.mission_statement || "",
-                        execution: mission.execution || "",
-                        sustainment: mission.sustainment || "",
-                        commandSignal: mission.command_signal || "",
+                        situation: mission.situation || '',
+                        missionStatement: mission.mission_statement || '',
+                        execution: mission.execution || '',
+                        sustainment: mission.sustainment || '',
+                        commandSignal: mission.command_signal || '',
                     },
                 }));
 
                 setMissions(mappedMissions);
             } catch (err) {
-                console.error("Error fetching mission plans:", err);
+                console.error('Error fetching mission plans:', err);
             }
         };
 
         fetchMsn();
+    }, []);
+
+    useEffect(() => {
+        const fetchPersonnel = async () => {
+            try {
+                const response = await fetch('http://localhost:8080/personnel');
+
+                if (!response.ok) {
+                    console.error('Failed to fetch personnel:', response.status);
+                    return;
+                }
+
+                const data = await response.json();
+
+                const mappedPersonnel = data.map((person) => ({
+                    id: person.id,
+                    name: `${person.rank} ${person.first_name} ${person.last_name}`,
+                    role: person.role,
+                    qualified: true,
+                    available: true,
+                }));
+
+                setPersonnel(mappedPersonnel);
+            } catch (err) {
+                console.error('Error fetching personnel:', err);
+            }
+        };
+
+        fetchPersonnel();
     }, []);
 
     function isUpcomingMission(mission) {
@@ -202,14 +159,9 @@ function MPC() {
 
     function handlePersonnelToggle(personId) {
         if (assignedPersonnel.includes(personId)) {
-            setAssignedPersonnel(
-                assignedPersonnel.filter((id) => id !== personId)
-            );
+            setAssignedPersonnel(assignedPersonnel.filter((id) => id !== personId));
         } else {
-            setAssignedPersonnel([
-                ...assignedPersonnel,
-                personId,
-            ]);
+            setAssignedPersonnel([...assignedPersonnel, personId]);
         }
     }
 
@@ -477,7 +429,7 @@ function MPC() {
                     ...mission,
                     status: "Ready",
                     issue: null,
-                    stage: 6,
+                    stage: 5,
                     approvedBy: "Current User",
                     approvedAt: new Date().toLocaleString(),
                 };
@@ -1260,7 +1212,10 @@ function MPC() {
                         {missionViewSection === "personnel" && (
                             <div className="personnel-list">
                                 {selectedMission.personnel?.map((person) => (
-                                    <div className="personnel-row" key={person.id}>
+                                    <div
+                                        className="personnel-row"
+                                        key={person.personId ?? person.id}
+                                    >
                                         <div>
                                             <strong>{person.name}</strong>
                                             <p>{person.role}</p>

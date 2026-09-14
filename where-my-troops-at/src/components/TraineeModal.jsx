@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-
-const API_BASE = 'http://localhost:8080'
+// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
+import { SERVER_URL as API_BASE } from '../utils/api'
 
 
 function TraineeModal({

@@ -1,11 +1,11 @@
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import LoginPage from './Login/LoginPage.jsx';
-import AdminHome from './AdminHome.jsx';
-import EvaluatorHome from './EvaluatorHome.jsx';
+import AdminHome from './Admin/AdminHome.jsx';
+import EvaluatorHome from './Evaluator/EvaluatorHome.jsx';
 import CreateAccount from './Login/CreateAccount';
-import CreatePersonnel from './CreatePersonnel';
-// import ProtectedRoute from './ProtectedRoute';
+import CreatePersonnel from './Admin/CreatePersonnel';
+// import ProtectedRoute from './components/ProtectedRoute';
 import GenUser from './genUser/genUser.jsx';
 import MPC from './planning/MPC';
 
@@ -46,6 +46,10 @@ function App() {
         <Route path="/Admin" element={<AdminHome />}></Route>
         <Route path="/MPC" element={<MPC />}></Route>
       </Routes>
+
+      <footer>
+        <a className="support-footer" href="https://github.com/aries510/sdi-capstone-chesters-smile" alt="Github Link">Support the Project</a>
+      </footer>
     </div>
   );
 }

@@ -3,10 +3,10 @@ import './AdminHome.css';
 import EvaluatorsPanel from './EvaluatorsPanel';
 import CertQualRenewalPanel from './CertQualRenewalPanel';
 import CertificationCatalog from './CertificationCatalog';
-import TraineeModal from './TraineeModal';
-import Navbar from './Navbar';
-
-const API_BASE = 'http://127.0.0.1:8080';
+import TraineeModal from '../components/TraineeModal';
+import Navbar from '../components/Navbar';
+// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
+import { SERVER_URL as API_BASE } from '../utils/api';
 
 function AdminHome() {
     const [evaluators, setEvaluators] = useState([]);

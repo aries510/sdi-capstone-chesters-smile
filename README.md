@@ -74,7 +74,68 @@ erDiagram
 
 ---
 
+## Features:
+<details>
+  <summary>Current Features</summary>
+  <table>
+    <tr>
+      <th>Feature</th>
+    </tr>
+    <tr>
+      <td>Login (auth, role-based redirect)</td>
+    </tr>
+    <tr>
+      <td>GeneralUser dashboard (identity, quals, certs, weapon systems, missions, next steps)</td>
+    </tr>
+    <tr>
+      <td>Shared Navbar (branding, nav links, light/dark toggle)</td>
+    </tr>
+    <tr>
+      <td>Admin Dashboard (evaluators & trainees roster, evaluator management, certification catalog search, upload/bulk import UI)</td>
+    </tr>
+    <tr>
+      <td>Evaluator Dashboard (personnel search/filter, trainee roster with add/edit)</td>
+    </tr>
+    <tr>
+      <td>Trainee add/edit modal</td>
+    </tr>
+    <tr>
+      <td>MPC Planning Dashboard (mission summary cards, active mission plans with readiness tracker)</td>
+    </tr>
+    <tr>
+      <td>New Mission Plan wizard (mission info, CONOP, personnel assignment, readiness, approval)</td>
+    </tr>
+  </table>
+</details>
+
+---
+
+<details>
+  <summary>In-progress</summary>
+  <table>
+    <tr>
+      <th>Task</th>
+      <th>Team member</th>
+    </tr>
+    <tr>
+      <td>Context Wrapper for persistent Light/Dark theme</td>
+      <td>pending</td>
+    </tr>
+    <tr>
+      <td>Crew Certifications modal (role → required certs)</td>
+      <td>Augustine</td>
+    </tr>
+    <tr>
+      <td>Wire GeneralUser to real personnel_id from login</td>
+      <td>Augustine</td>
+    </tr>
+  </table>
+</details>
+
+---
+
 ## API Endpoints
+
 
 Base URL: `http://localhost:8080`
 
@@ -83,6 +144,9 @@ Base URL: `http://localhost:8080`
 | Method | Endpoint | Description       |
 | ------ | -------- | ----------------- |
 | GET    | `/`      | API homepage text |
+
+<details>
+  <summary>View More...</summary>
 
 ### Users — `/users`
 
@@ -188,6 +252,8 @@ Base URL: `http://localhost:8080`
 | POST   | `/crewcerts`                 | Require a certification for a crew role. Body: `{ crewRole, certification }`           |
 | DELETE | `/crewcerts?role=&cert=`     | Remove a required certification from a crew role, by name                              |
 | DELETE | `/crewcerts/:roleId/:certId` | Remove a required certification from a crew role, by id                                |
+
+</details>
 
 ---
 

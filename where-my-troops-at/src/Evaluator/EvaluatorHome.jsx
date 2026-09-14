@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import TraineeModal from './TraineeModal'
-import Navbar from './Navbar'
+import TraineeModal from '../components/TraineeModal'
+import Navbar from '../components/Navbar'
 import './EvaluatorHome.css'
-
-const API_BASE = 'http://127.0.0.1:8080'
+// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
+import { SERVER_URL as API_BASE } from '../utils/api'
 
 function EvaluatorHome() {
     const [trainees, setTrainees] = useState([])

@@ -1,18 +1,17 @@
 import './genUser.css';
 import { useState, useEffect } from 'react';
-import Navbar from '../Navbar';
+import Navbar from '../components/Navbar';
+// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
+import { SERVER_URL, fetchCatch } from '../utils/api';
 
 
 
 
-/** ####################################
- * Variables for production 
-##########################################*/
-function fetchCatch(message){
-    return (error) => console.log(message, error);
-}
+
+{/* // 1. Variables for production ---- */}
+//#######################################################
+
 //server routes
-const serverUrl = 'localhost:8080';
 
     /**
      * PERSONNEL LINK
@@ -25,18 +24,22 @@ const serverUrl = 'localhost:8080';
     */
     const personnelId = 1;
 
-    const personnelUrl = `http://${serverUrl}/personnel/${personnelId}`;
-    const certificationsUrl = `http://${serverUrl}/perscerts/${personnelId}`;
-    const qualificationsUrl =`http://${serverUrl}/quals/${personnelId}`;
+    const personnelUrl = `${SERVER_URL}/personnel/${personnelId}`;
+    const certificationsUrl = `${SERVER_URL}/perscerts/${personnelId}`;
+    const qualificationsUrl =`${SERVER_URL}/quals/${personnelId}`;
 
 
-/** ####################################
- * Functions 
-#########################################*/
+
+
+
+    
+{/* // 2. Functions ---- */}
+//#######################################################
+{/* // 2.1 GenUser ---- */}
 function GenUser() {
 
 
-    /**----------UseStates | Tracked information----------------*/
+    {/* // 2.1.1 UseStates | Tracked information ----*/}
      //--User Info Panel
     const [person, setPerson] = useState({
         rank: '1st Lt',
@@ -76,11 +79,24 @@ function GenUser() {
         }
     ]);
     const [openModal, setOpenModal] = useState(null);
-
+    const [roleCerts, setRoleCerts] = useState([
+        {
+            roleId: 1,
+            crew_role: 'Demo Rold A',
+            certifications: [
+                { certId: 1, certification: 'Cyber Security' },
+                { certId: 2, certification: 'Demo Cert B' }
+            ]
+        }
+    ]);
+    // Used for crew certifications modal | tells us which role is selected so we know what data to display
+    const [selectedRole, setSelectedRole] = useState(null);
     
     
     
-    /**----- Fetches to Gather data ------------- */
+   //#######################################################
+    {/* // 2.1.2 FETCHES/USEEFFECT ---- */}
+    //#######################################################
     //Fetch personal Data
     useEffect(() => {
         fetch(personnelUrl)
@@ -88,8 +104,6 @@ function GenUser() {
             .then((data) => setPerson(data))
             .catch(fetchCatch('Could not load live personnel data, using demo:'));
     }, []);
-
-
     //Fetch Qualifications
     useEffect(() => {
         fetch(qualificationsUrl)
@@ -103,11 +117,24 @@ function GenUser() {
             .then((response) => response.json())
             .then((data) => setCerts(data.certifications))
             .catch(fetchCatch('Could not load certifications data, using demo:'));
-        }, [])
+    }, [])
+    //Fetch Crew Role cert requirements
+    useEffect(() => {
+        const distinctRoles = getDistinctRoles(quals);
+        Promise.all(
+            distinctRoles.map((role) => 
+            fetch(`${SERVER_URL}/crewcerts/${role.roleId}`).then((response) => response.json())
+            )
+        )
+        .then((results) => setRoleCerts(results))
+        .catch(fetchCatch('Could not load role certification requirements, using demo:'));
+    }, [quals]);
         
 
         
-    /**---- Sub Functions ------------------------ */
+    //#######################################################
+    {/* // 2.1.3 Sub Functions ---- */}
+    //#######################################################
     //Used for Weapons Systems quick info in User Info Panel
     function getDistinctSystems(qualsArray) {
         const systemsMap = {};
@@ -130,12 +157,16 @@ function GenUser() {
     }
 
     const distinctSystems = getDistinctSystems(quals);
-    console.log(distinctSystems);
     
     const isReady = distinctSystems.every(system => system.is_current)
         && quals.every(qual => qual.is_current)
         && certs.every(cert => cert.is_current);
 
+    /**Populates modals with data
+     * 
+     * Dependencies:
+     * - distinctSystems (dependent on getDistinctSystems)
+     */
     function getModalContent(type) {
         if (type === 'systems') {
             return {
@@ -170,7 +201,18 @@ function GenUser() {
         return null;
     }
 
-
+    function getDistinctRoles(qualsArray) {
+        const rolesMap = {};
+        qualsArray.forEach((qual) => {
+            if (!rolesMap[qual.roleId]) {
+                rolesMap[qual.roleId] = {
+                    roleId: qual.roleId,
+                    role: qual.role
+                };
+            }
+        });
+        return Object.values(rolesMap);
+    }
 
     //Used for Mission's readiness logic
     function meetsRequirements(mission, certsArray) {
@@ -192,13 +234,18 @@ function GenUser() {
 
 
 
+
+
     const modalContent = openModal && ['systems', 'quals', 'certs'].includes(openModal.type)
         ? getModalContent(openModal.type)
         : null;
 
-    /**##########################
-     * Return
-     #############################*/
+
+
+
+
+
+    {/* // 2.1.4 RETURN ---- */}
     return (
 
         /**-----Dashboard/Home view-=------------------------ */
@@ -243,7 +290,7 @@ function GenUser() {
                             : { type: 'quals', quals }
                         )}
                     >
-                        Crew Quals
+                        Crew Roles
                     </button>
                     <p className="user-cert-ready numX-display">{quals.filter(qual => qual.is_current).length}</p>
                     <p className="user-cert-inprogress numX-display">0</p>
@@ -328,7 +375,7 @@ function GenUser() {
             </div>
             
             
-            {/** MODALS ################################### */}
+            {/* // 2.1.4.4 MODALS ----  */}
             {/**Selected Mission Modal */}
             {openModal?.type === 'mission' && (
                 <div className="mission-modal-backdrop" onClick={() => setOpenModal(null)}>

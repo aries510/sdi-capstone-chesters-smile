@@ -14,6 +14,7 @@ exports.seed = async function (knex) {
       end_date: '2023-01-10',
       location: 'range 1',
       description: 'space effect fires iso centcom',
+      num_personnel_req: 4,
     },
     {
       msn_name: 'deep water',
@@ -22,6 +23,7 @@ exports.seed = async function (knex) {
       end_date: '2026-09-05',
       location: 'range 2',
       description: 'red cyber effects iso southcom',
+      num_personnel_req: 5,
     },
     {
       msn_name: 'ghost air',
@@ -30,6 +32,7 @@ exports.seed = async function (knex) {
       end_date: '2027-02-15',
       location: 'range 3',
       description: 'blue cyber effects iso korpen',
+      num_personnel_req: 6,
     },
   ]);
 };

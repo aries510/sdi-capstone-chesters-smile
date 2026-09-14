@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import './Navbar.css';
-import logo from './bg-images/spaceforcelogo.png';
+import logo from '../bg-images/spaceforcelogo.png';
 
 const links = [
   { to: '/GeneralUser', label: 'My Info' },
