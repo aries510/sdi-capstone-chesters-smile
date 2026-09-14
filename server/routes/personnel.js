@@ -3,7 +3,7 @@ const app = express();
 const knex = require('knex')(require('../knexfile.js')['development']);
 const router = express.Router();
 
-const roles = ['trainee', 'evaluator'];
+const roles = ['trainee', 'evaluator', 'planner'];
 
 app.use(express.json());
 

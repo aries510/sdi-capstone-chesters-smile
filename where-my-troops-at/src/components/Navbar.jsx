@@ -16,7 +16,11 @@ const pages = [
   { header: 'MPC', url: '/mpc' },
 ];
 
-function Navbar() {
+const logoff = () => {
+  localStorage.removeItem('user');
+};
+
+export default function Navbar() {
   const [darkMode, setDarkMode] = useState(true);
   const { pathname } = useLocation();
 
@@ -32,9 +36,7 @@ function Navbar() {
     <nav className="navbar">
       <div className="title">
         <img src={logo} alt="Space Force Logo" className="navbar-logo" />
-        <div className="wmta-brand-title">
-          WHERE MY TROOPS AT
-        </div>
+        <div className="wmta-brand-title">WHERE MY TROOPS AT</div>
       </div>
 
       {/* {currentPage && (
@@ -61,9 +63,10 @@ function Navbar() {
         >
           {darkMode ? 'Light Mode' : 'Dark Mode'}
         </button>
+        <button className="navbar-theme-btn" onClick={() => logoff()}>
+          Logoff
+        </button>
       </div>
     </nav>
   );
 }
-
-export default Navbar;
