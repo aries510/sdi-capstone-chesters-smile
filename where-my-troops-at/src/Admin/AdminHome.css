@@ -84,7 +84,7 @@ body {
 
 .eval-trainee-list {
     flex: 1;
-    background-color: var(--list-bg);
+    background-color: var(--panel-bg);
     backdrop-filter: blur(6px);
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -127,6 +127,10 @@ body {
 
 .title-trainee {
     color: #059669;
+}
+
+.title-planner {
+    color: #b45309;
 }
 
 .no-records-msg {
@@ -175,6 +179,11 @@ body {
     color: #065f46;
 }
 
+.badge-planner {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
 .trainee-item-actions {
     display: flex;
     gap: 8px;
@@ -195,15 +204,18 @@ body {
 }
 
 /* Custom Scrollbar Styles for the Inner List */
-.eval-trainee-scroll::-webkit-scrollbar {
+.eval-trainee-scroll::-webkit-scrollbar,
+.panel-list::-webkit-scrollbar {
     width: 6px;
 }
 
-.eval-trainee-scroll::-webkit-scrollbar-track {
+.eval-trainee-scroll::-webkit-scrollbar-track,
+.panel-list::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.eval-trainee-scroll::-webkit-scrollbar-thumb {
+.eval-trainee-scroll::-webkit-scrollbar-thumb,
+.panel-list::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: 4px;
 }
@@ -239,15 +251,15 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Middle Panels (Evaluators & Upcoming Certs) */
+/* Middle Panels (Evaluators, Accounts, Crew Roles, Upcoming Certs) */
 .admin-panels {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
     margin-bottom: 20px;
 }
 
 .panel {
-    flex: 1;
     background-color: var(--panel-bg);
     backdrop-filter: blur(6px);
     border: 1px solid var(--border-color);
@@ -289,9 +301,18 @@ body {
     margin-bottom: 8px;
 }
 
+.panel-list {
+    list-style: none;
+    padding-left: 0;
+    padding-right: 8px;
+    margin: 0;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
 /* Bottom Catalog Section */
 .catalog-wrapper {
-    background-color: var(--catalog-bg);
+    background-color: var(--panel-bg);
     backdrop-filter: blur(6px);
     border: 1px solid var(--border-color);
     border-radius: 4px;

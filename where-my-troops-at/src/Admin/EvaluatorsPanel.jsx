@@ -1,80 +1,72 @@
 import { useState } from 'react';
-// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
 import { SERVER_URL } from '../utils/api';
 
-export default function EvaluatorsPanel({ evaluators, standardUsers, trainees, onEvaluatorAdded, onEvaluatorDeleted }) {
+export default function EvaluatorsPanel({ evaluators, trainees, onEvaluatorAdded, onEvaluatorRemoved }) {
     const [isFormOpen, setIsFormOpen] = useState(false);
-
-    const [rank, setRank] = useState('');
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [selectedTraineeId, setSelectedTraineeId] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
+    const updateRole = async (personnel, role) => {
+        const res = await fetch(`${SERVER_URL}/personnel/${personnel.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                rank: personnel.rank,
+                first_name: personnel.first_name,
+                last_name: personnel.last_name,
+                role,
+            }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(capitalize(data.error || `Failed to set role to ${role}`));
+        }
+
+        return data;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        if (!rank || !firstName || !lastName || !username || !password) {
-            setError('All fields are required.');
+        if (!selectedTraineeId) {
+            setError('Select a trainee to promote.');
+            return;
+        }
+
+        const trainee = trainees.find(
+            (t) => Number(t.id) === Number(selectedTraineeId),
+        );
+        if (!trainee) {
+            setError('Selected trainee could not be found.');
             return;
         }
 
         setIsLoading(true);
 
         try {
-            const personnelRes = await fetch(`${SERVER_URL}/personnel`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    rank,
-                    last_name: lastName,
-                    first_name: firstName,
-                    role: 'evaluator',
-                }),
-            });
-
-            const personnelData = await personnelRes.json();
-
-            if (!personnelRes.ok) {
-                throw new Error(capitalize(personnelData.error || 'Failed to create personnel record'));
-            }
-
-            const userRes = await fetch(`${SERVER_URL}/users`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: username,
-                    password: password,
-                    is_evaluator: true,
-                    is_admin: false,
-                    is_planner: false,
-                })
-            });
-
-            const userData = await userRes.json();
-
-            if (!userRes.ok) {
-                throw new Error('Failed to create user credentials.');
-            }
-
-            onEvaluatorAdded(userData);
-
-            setRank('');
-            setLastName('');
-            setFirstName('');
-            setUsername('');
-            setPassword('');
+            const updated = await updateRole(trainee, 'evaluator');
+            onEvaluatorAdded(updated);
+            setSelectedTraineeId('');
             setIsFormOpen(false);
-
         } catch (err) {
             setError(err.message);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleRemove = async (evaluator) => {
+        try {
+            const updated = await updateRole(evaluator, 'trainee');
+            onEvaluatorRemoved(updated);
+        } catch (err) {
+            alert(err.message);
         }
     };
 
@@ -85,13 +77,13 @@ export default function EvaluatorsPanel({ evaluators, standardUsers, trainees, o
                 <button className="new-btn" onClick={() => setIsFormOpen(true)}>+ New Evaluator</button>
             </div>
 
-            <ul style={{ listStyle: 'none', paddingLeft: 0, margin: 0 }}>
+            <ul className="panel-list">
                 {evaluators.map(evaluator => (
                     <li key={evaluator.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
-                        <span>{evaluator.username}</span>
+                        <span>{evaluator.rank} {evaluator.first_name} {evaluator.last_name}</span>
                         <button
                             style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}
-                            onClick={() => onEvaluatorDeleted(evaluator.id)}
+                            onClick={() => handleRemove(evaluator)}
                         >
                             Remove
                         </button>
@@ -120,27 +112,32 @@ export default function EvaluatorsPanel({ evaluators, standardUsers, trainees, o
                         color: 'var(--text-color)'
                     }}>
                         <h4 style={{ marginTop: 0, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
-                            Add New Evaluator
+                            Promote Trainee to Evaluator
                         </h4>
 
                         {error && <div style={{ color: '#dc2626', marginBottom: '10px', fontSize: '0.9rem' }}>{error}</div>}
 
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <input type="text" placeholder="Rank" value={rank} onChange={(e) => setRank(e.target.value)} required style={{ flex: 1, minWidth: 0, padding: '8px', boxSizing: 'border-box' }} />
-                                <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required style={{ flex: 2, minWidth: 0, padding: '8px', boxSizing: 'border-box' }} />
-                                <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required style={{ flex: 2, minWidth: 0, padding: '8px', boxSizing: 'border-box' }} />
-                            </div>
-
-                            <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-                            <input type="password" placeholder="Temporary Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
+                            <select
+                                value={selectedTraineeId}
+                                onChange={(e) => setSelectedTraineeId(e.target.value)}
+                                required
+                                style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                            >
+                                <option value="" disabled>Select a trainee</option>
+                                {trainees.map((t) => (
+                                    <option key={t.id} value={t.id}>
+                                        {t.rank} {t.first_name} {t.last_name}
+                                    </option>
+                                ))}
+                            </select>
 
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
                                 <button type="button" onClick={() => setIsFormOpen(false)} style={{ padding: '6px 12px', cursor: 'pointer', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-color)' }}>
                                     Cancel
                                 </button>
                                 <button type="submit" disabled={isLoading} style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: '#215b93', color: 'white', border: 'none', borderRadius: '4px' }}>
-                                    {isLoading ? 'Creating...' : 'Create Record'}
+                                    {isLoading ? 'Promoting...' : 'Promote'}
                                 </button>
                             </div>
                         </form>
