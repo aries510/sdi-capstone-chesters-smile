@@ -38,17 +38,22 @@ function CertQualRenewalPanel() {
     }, []);
 
     return (
-        <div className="panel">
-            <h3 style={{ marginTop: '0px' }}>Upcoming Cert Renewals & Quals</h3>
+        <div className="trainees-panel">
+            <div className="trainees-header">
+                <h3>Upcoming Cert Renewals & Quals</h3>
+            </div>
             {renewals.length === 0 ? (
-                <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: '10px' }}>
+                <p className="no-trainees-msg">
                     No certifications expiring in the next 30 days.
                 </p>
             ) : (
-                <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
+                <ul className="trainees-list">
                     {renewals.map(r => (
-                        <li key={r.id} style={{ marginBottom: '6px' }}>
-                            <strong>{r.memberName}</strong> — {r.certName} (Expires: {r.expiryDate})
+                        <li key={r.id}>
+                            <span>
+                                <strong>{r.memberName}</strong> — {r.certName}
+                            </span>
+                            <span className="tag-empty">Expires: {r.expiryDate}</span>
                         </li>
                     ))}
                 </ul>
