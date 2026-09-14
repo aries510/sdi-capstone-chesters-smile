@@ -8,10 +8,12 @@ import CreatePersonnel from './Admin/CreatePersonnel';
 // import ProtectedRoute from './components/ProtectedRoute';
 import GenUser from './genUser/genUser.jsx';
 import MPC from './planning/MPC';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
     <div className="main">
+      <Navbar />
       <Routes>
         <Route path="/" element={<LoginPage />}></Route>
 

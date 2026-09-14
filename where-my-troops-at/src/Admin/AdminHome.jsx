@@ -4,7 +4,6 @@ import EvaluatorsPanel from './EvaluatorsPanel';
 import CertQualRenewalPanel from './CertQualRenewalPanel';
 import CertificationCatalog from './CertificationCatalog';
 import TraineeModal from '../components/TraineeModal';
-import Navbar from '../components/Navbar';
 // Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
 import { SERVER_URL as API_BASE } from '../utils/api';
 
@@ -82,9 +81,7 @@ function AdminHome() {
     };
 
     return (
-        <>
-            <Navbar />
-            <div className="admin-container">
+        <div className="admin-container">
                 <div className="top-row">
                     <div className="eval-trainee-list">
                         <h3>Evaluators and Trainees</h3>
@@ -287,7 +284,6 @@ function AdminHome() {
                     </div>
                 )}
             </div>
-        </>
     );
 }
 
