@@ -1,0 +1,33 @@
+/* Shared, app-wide styling. Every page/component reads from these
+   instead of redeclaring its own copy - keeps colors and font
+   consistent by construction instead of by convention. */
+
+:root {
+    --bg-color: #ffffff;
+    --panel-bg: rgba(255, 255, 255, 0.55);
+    --panel-bg-hover: rgba(206, 204, 204, 0.55);
+    --text-color: #222222;
+    --text-color-hover: #215b93;
+    --border-color: #dcdcdc;
+    --list-bg: rgba(253, 245, 230, 0.55);
+    --catalog-bg: rgba(234, 241, 248, 0.55);
+    --button-text: #ffffff;
+    --scrollbar-thumb: #cbd5e1;
+}
+
+.dark-theme {
+    --bg-color: #001026;
+    --panel-bg: rgba(30, 30, 30, 0.55);
+    --panel-bg-hover: rgba(97, 97, 97, 0.55);
+    --text-color: #c0c0c0;
+    --border-color: #333333;
+    --list-bg: rgba(17, 30, 56, 0.55);
+    --catalog-bg: rgba(22, 34, 44, 0.55);
+    --button-text: #ffffff;
+    --scrollbar-thumb: #334155;
+}
+
+body {
+    font-family: sans-serif;
+    margin: 0;
+}

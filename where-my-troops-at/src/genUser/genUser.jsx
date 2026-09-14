@@ -8,7 +8,6 @@ import { SERVER_URL, fetchCatch } from '../utils/api';
 
 
 {/* // 1. Variables for production ---- */}
-//#######################################################
 
 //server routes
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -80,6 +79,9 @@ function GenUser() {
     ]);
     // Used for crew certifications modal | tells us which role is selected so we know what data to display
     const [selectedRole, setSelectedRole] = useState(null);
+    // Full crew role catalog (name + description), used to show role info
+    // alongside its required certs in the Crew Certifications modal
+    const [crewRoles, setCrewRoles] = useState([]);
     
     
     
@@ -116,10 +118,17 @@ function GenUser() {
         .then((results) => setRoleCerts(results))
         .catch(fetchCatch('Could not load role certification requirements, using demo:'));
     }, [quals]);
+    //Fetch full crew role catalog (name + description), independent of this person's own quals
+    useEffect(() => {
+        fetch(`${SERVER_URL}/crewroles`)
+            .then((response) => response.json())
+            .then((data) => setCrewRoles(data))
+            .catch(fetchCatch('Could not load crew role catalog, using demo:'));
+    }, []);
         
 
         
-    {/* ////// 2.1.3 Sub Functions ---- */}
+    {/* //// 2.1.3 Sub Functions ---- */}
     //Used for Weapons Systems quick info in User Info Panel
     function getDistinctSystems(qualsArray) {
         const systemsMap = {};
@@ -249,7 +258,7 @@ function GenUser() {
 
         /**-----Dashboard/Home view-=------------------------ */
         <div className="genUser-dashboard">
-            {/**------------User Info Panel---------------- */}
+            {/* ////// 2.1.4.1 User Info Panel ---- */}
             <div className="user-info user-panel">
                 <div className="header">
                     <h3>User Info</h3>
@@ -308,7 +317,7 @@ function GenUser() {
             </div>
             
 
-            {/**-----------User Mission Panel---------------- */}
+            {/* ////// 2.1.4.2 User Mission Panel ---- */}
             <div className="user-mission-container user-panel">
                 <div className="header">
                     <h3>Current Missions</h3>
@@ -341,7 +350,7 @@ function GenUser() {
             </div>
 
 
-            {/**-----------User Tasks Panel---------------- */} 
+            {/* ////// 2.1.4.3 User Tasks Panel ---- */} 
             <div className="user-tasks user-panel">
                 <h3>Next Steps</h3>
                 <div className="user-tasks-content">
@@ -420,6 +429,7 @@ function GenUser() {
                         
                         <div className="crew-cert-body">
                             <div className="crew-cert-role-list">
+                            <p className="crew-cert-pane-header">Crew Role</p>
                             {roleCerts.map((role) => {
                                 const isSelected =
                                 selectedRole?.roleId === role.roleId;
@@ -438,6 +448,18 @@ function GenUser() {
                             </div>
 
                             <div className="crew-cert-requirements">
+                            <p className="crew-cert-pane-header">Certifications</p>
+                            {selectedRole && (() => {
+                                const roleInfo = crewRoles.find(
+                                    (r) => r.id === selectedRole.roleId
+                                );
+                                return (
+                                    <div className="crew-cert-role-info">
+                                        <h5>{selectedRole.crew_role}</h5>
+                                        <p>{roleInfo?.description || 'No description available.'}</p>
+                                    </div>
+                                );
+                            })()}
                             {selectedRole &&
                                 selectedRole.certifications.map((cert) => {
                                 const held = certs.some(

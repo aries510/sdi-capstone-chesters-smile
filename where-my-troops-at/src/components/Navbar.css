@@ -1,14 +1,5 @@
-:root {
-  --panel-bg: rgba(255, 255, 255, 0.55);
-  --text-color: #222222;
-  --border-color: #dcdcdc;
-}
-
-.dark-theme {
-  --panel-bg: rgba(30, 30, 30, 0.55);
-  --text-color: #c0c0c0;
-  --border-color: #333333;
-}
+/* --panel-bg / --text-color / --border-color now come from the
+   shared index.css :root - removed the duplicate declaration here */
 
 .wmta-brand-title {
   font-family: Impact, "Arial Narrow", sans-serif;
@@ -100,6 +91,10 @@
   cursor: pointer;
   font-size: 0.9rem;
 }
+.navbar-theme-btn:hover {
+  background-color: var(--panel-bg-hover);
+  color: var(--text-color-hover);
+}
 
 @media (max-width: 768px) {
   .navbar-page-name {
@@ -130,4 +125,17 @@
 
 .title span {
   padding-left: 10px;
+}
+
+.nav-utils {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: space-between;
+}
+
+.logout {
+  text-decoration: none;
+  position: relative;
+  margin-bottom: 5px;
 }

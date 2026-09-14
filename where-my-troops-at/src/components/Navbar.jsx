@@ -32,8 +32,12 @@ export default function Navbar() {
     document.body.classList.toggle('dark-theme', darkMode);
   }, [darkMode]);
 
-  return (
-    <nav className="navbar">
+
+  if (pathname === '/') { 
+    return null;
+  } else {
+    return (
+      <nav className="navbar">
       <div className="title">
         <img src={logo} alt="Space Force Logo" className="navbar-logo" />
         <div className="wmta-brand-title">WHERE MY TROOPS AT</div>
@@ -41,18 +45,18 @@ export default function Navbar() {
 
       {/* {currentPage && (
         <span className="navbar-page-name">{currentPage.header}</span>
-      )} */}
+        )} */}
 
       <div className="navbar-links">
         {links.map((link) => (
           <NavLink
-            key={link.to}
-            to={link.to}
-            end
-            className={({ isActive }) =>
-              `navbar-link ${isActive ? 'active' : ''}`
-            }
-          >
+          key={link.to}
+          to={link.to}
+          end
+          className={({ isActive }) =>
+            `navbar-link ${isActive ? 'active' : ''}`
+        }
+        >
             {link.label}
           </NavLink>
         ))}
@@ -69,4 +73,4 @@ export default function Navbar() {
       </div>
     </nav>
   );
-}
+}}
