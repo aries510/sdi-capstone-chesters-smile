@@ -12,6 +12,7 @@ const stages = [
 
 function MPC() {
   const [missions, setMissions] = useState([]);
+  const [personnel, setPersonnel] = useState([]);
   const [showMissionForm, setShowMissionForm] = useState(false);
   const [selectedMission, setSelectedMission] = useState(null);
   const [assignedPersonnel, setAssignedPersonnel] = useState([]);
@@ -94,6 +95,35 @@ function MPC() {
     };
 
     fetchMsn();
+  }, []);
+
+  useEffect(() => {
+    const fetchPersonnel = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/personnel');
+
+        if (!response.ok) {
+          console.error('Failed to fetch personnel:', response.status);
+          return;
+        }
+
+        const data = await response.json();
+
+        const mappedPersonnel = data.map((person) => ({
+          id: person.id,
+          name: `${person.rank} ${person.first_name} ${person.last_name}`,
+          role: person.role,
+          qualified: true,
+          available: true,
+        }));
+
+        setPersonnel(mappedPersonnel);
+      } catch (err) {
+        console.error('Error fetching personnel:', err);
+      }
+    };
+
+    fetchPersonnel();
   }, []);
 
   function isUpcomingMission(mission) {
