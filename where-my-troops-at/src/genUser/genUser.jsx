@@ -1,6 +1,5 @@
 import './genUser.css';
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
 // Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
 import { SERVER_URL, fetchCatch } from '../utils/api';
 
@@ -249,8 +248,6 @@ function GenUser() {
     return (
 
         /**-----Dashboard/Home view-=------------------------ */
-        <>
-        <Navbar />
         <div className="genUser-dashboard">
             {/**------------User Info Panel---------------- */}
             <div className="user-info user-panel">
@@ -477,7 +474,6 @@ function GenUser() {
 
 
 
-    </>
     )//Closes return
 }
 

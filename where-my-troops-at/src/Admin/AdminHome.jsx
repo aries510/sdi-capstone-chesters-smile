@@ -8,7 +8,6 @@ import CrewCertificationPanel from './CrewCertificationPanel';
 import CertQualRenewalPanel from './CertQualRenewalPanel';
 import CertificationCatalog from './CertificationCatalog';
 import TraineeModal from '../components/TraineeModal';
-import Navbar from '../components/Navbar';
 // Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
 import { SERVER_URL as API_BASE } from '../utils/api';
 
@@ -159,9 +158,7 @@ function AdminHome() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="admin-container">
+    <div className="admin-container">
         <div className="top-row">
           <div className="eval-trainee-list" style={{ position: 'relative' }}>
             <div
@@ -567,7 +564,6 @@ function AdminHome() {
           </div>
         )}
       </div>
-    </>
   );
 }
 

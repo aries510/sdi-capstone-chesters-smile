@@ -110,7 +110,7 @@ function CertificationCatalog() {
           alignItems: 'center',
         }}
       >
-        <h2>Certification Catalog</h2>
+        <h2 style={{ marginTop: '0px' }}>Certification Catalog</h2>
         <button className="new-btn" onClick={openCreateForm}>
           + New Certification
         </button>

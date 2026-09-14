@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import TraineeModal from '../components/TraineeModal'
-import Navbar from '../components/Navbar'
 import './EvaluatorHome.css'
 // Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
 import { SERVER_URL as API_BASE } from '../utils/api'
@@ -128,9 +127,7 @@ function EvaluatorHome() {
     }
 
     return (
-        <>
-            <Navbar />
-            <div className="evaluator-container">
+        <div className="evaluator-container">
                 {/* Search and Filters Section */}
                 <div className="search-filter-section">
                     <div className="search-bar-container">
@@ -303,7 +300,6 @@ function EvaluatorHome() {
                     </div>
                 )}
             </div>
-        </>
     )
 }
 
