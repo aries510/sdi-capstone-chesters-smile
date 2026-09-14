@@ -73,8 +73,8 @@ export default function EvaluatorsPanel({ evaluators, trainees, onEvaluatorAdded
     return (
         <div className="panel" style={{ position: 'relative' }}>
             <div className="panel-header">
-                <h3>Evaluator Management</h3>
-                <button className="new-btn" onClick={() => setIsFormOpen(true)}>+ New Evaluator</button>
+                <h3>Trainee Management</h3>
+                <button className="new-btn" onClick={() => setIsFormOpen(true)}>Promote New Evaluator</button>
             </div>
 
             <ul className="panel-list">
