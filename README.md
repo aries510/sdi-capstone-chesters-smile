@@ -86,10 +86,13 @@ erDiagram
       <td>Login (auth, role-based redirect)</td>
     </tr>
     <tr>
-      <td>GeneralUser dashboard (identity, quals, certs, weapon systems, missions, next steps)</td>
+      <td>GeneralUser dashboard (identity, quals, certs, weapon systems, missions, next steps), wired to the real logged-in user's personnel_id</td>
     </tr>
     <tr>
-      <td>Shared Navbar (branding, nav links, light/dark toggle)</td>
+      <td>Crew Certifications modal (role list + required certs, with role description, held/missing status per cert)</td>
+    </tr>
+    <tr>
+      <td>Shared Navbar (branding, nav links, light/dark toggle) - mounted once above the router, so the theme choice now persists across page navigation</td>
     </tr>
     <tr>
       <td>Admin Dashboard (evaluators & trainees roster, evaluator management, certification catalog search, upload/bulk import UI)</td>
@@ -106,6 +109,9 @@ erDiagram
     <tr>
       <td>New Mission Plan wizard (mission info, CONOP, personnel assignment, readiness, approval)</td>
     </tr>
+    <tr>
+      <td>Global shared styling (single source for theme colors/variables and font in index.css - removed duplicate/conflicting per-page copies)</td>
+    </tr>
   </table>
 </details>
 
@@ -119,16 +125,6 @@ erDiagram
       <th>Team member</th>
     </tr>
     <tr>
-      <td>Context Wrapper for persistent Light/Dark theme</td>
-      <td>pending</td>
-    </tr>
-    <tr>
-      <td>Crew Certifications modal (role → required certs)</td>
-      <td>Augustine</td>
-    </tr>
-    <tr>
-      <td>Wire GeneralUser to real personnel_id from login</td>
-      <td>Augustine</td>
     </tr>
   </table>
 </details>

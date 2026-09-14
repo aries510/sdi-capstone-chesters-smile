@@ -1,34 +1,22 @@
 :root {
-    --bg-color: #ffffff;
-    --panel-bg: rgba(255, 255, 255, 0.9);
     --secondary-panel-bg: rgba(248, 250, 252, 0.9);
-    --text-color: #222222;
     --muted-text: #5f6670;
-    --border-color: #d4d8dd;
-    --list-bg: rgba(253, 245, 230, 0.9);
-    --catalog-bg: rgba(234, 241, 248, 0.9);
-    --button-text: #ffffff;
-    --scrollbar-thumb: #cbd5e1;
     --input-bg: rgba(255, 255, 255, 0.95);
     --card-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     --secondary-button-bg: rgba(255, 255, 255, 0.85);
 }
 
 .dark-theme {
-    --bg-color: #001026;
-    --panel-bg: rgba(24, 31, 42, 0.92);
     --secondary-panel-bg: rgba(31, 41, 55, 0.92);
-    --text-color: #f1f5f9;
     --muted-text: #c2cad5;
-    --border-color: #475569;
-    --list-bg: rgba(22, 35, 56, 0.92);
-    --catalog-bg: rgba(29, 42, 55, 0.92);
-    --button-text: #ffffff;
-    --scrollbar-thumb: #64748b;
     --input-bg: rgba(15, 23, 42, 0.92);
     --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     --secondary-button-bg: rgba(45, 55, 72, 0.95);
 }
+/* --bg-color / --panel-bg / --text-color / --border-color / --list-bg /
+   --catalog-bg / --button-text / --scrollbar-thumb now come from the
+   shared index.css :root - removed the duplicate (and value-conflicting:
+   0.9 opacity here vs 0.55 everywhere else) declaration that used to be here */
 
 body {
     background-image: url("../bg-images/admin-bg.jpeg");
@@ -52,14 +40,12 @@ body {
     margin: 0 auto;
     padding: 32px 0;
     box-sizing: border-box;
-    font-family: sans-serif;
     color: var(--text-color);
 }
 
 .main>h1 {
     color: #ffffff;
     text-align: center;
-    font-family: sans-serif;
     font-size: 2rem;
     font-weight: 600;
     margin: 0;
@@ -77,7 +63,6 @@ body {
 .mpc-header h1 {
     margin: 0 0 6px 0;
     color: #ffffff;
-    font-family: sans-serif;
     font-size: 2rem;
     font-weight: 500;
 }
@@ -197,7 +182,6 @@ body {
 .mission-section h2 {
     margin: 0 0 15px 0;
     color: #ffffff;
-    font-family: sans-serif;
     font-size: 2rem;
     font-weight: 500;
 }
