@@ -15,13 +15,17 @@
 - Generic modal (`modalContent`/`getModalContent`) covering Weapon Systems and Certifications
 - Next Steps panel, derived from expired certs (`certTasks`)
 - Crew role certification requirements fetch (`roleCerts`, via `/crewcerts/:roleId`, one fetch per distinct role using `Promise.all`)
+- **Crew Certifications modal** — its own dedicated two-pane codeblock (role list left, selected role's required certs right, color-coded held/missing), fully separated from the generic list modal
 - Navbar integrated (branding, nav links, light/dark toggle) — own local toggle removed as redundant
 - Full theming pass to match Admin/Evaluator/MPC's shared variables and MPC's status-tag pattern (`--status-good/warn/bad`, light+dark variants)
+- User Info's FMC/PMC/Expired counts collapsed into a single colored status dot per category button (`getCategoryStatus`) — the old 4-column breakdown grid overflowed once the layout gave Missions the dominant column share
+- Page width-locked and centered to match Admin/Evaluator (`max-width: 1200px`), grid columns rebalanced to `1fr 3fr 1fr` so Missions is the visual focal point, `min-width: 0` fix so all three panels actually shrink/grow with the window instead of just two of them
+- **Real personnel_id wiring** — reads the logged-in user's real `personnel_id` from `localStorage` (already saved there by `LoginPage.jsx`), falls back to `1` if nothing's stored or the account has no linked personnel record
 
 ### In Progress
-- **Crew Certifications modal** — renaming/reworking "Crew Roles" (currently still using the generic `modalContent` path) into its own dedicated codeblock: left side lists roles, selecting one shows that role's required certs on the right, color-coded. Needs: `selectedRole` state (built), the generic-modal cleanup so `'quals'` no longer needs handling there, then the actual two-pane modal JSX + its own styling.
-- **Real personnel_id wiring** — `personnelId` is still hardcoded to `1`. Backend now supports pulling real user/personnel data with logins tied to a key with the user id (confirmed 9/9) — next step is reading that real id from the login response instead of the hardcoded value, which still depends on an AuthContext (or similar) existing to carry it app-wide.
 - **Dark/light persistence across pages** — flagged, not yet solved. Navbar's toggle works on GeneralUser itself, but navigating to another page loses the state (no wrapper/shared context carrying it yet).
+- **PMC still a placeholder `0`** — no assignment-tracking table exists yet (a cert/qual an evaluator assigned but hasn't been completed); tied to whoever builds the Evaluator feature, not GeneralUser's own scope
+- Two of the four original demo accounts' logins (`admin`, `evaluator`, `msn_planner`, `gen_user`) still have `personnel_id: null` in the seed — use `test_user` (real personnel link, no elevated role flags) to test GeneralUser with real data instead
 
 
 ## Purpose
@@ -56,8 +60,8 @@ GeneralUser is where the underlying data actually gets populated and kept curren
 - **Contact info** — how MPC actually reaches someone once assigned; not in `personnel` currently
 - **Qualification currency trend over time** — not urgent, but a "history" view (quals gained/lost/renewed over time) could be a nice differentiator in the final presentation vs. the spreadsheet it's replacing
 
-## Terminology note (not yet applied)
-- Recommended: use real maintenance-readiness codes instead of generic labels for the status badges — **PMC / FMC / NMC** (Partially / Fully / Not Mission Capable) instead of "In-Progress / Ready / Not Started." More domain-authentic. Swap once the status columns are finalized.
+## Terminology note
+- Applied: FMC / PMC / NMC (Fully / Partially / Not Mission Capable) in place of generic Ready/In-Progress/Not-Started labels.
 
 ## Feature ideas for other roles (context, not building these)
 - **Evaluator**: same core data as GeneralUser, plus editing rights over their assigned trainees' quals/certs; bulk import; search/filter across personnel

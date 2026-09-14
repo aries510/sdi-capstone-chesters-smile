@@ -12,17 +12,8 @@ import { SERVER_URL, fetchCatch } from '../utils/api';
 //#######################################################
 
 //server routes
-
-    /**
-     * PERSONNEL LINK
-     * Hardcoded to personnel id 1 for demo
-     * 
-     * Production Solution:
-     * 1. POST /login needs personnel_id added to its response
-     *  - currently exists on users, just isn't returned
-     * 2. Some sort of AuthContext wrapper for persistent access
-    */
-    const personnelId = 1;
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const personnelId = storedUser.personnel_id || 1;
 
     const personnelUrl = `${SERVER_URL}/personnel/${personnelId}`;
     const certificationsUrl = `${SERVER_URL}/perscerts/${personnelId}`;
@@ -33,13 +24,12 @@ import { SERVER_URL, fetchCatch } from '../utils/api';
 
 
     
-{/* // 2. Functions ---- */}
-//#######################################################
+
 {/* // 2.1 GenUser ---- */}
 function GenUser() {
 
 
-    {/* // 2.1.1 UseStates | Tracked information ----*/}
+    {/* //// 2.1.1 UseStates | Tracked information ----*/}
      //--User Info Panel
     const [person, setPerson] = useState({
         rank: '1st Lt',
@@ -94,10 +84,8 @@ function GenUser() {
     
     
     
-   //#######################################################
-    {/* // 2.1.2 FETCHES/USEEFFECT ---- */}
-    //#######################################################
-    //Fetch personal Data
+    {/* //// 2.1.2 FETCHES/USEEFFECT ---- */}
+     //Fetch personal Data
     useEffect(() => {
         fetch(personnelUrl)
             .then((response) => response.json())
@@ -132,9 +120,7 @@ function GenUser() {
         
 
         
-    //#######################################################
-    {/* // 2.1.3 Sub Functions ---- */}
-    //#######################################################
+    {/* ////// 2.1.3 Sub Functions ---- */}
     //Used for Weapons Systems quick info in User Info Panel
     function getDistinctSystems(qualsArray) {
         const systemsMap = {};
@@ -178,16 +164,6 @@ function GenUser() {
                 }))
             };
         }
-        if (type === 'quals') {
-            return {
-                title: 'Crew Quals',
-                items: quals.map((qual) => ({
-                    label: `${qual.role} - ${qual.system}`,
-                    date: qual.qualified_date,
-                    isCurrent: qual.is_current
-                }))
-            };
-        }
         if (type === 'certs') {
             return {
                 title: 'Certifications',
@@ -221,6 +197,30 @@ function GenUser() {
         );
     }
 
+    //Collapses a category's Ready/In-Progress/Expired counts into one
+    //overall color, used for the compact button indicator dots
+    function getCategoryStatus(readyCount, inProgressCount, notStartedCount) {
+        if (notStartedCount > 0) return 'bad';
+        if (inProgressCount > 0) return 'warn';
+        return 'good';
+    }
+
+    const systemsStatus = getCategoryStatus(
+        distinctSystems.filter((s) => s.is_current).length,
+        0,
+        distinctSystems.filter((s) => !s.is_current).length
+    );
+    const rolesStatus = getCategoryStatus(
+        quals.filter((q) => q.is_current).length,
+        0,
+        quals.filter((q) => !q.is_current).length
+    );
+    const certsStatus = getCategoryStatus(
+        certs.filter((c) => c.is_current).length,
+        0,
+        certs.filter((c) => !c.is_current).length
+    );
+
 
 
     //Tasks
@@ -236,7 +236,7 @@ function GenUser() {
 
 
 
-    const modalContent = openModal && ['systems', 'quals', 'certs'].includes(openModal.type)
+    const modalContent = openModal && ['systems', 'certs'].includes(openModal.type)
         ? getModalContent(openModal.type)
         : null;
 
@@ -245,7 +245,7 @@ function GenUser() {
 
 
 
-    {/* // 2.1.4 RETURN ---- */}
+    {/* //// 2.1.4 RETURN ---- */}
     return (
 
         /**-----Dashboard/Home view-=------------------------ */
@@ -263,51 +263,41 @@ function GenUser() {
                 
                 {/**Personal Data Panel */}
                 <div className="certs">
-                    <div></div>{/**Empty cell for spacing */}
-
-                    {/**Table Headers */}
-                    <p className="cert-header">FMC</p>
-                    <p className="cert-header">PMC</p>
-                    <p className="cert-header">Expired</p>
-
-                    {/**Weapon Systems Certified on */}
-                    <button className="btn-toggle certs-btn" onClick={() => setOpenModal(
-                        openModal?.type === 'systems' 
-                            ? null
-                            : { type: 'systems', systems: distinctSystems }
+                    <button
+                        className="btn-toggle certs-btn"
+                        onClick={() => setOpenModal(
+                            openModal?.type === 'systems'
+                                ? null
+                                : { type: 'systems', systems: distinctSystems }
                         )}
                     >
                         Weapon Systems
+                        <span className={`status-dot status-dot-${systemsStatus}`}></span>
                     </button>
-                    <p className="user-cert-ready numX-display">{distinctSystems.filter(system => system.is_current).length}</p>
-                    <p className="user-cert-inprogress numX-display">0</p>
-                    <p className="user-cert-notstarted numX-display">{distinctSystems.filter(system => !system.is_current).length}</p>
 
-                    {/**Qualifications held */}
-                    <button className="btn-toggle certs-btn" onClick={() => setOpenModal(
-                        openModal?.type === 'quals'
-                            ? null
-                            : { type: 'quals', quals }
+                    <button
+                        className="btn-toggle certs-btn"
+                        onClick={() => setOpenModal(
+                            openModal?.type === 'roles'
+                                ? null
+                                : { type: 'roles' }
                         )}
                     >
                         Crew Roles
+                        <span className={`status-dot status-dot-${rolesStatus}`}></span>
                     </button>
-                    <p className="user-cert-ready numX-display">{quals.filter(qual => qual.is_current).length}</p>
-                    <p className="user-cert-inprogress numX-display">0</p>
-                    <p className="user-cert-notstarted numX-display">{quals.filter(qual => !qual.is_current).length}</p>
 
-                    {/**Certifications Held */}
-                    <button className="btn-toggle certs-btn" onClick={() => setOpenModal(
-                        openModal?.type === 'certs'
-                            ? null
-                            : { type: 'certs', certs }
+                    <button
+                        className="btn-toggle certs-btn"
+                        onClick={() => setOpenModal(
+                            openModal?.type === 'certs'
+                                ? null
+                                : { type: 'certs', certs }
                         )}
                     >
                         Certifications
+                        <span className={`status-dot status-dot-${certsStatus}`}></span>
                     </button>
-                    <p className="user-cert-ready numX-display">{certs.filter(cert => cert.is_current).length}</p>
-                    <p className="user-cert-inprogress numX-display">0</p>
-                    <p className="user-cert-notstarted numX-display">{certs.filter(cert => !cert.is_current).length}</p>
                 </div>
                 
                 <div className="contact">
@@ -375,8 +365,8 @@ function GenUser() {
             </div>
             
             
-            {/* // 2.1.4.4 MODALS ----  */}
-            {/**Selected Mission Modal */}
+            {/* ////// 2.1.4.4 MODALS ----  */}
+            {/* //////// 2.1.4.4.1 Selected Mission Modal ---- */}
             {openModal?.type === 'mission' && (
                 <div className="mission-modal-backdrop" onClick={() => setOpenModal(null)}>
                     <div className="mission-modal mission-view-modal" onClick={(event) => event.stopPropagation()}>
@@ -394,7 +384,7 @@ function GenUser() {
                 </div>
             )}
 
-            {/**Certs/Quals/Systems Modal */}
+            {/* //////// 2.1.4.4.2 Certs/Quals/Systems Modal ---- */}
             {modalContent && (
                 <div className="mission-modal-backdrop cert-qual-modal" onClick={() => setOpenModal(null)}>
                     <div className="mission-modal" onClick={(event) => event.stopPropagation()}>
@@ -410,6 +400,71 @@ function GenUser() {
                                 </span>
                             </p>
                         ))}
+                    </div>
+                </div>
+            )}
+
+            {/* //////// 2.1.4.4.3 Crew Certifications Modal ---- */}
+            {openModal?.type === 'roles' && (
+                <div
+                    className="mission-modal-backdrop"
+                    onClick={() => setOpenModal(null)}
+                >
+                    <div
+                    className="mission-modal crew-cert-modal"
+                    onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className="modal-header">
+                            <h2>Crew Certifications</h2>
+                            <button onClick={() => setOpenModal(null)}>
+                            Close
+                            </button>
+                        </div>
+                        
+                        <div className="crew-cert-body">
+                            <div className="crew-cert-role-list">
+                            {roleCerts.map((role) => {
+                                const isSelected =
+                                selectedRole?.roleId === role.roleId;
+                                return (
+                                <p
+                                    key={role.roleId}
+                                    className={isSelected ? 'role-selected' : ''}
+                                    onClick={() =>
+                                    setSelectedRole(isSelected ? null : role)
+                                    }
+                                >
+                                    {role.crew_role}
+                                </p>
+                                );
+                            })}
+                            </div>
+
+                            <div className="crew-cert-requirements">
+                            {selectedRole &&
+                                selectedRole.certifications.map((cert) => {
+                                const held = certs.some(
+                                    (c) =>
+                                    c.certification === cert.certification &&
+                                    c.is_current
+                                );
+                                return (
+                                    <p key={cert.certId}>
+                                    {cert.certification}
+                                    <span
+                                        className={
+                                        held
+                                            ? 'status-pill-ready'
+                                            : 'status-pill-expired'
+                                        }
+                                    >
+                                        {held ? 'Ready' : 'Missing'}
+                                    </span>
+                                    </p>
+                                );
+                                })}
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
