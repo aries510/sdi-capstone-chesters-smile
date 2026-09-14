@@ -1,8 +1,8 @@
 # Problem Statement
 
-- Current personnel tracking is fragmented across disconnected spreadsheets and PowerPoint presentations. This leaves commanders without a centralized method to evaluate unit readiness in real time, leading to ineffective management of unit personnel.
+- Current personnel tracking is fragmented across disconnected spreadsheets and PowerPoint presentations. This leaves commanders without a centralized method to evaluate unit readiness in real time, leading to ineffective management.
 
-- Where My Troops At?™ aims to centralize personnel tracking by providing commanders with a single platform to manage and monitor unit personnel information in real time. This will improve visibility into unit readiness, reduce reliance on disconnected spreadsheets and presentations, and enable more effective personnel management and informed decision-making.
+- Where My Troops At?™ centralizes personnel tracking into a single platform. The application delivers real-time visibility into unit readiness, eliminates manual tracking, and empowers commanders to make fast, data-driven decisions.
 
 ## ERD
 
@@ -77,34 +77,31 @@ erDiagram
 ## Features:
 
 <details>
-  <summary>Current Features</summary>
+  <summary>Implemented Features</summary>
   <table>
-    <tr>
+    <!-- <tr>
       <th>Feature</th>
+    </tr> -->
+    <tr>
+      <td><strong>Role-Based Authentication:</strong> Secure login with automatic dashboard routing based on user permissions.</td>
     </tr>
     <tr>
-      <td>Login (auth, role-based redirect)</td>
+      <td><strong>General User Dashboard:</strong> Displays personal identity details, qualifications, active certifications, tracking for weapon systems, assigned missions, and upcoming milestones.</td>
     </tr>
     <tr>
-      <td>GeneralUser dashboard (identity, quals, certs, weapon systems, missions, next steps)</td>
+      <td><strong>Admin Controls:</strong> Interface for evaluator management, trainee rosters, catalog searches, and tools for bullk spreadsheet/data uploads.</td>
     </tr>
     <tr>
-      <td>Shared Navbar (branding, nav links, light/dark toggle)</td>
+      <td><strong>Evaluator Workspace:</strong> Personnel search and filtering options alongside a dedicated, editable trainee roster.</td>
     </tr>
     <tr>
-      <td>Admin Dashboard (evaluators & trainees roster, evaluator management, certification catalog search, upload/bulk import UI)</td>
+      <td><strong>MPC Planning Dashboard:</strong> Mission summary views and active mission planners equipped with dynamic readiness trackers.</td>
     </tr>
     <tr>
-      <td>Evaluator Dashboard (personnel search/filter, trainee roster with add/edit)</td>
+      <td><strong>Mission Wizard:</strong> Multi-step creation tool covering core mission parametes, CONOP development, personnel assignment, and readiness approval workflows.</td>
     </tr>
     <tr>
-      <td>Trainee add/edit modal</td>
-    </tr>
-    <tr>
-      <td>MPC Planning Dashboard (mission summary cards, active mission plans with readiness tracker)</td>
-    </tr>
-    <tr>
-      <td>New Mission Plan wizard (mission info, CONOP, personnel assignment, readiness, approval)</td>
+      <td><strong>Global Shell:</strong> Shared navbar with consistent branding, navigation paths, and a native light/dark mode switch.</td>
     </tr>
   </table>
 </details>
