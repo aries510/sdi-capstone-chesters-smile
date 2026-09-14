@@ -73,8 +73,8 @@ function MPC() {
                     stage: mission.stage,
                     issue: mission.issue,
 
-                    requiredPersonnel: mission.required_personnel,
-                    requiredRoles: mission.required_roles,
+                    requiredPersonnel: mission.num_personnel_req,
+                    requiredRoles: mission.roles,
 
                     approvedBy: mission.approved_by,
                     approvedAt: mission.approved_at,
@@ -602,8 +602,7 @@ function MPC() {
                         },
                         body: JSON.stringify({
                             updates: {
-                                required_personnel: Number(newMission.requiredPersonnel),
-                                required_roles: newMission.requiredRoles,
+                                num_personnel_req: Number(newMission.requiredPersonnel),
                                 stage: 2,
                             },
                         }),
@@ -664,7 +663,7 @@ function MPC() {
             setViewStage(6);
             setMissionViewSection("mission");
         } else {
-            setViewStage(currentMission.stage || 1);
+            setViewStage(currentMission.stage === 1 ? 2 : currentMission.stage);
         }
 
         setAssignedPersonnel(
