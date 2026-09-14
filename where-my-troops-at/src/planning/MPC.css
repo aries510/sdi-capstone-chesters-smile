@@ -30,6 +30,12 @@
     --secondary-button-bg: rgba(45, 55, 72, 0.95);
 }
 
+.dark-theme .new-mission-form input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.85;
+    cursor: pointer;
+}
+
 body {
     background-image: url("../bg-images/admin-bg.jpeg");
     background-size: cover;
@@ -824,4 +830,32 @@ body {
     .form-actions button {
         width: 100%;
     }
+}
+
+.mission-card-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.delete-mission-button {
+    background: #b42318 !important;
+    color: #ffffff !important;
+    border: 1px solid #b42318 !important;
+}
+
+.delete-mission-button:hover {
+    background: #8f1c13 !important;
+    border-color: #8f1c13 !important;
+}
+
+.edit-mission-button {
+    background: #d4a017 !important;
+    color: #ffffff !important;
+    border: 1px solid #d4a017 !important;
+}
+
+.edit-mission-button:hover {
+    background: #975a16 !important;
+    border-color: #975a16 !important;
 }
