@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { SERVER_URL } from '../utils/api';
 
 const emptyForm = { name: '', description: '' };
 
-export default function CrewRolePanel() {
-    const [roles, setRoles] = useState([]);
+export default function CrewRolePanel({ roles, setRoles }) {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [form, setForm] = useState(emptyForm);
@@ -12,13 +11,6 @@ export default function CrewRolePanel() {
     const [isLoading, setIsLoading] = useState(false);
 
     const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-
-    useEffect(() => {
-        fetch(`${SERVER_URL}/crewroles`)
-            .then((res) => res.json())
-            .then(setRoles)
-            .catch(console.error);
-    }, []);
 
     const openCreateForm = () => {
         setEditingId(null);

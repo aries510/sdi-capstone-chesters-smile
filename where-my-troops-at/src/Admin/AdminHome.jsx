@@ -5,7 +5,6 @@ import AccountManagementPanel from './AccountManagementPanel';
 import CrewRolePanel from './CrewRolePanel';
 import WeaponSystemPanel from './WeaponSystemPanel';
 import CrewCertificationPanel from './CrewCertificationPanel';
-import CertQualRenewalPanel from './CertQualRenewalPanel';
 import CertificationCatalog from './CertificationCatalog';
 import TraineeModal from '../components/TraineeModal';
 // Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
@@ -13,7 +12,6 @@ import { SERVER_URL as API_BASE } from '../utils/api';
 
 function AdminHome() {
   const [personnel, setPersonnel] = useState([]);
-  const [qualifications, setQualifications] = useState([]);
   const [weaponSystems, setWeaponSystems] = useState([]);
   const [crewRoles, setCrewRoles] = useState([]);
   const [certifications, setCertifications] = useState([]);
@@ -36,20 +34,11 @@ function AdminHome() {
   const trainees = personnel.filter((p) => p.role === 'trainee');
   const planners = personnel.filter((p) => p.role === 'planner');
 
-  const fetchQuals = () => {
-    fetch(`${API_BASE}/quals`)
-      .then((res) => res.json())
-      .then(setQualifications)
-      .catch(console.error);
-  };
-
   useEffect(() => {
     fetch(`${API_BASE}/personnel`)
       .then((res) => res.json())
       .then(setPersonnel)
       .catch(console.error);
-
-    fetchQuals();
 
     fetch(`${API_BASE}/weaponsystems`)
       .then((res) => res.json())
@@ -159,411 +148,402 @@ function AdminHome() {
 
   return (
     <div className="admin-container">
-        <div className="top-row">
-          <div className="eval-trainee-list" style={{ position: 'relative' }}>
+      <div className="top-row">
+        <div className="eval-trainee-list" style={{ position: 'relative' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <h3>Personnel</h3>
+            <button className="new-btn" onClick={openCreatePersonnel}>
+              + Add Personnel
+            </button>
+          </div>
+          <p className="eval-trainee-subtitle">Click name to view details</p>
+
+          <div className="eval-trainee-scroll">
+            <div className="personnel-group">
+              <h4 className="group-title title-evaluator">Evaluators</h4>
+              {evaluators.length === 0 ? (
+                <p className="no-records-msg">No evaluators found.</p>
+              ) : (
+                <ul className="personnel-list">
+                  {evaluators.map((ev) => (
+                    <li
+                      key={ev.id}
+                      className="personnel-item"
+                      onClick={() =>
+                        setSelectedDetails({
+                          type: 'Evaluator',
+                          ...ev,
+                        })
+                      }
+                    >
+                      <span>
+                        {ev.rank} {ev.first_name} {ev.last_name}
+                      </span>
+                      <div className="trainee-item-actions">
+                        <span className="badge badge-evaluator">Evaluator</span>
+                        <button
+                          className="btn-delete-trainee"
+                          onClick={(e) => openEditPersonnel(ev, e)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn-delete-trainee"
+                          onClick={(e) => handleDeletePersonnel(ev.id, e)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="personnel-group">
+              <h4 className="group-title title-planner">Planners</h4>
+              {planners.length === 0 ? (
+                <p className="no-records-msg">No planners found.</p>
+              ) : (
+                <ul className="personnel-list">
+                  {planners.map((pl) => (
+                    <li
+                      key={pl.id}
+                      className="personnel-item"
+                      onClick={() =>
+                        setSelectedDetails({
+                          type: 'Planner',
+                          ...pl,
+                        })
+                      }
+                    >
+                      <span>
+                        {pl.rank} {pl.first_name} {pl.last_name}
+                      </span>
+                      <div className="trainee-item-actions">
+                        <span className="badge badge-planner">Planner</span>
+                        <button
+                          className="btn-delete-trainee"
+                          onClick={(e) => openEditPersonnel(pl, e)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn-delete-trainee"
+                          onClick={(e) => handleDeletePersonnel(pl.id, e)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="personnel-group">
+              <h4 className="group-title title-trainee">Trainees</h4>
+              {trainees.length === 0 ? (
+                <p className="no-records-msg">No trainees found.</p>
+              ) : (
+                <ul className="personnel-list">
+                  {trainees.map((t) => (
+                    <li
+                      key={t.id}
+                      className="personnel-item"
+                      onClick={() => setSelectedTrainee(t)}
+                    >
+                      <span>
+                        {t.rank} {t.first_name} {t.last_name}
+                      </span>
+                      <div className="trainee-item-actions">
+                        <span className="badge badge-trainee">Trainee</span>
+                        <button
+                          className="btn-delete-trainee"
+                          onClick={(e) => openEditPersonnel(t, e)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn-delete-trainee"
+                          onClick={(e) => handleDeletePersonnel(t.id, e)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {isPersonnelFormOpen && (
             <div
               style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                backdropFilter: 'blur(4px)',
                 display: 'flex',
-                justifyContent: 'space-between',
+                justifyContent: 'center',
                 alignItems: 'center',
+                zIndex: 10,
+                borderRadius: '4px',
               }}
             >
-              <h3>Personnel</h3>
-              <button className="new-btn" onClick={openCreatePersonnel}>
-                + Add Personnel
-              </button>
-            </div>
-            <p className="eval-trainee-subtitle">Click name to view details</p>
-
-            <div className="eval-trainee-scroll">
-              <div className="personnel-group">
-                <h4 className="group-title title-evaluator">Evaluators</h4>
-                {evaluators.length === 0 ? (
-                  <p className="no-records-msg">No evaluators found.</p>
-                ) : (
-                  <ul className="personnel-list">
-                    {evaluators.map((ev) => (
-                      <li
-                        key={ev.id}
-                        className="personnel-item"
-                        onClick={() =>
-                          setSelectedDetails({
-                            type: 'Evaluator',
-                            ...ev,
-                          })
-                        }
-                      >
-                        <span>
-                          {ev.rank} {ev.first_name} {ev.last_name}
-                        </span>
-                        <div className="trainee-item-actions">
-                          <span className="badge badge-evaluator">
-                            Evaluator
-                          </span>
-                          <button
-                            className="btn-delete-trainee"
-                            onClick={(e) => openEditPersonnel(ev, e)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="btn-delete-trainee"
-                            onClick={(e) => handleDeletePersonnel(ev.id, e)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              <div className="personnel-group">
-                <h4 className="group-title title-planner">Planners</h4>
-                {planners.length === 0 ? (
-                  <p className="no-records-msg">No planners found.</p>
-                ) : (
-                  <ul className="personnel-list">
-                    {planners.map((pl) => (
-                      <li
-                        key={pl.id}
-                        className="personnel-item"
-                        onClick={() =>
-                          setSelectedDetails({
-                            type: 'Planner',
-                            ...pl,
-                          })
-                        }
-                      >
-                        <span>
-                          {pl.rank} {pl.first_name} {pl.last_name}
-                        </span>
-                        <div className="trainee-item-actions">
-                          <span className="badge badge-planner">Planner</span>
-                          <button
-                            className="btn-delete-trainee"
-                            onClick={(e) => openEditPersonnel(pl, e)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="btn-delete-trainee"
-                            onClick={(e) => handleDeletePersonnel(pl.id, e)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              <div className="personnel-group">
-                <h4 className="group-title title-trainee">Trainees</h4>
-                {trainees.length === 0 ? (
-                  <p className="no-records-msg">No trainees found.</p>
-                ) : (
-                  <ul className="personnel-list">
-                    {trainees.map((t) => (
-                      <li
-                        key={t.id}
-                        className="personnel-item"
-                        onClick={() => setSelectedTrainee(t)}
-                      >
-                        <span>
-                          {t.rank} {t.first_name} {t.last_name}
-                        </span>
-                        <div className="trainee-item-actions">
-                          <span className="badge badge-trainee">Trainee</span>
-                          <button
-                            className="btn-delete-trainee"
-                            onClick={(e) => openEditPersonnel(t, e)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="btn-delete-trainee"
-                            onClick={(e) => handleDeletePersonnel(t.id, e)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-
-            {isPersonnelFormOpen && (
               <div
                 style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                  backdropFilter: 'blur(4px)',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  zIndex: 10,
-                  borderRadius: '4px',
+                  backgroundColor: 'var(--panel-bg)',
+                  padding: '20px',
+                  borderRadius: '6px',
+                  width: '85%',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                  color: 'var(--text-color)',
                 }}
               >
-                <div
+                <h4
                   style={{
-                    backgroundColor: 'var(--panel-bg)',
-                    padding: '20px',
-                    borderRadius: '6px',
-                    width: '85%',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                    color: 'var(--text-color)',
+                    marginTop: 0,
+                    borderBottom: '1px solid var(--border-color)',
+                    paddingBottom: '10px',
                   }}
                 >
-                  <h4
+                  {editingPersonnelId ? 'Edit Personnel' : 'Add Personnel'}
+                </h4>
+
+                {personnelFormError && (
+                  <div
                     style={{
-                      marginTop: 0,
-                      borderBottom: '1px solid var(--border-color)',
-                      paddingBottom: '10px',
+                      color: '#dc2626',
+                      marginBottom: '10px',
+                      fontSize: '0.9rem',
                     }}
                   >
-                    {editingPersonnelId ? 'Edit Personnel' : 'Add Personnel'}
-                  </h4>
+                    {personnelFormError}
+                  </div>
+                )}
 
-                  {personnelFormError && (
-                    <div
-                      style={{
-                        color: '#dc2626',
-                        marginBottom: '10px',
-                        fontSize: '0.9rem',
-                      }}
-                    >
-                      {personnelFormError}
-                    </div>
-                  )}
-
-                  <form
-                    onSubmit={handlePersonnelSubmit}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '10px',
-                    }}
-                  >
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <input
-                        type="text"
-                        placeholder="Rank"
-                        value={personnelForm.rank}
-                        onChange={(e) =>
-                          setPersonnelForm((f) => ({
-                            ...f,
-                            rank: e.target.value,
-                          }))
-                        }
-                        required
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                          padding: '8px',
-                          boxSizing: 'border-box',
-                        }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="First Name"
-                        value={personnelForm.first_name}
-                        onChange={(e) =>
-                          setPersonnelForm((f) => ({
-                            ...f,
-                            first_name: e.target.value,
-                          }))
-                        }
-                        required
-                        style={{
-                          flex: 2,
-                          minWidth: 0,
-                          padding: '8px',
-                          boxSizing: 'border-box',
-                        }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Last Name"
-                        value={personnelForm.last_name}
-                        onChange={(e) =>
-                          setPersonnelForm((f) => ({
-                            ...f,
-                            last_name: e.target.value,
-                          }))
-                        }
-                        required
-                        style={{
-                          flex: 2,
-                          minWidth: 0,
-                          padding: '8px',
-                          boxSizing: 'border-box',
-                        }}
-                      />
-                    </div>
-
-                    <select
-                      value={personnelForm.role}
+                <form
+                  onSubmit={handlePersonnelSubmit}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input
+                      type="text"
+                      placeholder="Rank"
+                      value={personnelForm.rank}
                       onChange={(e) =>
                         setPersonnelForm((f) => ({
                           ...f,
-                          role: e.target.value,
+                          rank: e.target.value,
                         }))
                       }
+                      required
                       style={{
-                        width: '100%',
+                        flex: 1,
+                        minWidth: 0,
                         padding: '8px',
                         boxSizing: 'border-box',
                       }}
-                    >
-                      <option value="trainee">Trainee</option>
-                      <option value="evaluator">Evaluator</option>
-                      <option value="planner">Planner</option>
-                    </select>
-
-                    <div
+                    />
+                    <input
+                      type="text"
+                      placeholder="First Name"
+                      value={personnelForm.first_name}
+                      onChange={(e) =>
+                        setPersonnelForm((f) => ({
+                          ...f,
+                          first_name: e.target.value,
+                        }))
+                      }
+                      required
                       style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        gap: '10px',
-                        marginTop: '10px',
+                        flex: 2,
+                        minWidth: 0,
+                        padding: '8px',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Last Name"
+                      value={personnelForm.last_name}
+                      onChange={(e) =>
+                        setPersonnelForm((f) => ({
+                          ...f,
+                          last_name: e.target.value,
+                        }))
+                      }
+                      required
+                      style={{
+                        flex: 2,
+                        minWidth: 0,
+                        padding: '8px',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+
+                  <select
+                    value={personnelForm.role}
+                    onChange={(e) =>
+                      setPersonnelForm((f) => ({
+                        ...f,
+                        role: e.target.value,
+                      }))
+                    }
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <option value="trainee">Trainee</option>
+                    <option value="evaluator">Evaluator</option>
+                    <option value="planner">Planner</option>
+                  </select>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      gap: '10px',
+                      marginTop: '10px',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setIsPersonnelFormOpen(false)}
+                      style={{
+                        padding: '6px 12px',
+                        cursor: 'pointer',
+                        background: 'transparent',
+                        border: '1px solid var(--border-color)',
+                        color: 'var(--text-color)',
                       }}
                     >
-                      <button
-                        type="button"
-                        onClick={() => setIsPersonnelFormOpen(false)}
-                        style={{
-                          padding: '6px 12px',
-                          cursor: 'pointer',
-                          background: 'transparent',
-                          border: '1px solid var(--border-color)',
-                          color: 'var(--text-color)',
-                        }}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isPersonnelSaving}
-                        style={{
-                          padding: '6px 12px',
-                          cursor: 'pointer',
-                          backgroundColor: '#215b93',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        {isPersonnelSaving
-                          ? 'Saving...'
-                          : editingPersonnelId
-                            ? 'Save Changes'
-                            : 'Create Record'}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* <div className="admin-actions">
-            <div className="upload-button">UPLOAD DOCUMENT</div>
-            <div className="import-button">+ BULK IMPORT PDF/CSV</div>
-          </div> */}
-        </div>
-
-        <div className="admin-panels">
-          <EvaluatorsPanel
-            evaluators={evaluators}
-            trainees={trainees}
-            onEvaluatorAdded={(promoted) =>
-              setPersonnel((prev) =>
-                prev.map((p) => (p.id === promoted.id ? promoted : p)),
-              )
-            }
-            onEvaluatorRemoved={(demoted) =>
-              setPersonnel((prev) =>
-                prev.map((p) => (p.id === demoted.id ? demoted : p)),
-              )
-            }
-          />
-          <AccountManagementPanel />
-          <CrewRolePanel />
-          <WeaponSystemPanel />
-          <div className="catalog-wrapper">
-            <CertificationCatalog />
-          </div>
-          <CrewCertificationPanel />
-          {/* <CertQualRenewalPanel /> */}
-        </div>
-
-        {/* Trainee Modal for qualifications/training */}
-        {selectedTrainee && (
-          <TraineeModal
-            trainee={selectedTrainee}
-            weaponSystems={weaponSystems}
-            crewRoles={crewRoles}
-            certifications={certifications}
-            onClose={() => setSelectedTrainee(null)}
-            onQualAdded={fetchQuals}
-          />
-        )}
-
-        {/* Evaluator generic details modal */}
-        {selectedDetails && (
-          <div className="modal-overlay blur-bg">
-            <div className="details-modal">
-              <div className="details-modal-header">
-                <h3>{selectedDetails.type} Details</h3>
-                <button
-                  className="close-icon-btn"
-                  onClick={() => setSelectedDetails(null)}
-                >
-                  &times;
-                </button>
-              </div>
-
-              <ul className="details-list">
-                {Object.entries(selectedDetails)
-                  .filter(([key]) => key !== 'type' && key !== 'pw_hash')
-                  .map(([key, value]) => (
-                    <li key={key} className="details-item">
-                      <strong className="details-label">
-                        {key.replace(/_/g, ' ')}:
-                      </strong>
-                      <span className="details-value">
-                        {typeof value === 'boolean'
-                          ? value
-                            ? 'True'
-                            : 'False'
-                          : String(value ?? 'N/A')}
-                      </span>
-                    </li>
-                  ))}
-              </ul>
-
-              <div className="details-modal-actions">
-                <button
-                  className="btn-close"
-                  onClick={() => setSelectedDetails(null)}
-                >
-                  Close
-                </button>
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isPersonnelSaving}
+                      style={{
+                        padding: '6px 12px',
+                        cursor: 'pointer',
+                        backgroundColor: '#215b93',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      {isPersonnelSaving
+                        ? 'Saving...'
+                        : editingPersonnelId
+                          ? 'Save Changes'
+                          : 'Create Record'}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      <div className="admin-panels">
+        <EvaluatorsPanel
+          evaluators={evaluators}
+          trainees={trainees}
+          onEvaluatorAdded={(promoted) =>
+            setPersonnel((prev) =>
+              prev.map((p) => (p.id === promoted.id ? promoted : p)),
+            )
+          }
+          onEvaluatorRemoved={(demoted) =>
+            setPersonnel((prev) =>
+              prev.map((p) => (p.id === demoted.id ? demoted : p)),
+            )
+          }
+        />
+        <AccountManagementPanel />
+        <CrewRolePanel roles={crewRoles} setRoles={setCrewRoles} />
+        <WeaponSystemPanel />
+        <div className="catalog-wrapper">
+          <CertificationCatalog />
+        </div>
+        <CrewCertificationPanel />
+      </div>
+
+      {/* Trainee Modal for qualifications/training */}
+      {selectedTrainee && (
+        <TraineeModal
+          trainee={selectedTrainee}
+          weaponSystems={weaponSystems}
+          crewRoles={crewRoles}
+          certifications={certifications}
+          onClose={() => setSelectedTrainee(null)}
+        />
+      )}
+
+      {/* Evaluator generic details modal */}
+      {selectedDetails && (
+        <div className="modal-overlay blur-bg">
+          <div className="details-modal">
+            <div className="details-modal-header">
+              <h3>{selectedDetails.type} Details</h3>
+              <button
+                className="close-icon-btn"
+                onClick={() => setSelectedDetails(null)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <ul className="details-list">
+              {Object.entries(selectedDetails)
+                .filter(([key]) => key !== 'type' && key !== 'pw_hash')
+                .map(([key, value]) => (
+                  <li key={key} className="details-item">
+                    <strong className="details-label">
+                      {key.replace(/_/g, ' ')}:
+                    </strong>
+                    <span className="details-value">
+                      {typeof value === 'boolean'
+                        ? value
+                          ? 'True'
+                          : 'False'
+                        : String(value ?? 'N/A')}
+                    </span>
+                  </li>
+                ))}
+            </ul>
+
+            <div className="details-modal-actions">
+              <button
+                className="btn-close"
+                onClick={() => setSelectedDetails(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
