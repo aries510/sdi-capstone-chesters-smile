@@ -43,7 +43,6 @@ function App() {
         </Route> */}
 
         <Route path="/GeneralUser" element={<GenUser />}></Route>
-        <Route path="/Admin" element={<AdminHome />}></Route>
         <Route path="/MPC" element={<MPC />}></Route>
       </Routes>
 

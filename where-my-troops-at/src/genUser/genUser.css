@@ -40,11 +40,12 @@
 
     .genUser-dashboard {
         height: 80vh;
+        max-width: 1200px;
         box-sizing: border-box;
         padding: 0 10px;
-        margin: 0;
+        margin: 20px auto;
         display: grid;
-        grid-template-columns: 1fr 2fr 1fr;
+        grid-template-columns: 1fr 3fr 1fr;
         grid-gap: 10px;
         color: white;
     }
@@ -57,6 +58,7 @@
         padding: 10px;
         background-color: var(--list-bg);
         backdrop-filter: blur(6px);
+        min-width: 0;
     }
     button {
         cursor: pointer;
@@ -135,16 +137,27 @@
             }
 
         .certs {
-            display: grid;
-            grid-template-columns: 4fr repeat(3, minmax(0, 1fr));
-            grid-template-rows: repeat(4, 1fr);
-            gap: 8px;
-            text-align: center;
-            width: 22vw;
-            max-width: 400px;
-            aspect-ratio: 2/1;
-            background-color: rgba(28, 16, 55, 0.187);
-            border-radius: var(--radius-pill);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        .status-dot-good {
+            background-color: var(--status-good-text);
+        }
+        .status-dot-warn {
+            background-color: var(--status-warn-text);
+        }
+        .status-dot-bad {
+            background-color: var(--status-bad-text);
         }
         .numX-display{
             display: flex;
@@ -175,9 +188,8 @@
             border-color: var(--status-bad-border);
         }
         .certs-btn {
-            aspect-ratio: 3/1;
-            height: fit-content;
-            align-self: center;
+            position: relative;
+            width: 100%;
         }
 
         .cert-header {
@@ -367,4 +379,60 @@
         background-color: var(--status-bad-bg);
         color: var(--status-bad-text);
         border: 1px solid var(--status-bad-border);
+    }
+
+    /* Certs/Quals/Systems list modal - item rows */
+    .cert-qual-modal .modal-header {
+        grid-column: 1 / -1;
+    }
+    .cert-qual-modal .mission-modal > p {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--list-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 10px 14px;
+        margin: 4px;
+    }
+
+    /* Crew Certifications modal - two-pane layout */
+    .crew-cert-modal {
+        display: flex;
+        flex-direction: column;
+    }
+    .crew-cert-body {
+        display: flex;
+        gap: 15px;
+        flex: 1;
+        min-height: 0;
+    }
+    .crew-cert-role-list,
+    .crew-cert-requirements {
+        flex: 1;
+        overflow-y: auto;
+        background-color: var(--list-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 10px;
+    }
+    .crew-cert-role-list p {
+        padding: 8px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 2px 0;
+    }
+    .crew-cert-role-list p:hover {
+        background-color: var(--panel-bg);
+    }
+    .role-selected {
+        background-color: #215b93;
+        color: white;
+    }
+    .crew-cert-requirements p {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border-color);
     }
