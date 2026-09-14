@@ -71,11 +71,19 @@ body {
 }
 
 /* --- Search & Filters Section --- */
+.search-filter-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 20px;
+}
+
 .search-filter-section {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 20px;
+    flex: 1;
     max-width: 600px;
 }
 
@@ -83,6 +91,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
+    width: 860px;
 }
 
 .search-label {
@@ -102,6 +111,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 4px;
     color: var(--text-color);
+    width: 825px;
 }
 
 .search-bar::placeholder {
@@ -120,6 +130,7 @@ body {
     border-radius: 4px;
     padding: 14px 16px;
     margin-bottom: 20px;
+    width: 825px;
 }
 
 .filters-bar>span {
@@ -223,7 +234,8 @@ body {
 .trainees-list li {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 10px;
     padding: 8px 4px;
     border-bottom: 1px solid var(--border-color);
 }
@@ -245,6 +257,48 @@ body {
     font-size: 0.85rem;
     opacity: 0.7;
     padding: 12px 4px !important;
+}
+
+.trainee-row-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.trainee-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+}
+
+.tag-label {
+    font-weight: 500;
+    opacity: 0.7;
+}
+
+.tag-empty {
+    opacity: 0.6;
+}
+
+.status-tag {
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.status-current {
+    background-color: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #16a34a;
+}
+
+.status-expired {
+    background-color: rgba(220, 38, 38, 0.15);
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #dc2626;
 }
 
 /* Custom scrollbar */
@@ -272,7 +326,7 @@ body {
 .upload-button {
     background-color: #215b93;
     color: white;
-    padding: 16px;
+    padding: 12px;
     text-align: center;
     border-radius: 4px;
     font-weight: 500;
@@ -284,7 +338,7 @@ body {
     background-color: var(--panel-bg);
     backdrop-filter: blur(6px);
     color: var(--text-color);
-    padding: 16px;
+    padding: 12px;
     text-align: center;
     border-radius: 4px;
     border: 1px solid var(--border-color);
