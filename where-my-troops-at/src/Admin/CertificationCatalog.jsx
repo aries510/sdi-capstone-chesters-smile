@@ -26,7 +26,7 @@ function CertificationCatalog() {
 
     return (
         <div className="cert-catalog">
-            <h2>CERTIFICATION CATALOG</h2>
+            <h2 style={{ marginTop: '0px' }}>CERTIFICATION CATALOG</h2>
             <input
                 type="text"
                 className="cert-search"
