@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
+// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
+import { SERVER_URL } from '../utils/api';
 
-const loginUrl = 'http://127.0.0.1:8080/login';
+const loginUrl = `${SERVER_URL}/login`;
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');

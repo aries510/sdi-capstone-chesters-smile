@@ -24,7 +24,7 @@
 
 /* Global Theme Transitions & Background Image */
 body {
-    background-image: url('./bg-images/admin-bg.jpeg');
+    background-image: url('../bg-images/admin-bg.jpeg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

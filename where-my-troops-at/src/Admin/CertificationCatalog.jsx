@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
+import { SERVER_URL } from '../utils/api'
 
 function CertificationCatalog() {
     const [certifications, setCertifications] = useState([])
@@ -6,7 +8,7 @@ function CertificationCatalog() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:8080/certs`)
+        fetch(`${SERVER_URL}/certs`)
             .then(res => res.json())
             .then(data => {
                 setCertifications(data)

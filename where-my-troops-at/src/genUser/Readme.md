@@ -1,6 +1,27 @@
 # General User
 
+## Status (as of 2026-09-14)
 
+### Done
+- Identity (rank/name) wired to `/personnel/:id`, with demo fallback
+- Qualifications wired to `/quals/:id`, with demo fallback
+- Certifications wired to `/perscerts/:id`, with demo fallback
+- Weapon Systems row derived from quals (`getDistinctSystems`) — multi-role-per-system handled with AND logic (every role tied to a system must be current, not just one)
+- FMC/PMC/Expired status system in place across Weapon Systems, Crew Roles, and Certifications rows (PMC intentionally placeholder `0` — no backing data yet, see In Progress)
+- Overall FMC/NMC readiness badge, derived from the above
+- Current Missions panel, built against shaped mock data (real `msn_plans` table can't support multiple/past missions yet)
+- Mission "Not Ready" logic (`meetsRequirements`) comparing a mission's required certs against held, current certs
+- Mission detail modal (its own codeblock, not the generic modal)
+- Generic modal (`modalContent`/`getModalContent`) covering Weapon Systems and Certifications
+- Next Steps panel, derived from expired certs (`certTasks`)
+- Crew role certification requirements fetch (`roleCerts`, via `/crewcerts/:roleId`, one fetch per distinct role using `Promise.all`)
+- Navbar integrated (branding, nav links, light/dark toggle) — own local toggle removed as redundant
+- Full theming pass to match Admin/Evaluator/MPC's shared variables and MPC's status-tag pattern (`--status-good/warn/bad`, light+dark variants)
+
+### In Progress
+- **Crew Certifications modal** — renaming/reworking "Crew Roles" (currently still using the generic `modalContent` path) into its own dedicated codeblock: left side lists roles, selecting one shows that role's required certs on the right, color-coded. Needs: `selectedRole` state (built), the generic-modal cleanup so `'quals'` no longer needs handling there, then the actual two-pane modal JSX + its own styling.
+- **Real personnel_id wiring** — `personnelId` is still hardcoded to `1`. Backend now supports pulling real user/personnel data with logins tied to a key with the user id (confirmed 9/9) — next step is reading that real id from the login response instead of the hardcoded value, which still depends on an AuthContext (or similar) existing to carry it app-wide.
+- **Dark/light persistence across pages** — flagged, not yet solved. Navbar's toggle works on GeneralUser itself, but navigating to another page loses the state (no wrapper/shared context carrying it yet).
 
 
 ## Purpose

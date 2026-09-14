@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
+import { SERVER_URL } from '../utils/api';
 
 function CertQualRenewalPanel() {
     const [renewals, setRenewals] = useState([]);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:8080/perscerts')
+        fetch(`${SERVER_URL}/perscerts`)
             .then(res => res.json())
             .then(data => {
                 const now = new Date();

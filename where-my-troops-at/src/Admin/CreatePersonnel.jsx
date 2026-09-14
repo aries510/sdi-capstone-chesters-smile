@@ -1,6 +1,8 @@
 import { useState } from 'react';
+// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
+import { SERVER_URL } from '../utils/api';
 
-const createPersonnelUrl = 'http://localhost:8080/personnel';
+const createPersonnelUrl = `${SERVER_URL}/personnel`;
 
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 

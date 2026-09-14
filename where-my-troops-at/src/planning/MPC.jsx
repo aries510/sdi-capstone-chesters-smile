@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./MPC.css"
-import Navbar from "../Navbar";
+import Navbar from "../components/Navbar";
 
 const initialMissions = [
     {

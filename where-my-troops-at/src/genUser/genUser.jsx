@@ -1,6 +1,8 @@
 import './genUser.css';
 import { useState, useEffect } from 'react';
-import Navbar from '../Navbar';
+import Navbar from '../components/Navbar';
+// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
+import { SERVER_URL, fetchCatch } from '../utils/api';
 
 
 
@@ -9,11 +11,7 @@ import Navbar from '../Navbar';
 {/* // 1. Variables for production ---- */}
 //#######################################################
 
-function fetchCatch(message){
-    return (error) => console.log(message, error);
-}
 //server routes
-const serverUrl = 'localhost:8080';
 
     /**
      * PERSONNEL LINK
@@ -26,9 +24,9 @@ const serverUrl = 'localhost:8080';
     */
     const personnelId = 1;
 
-    const personnelUrl = `http://${serverUrl}/personnel/${personnelId}`;
-    const certificationsUrl = `http://${serverUrl}/perscerts/${personnelId}`;
-    const qualificationsUrl =`http://${serverUrl}/quals/${personnelId}`;
+    const personnelUrl = `${SERVER_URL}/personnel/${personnelId}`;
+    const certificationsUrl = `${SERVER_URL}/perscerts/${personnelId}`;
+    const qualificationsUrl =`${SERVER_URL}/quals/${personnelId}`;
 
 
 
@@ -125,7 +123,7 @@ function GenUser() {
         const distinctRoles = getDistinctRoles(quals);
         Promise.all(
             distinctRoles.map((role) => 
-            fetch(`http://${serverUrl}/crewcerts/${role.roleId}`).then((response) => response.json())
+            fetch(`${SERVER_URL}/crewcerts/${role.roleId}`).then((response) => response.json())
             )
         )
         .then((results) => setRoleCerts(results))

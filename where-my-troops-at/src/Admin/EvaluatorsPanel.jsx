@@ -1,4 +1,6 @@
 import { useState } from 'react';
+// Added global 'SERVER_URL' in utils>api.js. Should make production conversion easier - Jacob
+import { SERVER_URL } from '../utils/api';
 
 export default function EvaluatorsPanel({ evaluators, standardUsers, trainees, onEvaluatorAdded, onEvaluatorDeleted }) {
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -25,7 +27,7 @@ export default function EvaluatorsPanel({ evaluators, standardUsers, trainees, o
         setIsLoading(true);
 
         try {
-            const personnelRes = await fetch('http://localhost:8080/personnel', {
+            const personnelRes = await fetch(`${SERVER_URL}/personnel`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -42,7 +44,7 @@ export default function EvaluatorsPanel({ evaluators, standardUsers, trainees, o
                 throw new Error(capitalize(personnelData.error || 'Failed to create personnel record'));
             }
 
-            const userRes = await fetch('http://127.0.0.1:8080/users', {
+            const userRes = await fetch(`${SERVER_URL}/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
