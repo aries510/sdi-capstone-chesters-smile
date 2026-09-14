@@ -75,6 +75,7 @@ erDiagram
 ---
 
 ## Features:
+
 <details>
   <summary>Current Features</summary>
   <table>
@@ -134,8 +135,24 @@ erDiagram
 
 ---
 
+## Application Endpoints
+
+Base URL: `http://localhost:5173`
+
+| Endpoint       | Description                                      |
+| -------------- | ------------------------------------------------ |
+| `/`            | Application Login Page                           |
+| `/Admin`       | Admin Dashboard                                  |
+| `/MPC`         | Mission Planning Dashboard                       |
+| `/GeneralUser` | Personal Certifications/Qualifications Dashboard |
+| `/Evaluator`   | Evaluator Dashboard                              |
+
+---
+
 ## API Endpoints
 
+<details>
+  <summary>Details</summary>
 
 Base URL: `http://localhost:8080`
 
@@ -145,18 +162,15 @@ Base URL: `http://localhost:8080`
 | ------ | -------- | ----------------- |
 | GET    | `/`      | API homepage text |
 
-<details>
-  <summary>View More...</summary>
-
 ### Users — `/users`
 
-| Method | Endpoint         | Description                                                                                                                                                       |
-| ------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/users`         | List users. Optional `?username=`                                                                                                                                 |
-| GET    | `/users/:userId` | Get a single user by id                                                                                                                                           |
-| POST   | `/users`         | Create a user. Body: `{ username, password, is_admin?, is_evaluator?, is_planner? }` (`password` is plaintext; it's hashed server-side before storing)            |
-| PATCH  | `/users/:userId` | Update a user. Body: any of `{ pw_hash, is_admin, is_evaluator, is_planner }`                                                                                     |
-| DELETE | `/users/:userId` | Delete a user                                                                                                                                                     |
+| Method | Endpoint         | Description                                                                                                                                            |
+| ------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| GET    | `/users`         | List users. Optional `?username=`                                                                                                                      |
+| GET    | `/users/:userId` | Get a single user by id                                                                                                                                |
+| POST   | `/users`         | Create a user. Body: `{ username, password, is_admin?, is_evaluator?, is_planner? }` (`password` is plaintext; it's hashed server-side before storing) |
+| PATCH  | `/users/:userId` | Update a user. Body: any of `{ pw_hash, is_admin, is_evaluator, is_planner }`                                                                          |
+| DELETE | `/users/:userId` | Delete a user                                                                                                                                          |
 
 ### Domains — `/domains`
 
