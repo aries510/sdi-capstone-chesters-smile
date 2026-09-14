@@ -283,6 +283,39 @@ function MPC() {
                 ? issueParts.join(" • ")
                 : null;
 
+        try {
+            const response = await fetch(
+                `http://localhost:8080/msnplans/${selectedMission.id}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        updates: {
+                            required_personnel: Number(requiredPersonnel),
+                            required_roles: selectedMission.requiredRoles,
+                            readiness: readiness,
+                            issue: missionIssue,
+                            stage: 4,
+                        },
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error(
+                    "Failed to save personnel readiness:",
+                    errorData
+                );
+                return;
+            }
+        } catch (error) {
+            console.error("Error saving personnel readiness:", error);
+            return;
+        }
+
         const updatedMissions = missions.map((mission) => {
             if (mission.id === selectedMission.id) {
                 return {
@@ -339,8 +372,40 @@ function MPC() {
         );
     }
 
-    function handleReadinessSubmit() {
+    async function handleReadinessSubmit() {
         if (!selectedMission) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `http://localhost:8080/msnplans/${selectedMission.id}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        updates: {
+                            stage: 5,
+                        },
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error(
+                    "Failed to advance mission to approval:",
+                    errorData
+                );
+                return;
+            }
+        } catch (error) {
+            console.error(
+                "Error advancing mission to approval:",
+                error
+            );
             return;
         }
 
@@ -365,8 +430,44 @@ function MPC() {
         setViewStage(5);
     }
 
-    function handleApprovalSubmit() {
+    async function handleApprovalSubmit() {
         if (!selectedMission) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `http://localhost:8080/msnplans/${selectedMission.id}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        updates: {
+                            status: "Ready",
+                            issue: null,
+                            stage: 5,
+                            approved_by: "Current User",
+                            approved_at: new Date().toISOString(),
+                        },
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error(
+                    "Failed to advance mission to approval:",
+                    errorData
+                );
+                return;
+            }
+        } catch (error) {
+            console.error(
+                "Error advancing mission to approval:",
+                error
+            );
             return;
         }
 
@@ -387,7 +488,17 @@ function MPC() {
 
         setMissions(updatedMissions);
 
-        setSelectedMission(null);
+        setSelectedMission({
+            ...selectedMission,
+            status: "Ready",
+            issue: null,
+            stage: 5,
+            approvedBy: "Current User",
+            approvedAt: new Date().toLocaleString(),
+        });
+
+        setViewStage(6);
+        setMissionViewSection("mission");
     }
 
     async function handleConopSubmit(event) {
@@ -606,7 +717,9 @@ function MPC() {
 
         setAssignedPersonnel(
             Array.isArray(currentMission.personnel)
-                ? currentMission.personnel.map((person) => person.id)
+                ? currentMission.personnel.map(
+                    (person) => person.personId ?? person.id
+                )
                 : []
         );
 
@@ -756,7 +869,10 @@ function MPC() {
 
                         <div className="personnel-list">
                             {personnel.map((person) => (
-                                <div className="personnel-row" key={person.id}>
+                                <div
+                                    className="personnel-row"
+                                    key={person.personId ?? person.id}
+                                >
                                     <div>
                                         <strong>{person.name}</strong>
                                         <p>{person.role}</p>
