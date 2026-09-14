@@ -49,7 +49,7 @@ function App() {
       </Routes>
 
       <footer>
-        <a className="support-footer" href="https://github.com/aries510/sdi-capstone-chesters-smile" alt="Github Link">Support the Project</a>
+        <a target="_blank" rel="nofollow noreferrer noopener" className="support-footer" href="https://github.com/aries510/sdi-capstone-chesters-smile" alt="Github Link">Support the Project</a>
       </footer>
     </div>
   );
