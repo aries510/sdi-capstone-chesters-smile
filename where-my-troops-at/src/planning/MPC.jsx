@@ -12,6 +12,7 @@ const stages = [
 function MPC() {
   const [missions, setMissions] = useState([]);
   const [personnel, setPersonnel] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [showMissionForm, setShowMissionForm] = useState(false);
   const [selectedMission, setSelectedMission] = useState(null);
   const [assignedPersonnel, setAssignedPersonnel] = useState([]);
@@ -50,6 +51,25 @@ function MPC() {
       });
     }
   }, [selectedMission, viewStage]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/crewroles');
+
+        if (!response.ok) {
+          console.error('Failed to fetch crew roles:', response.status);
+          return;
+        }
+        const data = await response.json();
+        const crewRoles = data.map((role) => role.name);
+        setRoles(crewRoles);
+      } catch (err) {
+        console.error('Error fetching crew roles:', err);
+      }
+    };
+    fetchRoles();
+  }, []);
 
   useEffect(() => {
     const fetchMsn = async () => {
@@ -120,23 +140,29 @@ function MPC() {
 
         const data = await response.json();
 
-        const mappedPersonnel = data.map((person) => {
-          const qualifications = person.qualifications || [];
-          const currentQualifications = qualifications.filter(
-            (qualification) => qualification.is_current,
-          );
-          const roles = [
-            ...new Set(currentQualifications.map((qualification) => qualification.role)),
-          ];
+        const mappedPersonnel = data
+          .map((person) => {
+            const qualifications = person.qualifications || [];
+            const currentQualifications = qualifications.filter(
+              (qualification) => qualification.is_current,
+            );
+            const roles = [
+              ...new Set(
+                currentQualifications.map(
+                  (qualification) => qualification.role,
+                ),
+              ),
+            ];
 
-          return {
-            id: person.personId,
-            name: `${person.rank} ${person.member}`,
-            role: roles,
-            qualified: currentQualifications.length > 0,
-            available: true,
-          };
-        });
+            return {
+              id: person.personId,
+              name: `${person.rank} ${person.member}`,
+              role: roles,
+              qualified: currentQualifications.length > 0,
+              available: true,
+            };
+          })
+          .filter((person) => person.qualified);
 
         setPersonnel(mappedPersonnel);
       } catch (err) {
@@ -166,6 +192,18 @@ function MPC() {
     setNewMission({
       ...newMission,
       [name]: value,
+    });
+  }
+
+  function handleRequiredRolesChange(event) {
+    const selectedRoles = Array.from(
+      event.target.selectedOptions,
+      (option) => option.value,
+    );
+
+    setNewMission({
+      ...newMission,
+      requiredRoles: selectedRoles.join(', '),
     });
   }
 
@@ -1594,14 +1632,26 @@ function MPC() {
             <div className="form-group">
               <label htmlFor="requiredRoles">Required Roles</label>
 
-              <input
+              <select
                 id="requiredRoles"
                 name="requiredRoles"
-                type="text"
-                placeholder="OIC, Team Leader, Medic"
-                value={newMission.requiredRoles}
-                onChange={handleChange}
-              />
+                multiple
+                value={
+                  newMission.requiredRoles
+                    ? newMission.requiredRoles
+                        .split(',')
+                        .map((role) => role.trim())
+                        .filter((role) => role)
+                    : []
+                }
+                onChange={handleRequiredRolesChange}
+              >
+                {roles.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="form-actions">
