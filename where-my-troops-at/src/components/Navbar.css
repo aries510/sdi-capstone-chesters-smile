@@ -127,10 +127,19 @@
   top: 6vh;
   right: 10px;
   gap: 10px;
-  background-color: var(--text-color);
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 10px;
   z-index: 3;
+}
+
+/* Only shown inside the dropdown at small widths - see media query.
+   Hidden by default so desktop doesn't show the nav links twice. */
+.menu-dropdown-links {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
 }
 
 @media (max-width: 768px) {
@@ -142,10 +151,17 @@
   }
 
   .navbar-links {
-    flex-basis: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  /* The flat links outside the dropdown hide at this width - the
+     duplicate copy inside .menu-dropdown-links takes over instead */
+  .navbar-links > .navbar-link {
+    display: none;
+  }
+
+  .menu-dropdown-links {
+    display: flex;
   }
 
   .navbar-link,
@@ -163,4 +179,3 @@
 .title span {
   padding-left: 10px;
 }
-

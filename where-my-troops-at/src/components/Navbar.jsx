@@ -84,6 +84,20 @@ export default function Navbar() {
 
         {menuOpen && (
             <div className="menu-dropdown">
+                <div className="menu-dropdown-links">
+                    {links.map((link) => (
+                      <NavLink
+                      key={link.to}
+                      to={link.to}
+                      end
+                      className={({ isActive }) =>
+                        `navbar-link ${isActive ? 'active' : ''}`
+                    }
+                    >
+                        {link.label}
+                      </NavLink>
+                    ))}
+                </div>
                 <button
                     className="navbar-theme-btn"
                     onClick={() => setDarkMode((mode) => !mode)}
