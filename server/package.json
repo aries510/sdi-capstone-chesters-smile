@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +21,9 @@
     "pg": "^8.23.0"
   },
   "devDependencies": {
-    "@faker-js/faker": "^10.6.0"
+    "@faker-js/faker": "^10.6.0",
+    "jest": "^30.5.1",
+    "mock-knex": "^0.4.13",
+    "supertest": "^7.2.2"
   }
 }

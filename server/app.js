@@ -54,3 +54,5 @@ app.use('/crewcerts', require('./routes/crewCertifications'));
 app.listen(port, () =>
   console.log(`Server is running on http://localhost:${port}`),
 );
+
+module.exports = app;
