@@ -82,7 +82,7 @@ export default function EvaluatorsPanel({ evaluators, trainees, onEvaluatorAdded
                     <li key={evaluator.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
                         <span>{evaluator.rank} {evaluator.first_name} {evaluator.last_name}</span>
                         <button
-                            style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}
+                            className="btn-delete"
                             onClick={() => handleRemove(evaluator)}
                         >
                             Remove

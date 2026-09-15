@@ -131,13 +131,13 @@ export default function WeaponSystemPanel() {
                         </div>
                         <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
                             <button
-                                style={{ background: 'none', border: 'none', color: 'var(--text-color)', cursor: 'pointer', textDecoration: 'underline' }}
+                                className="btn-edit"
                                 onClick={() => openEditForm(system)}
                             >
                                 Edit
                             </button>
                             <button
-                                style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}
+                                className="btn-delete"
                                 onClick={() => handleDelete(system)}
                             >
                                 Delete
