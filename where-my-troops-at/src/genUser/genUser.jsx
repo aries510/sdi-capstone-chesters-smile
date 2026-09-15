@@ -309,7 +309,7 @@ function GenUser() {
                 <div className="contact">
                     <div>
                         <h4>Contact Info:</h4>
-                        <button className="btn-toggle">Edit</button>
+                        <button className="btn-edit">Edit</button>
                     </div>
                     <p>Email@example.com</p>
                     <p>Comm:(000)000-0000</p>

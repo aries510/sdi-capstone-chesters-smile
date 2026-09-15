@@ -31,3 +31,36 @@ body {
     font-family: sans-serif;
     margin: 0;
 }
+
+/* Shared Edit/Delete button styling - matches the pattern MPC.css
+   originally established (.edit-mission-button / .delete-mission-button).
+   Used app-wide now instead of each page inventing its own. */
+.btn-edit {
+    background-color: #d4a017;
+    color: #ffffff;
+    border: 1px solid #d4a017;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn-edit:hover {
+    background-color: #975a16;
+    border-color: #975a16;
+}
+
+.btn-delete {
+    background-color: #b42318;
+    color: #ffffff;
+    border: 1px solid #b42318;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn-delete:hover {
+    background-color: #8f1c13;
+    border-color: #8f1c13;
+}

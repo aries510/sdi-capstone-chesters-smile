@@ -336,7 +336,7 @@ function EvaluatorHome() {
                         )}
                       </div>
                     </div>
-                    <button onClick={() => setSelectedTrainee(t)}>Edit</button>
+                    <button className="btn-edit" onClick={() => setSelectedTrainee(t)}>Edit</button>
                   </li>
                 );
               })

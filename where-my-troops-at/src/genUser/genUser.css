@@ -56,7 +56,7 @@
         height: 70vh;
         margin: 5vh 0;
         padding: 10px;
-        background-color: var(--list-bg);
+        background-color: var(--panel-bg);
         backdrop-filter: blur(6px);
         min-width: 0;
     }
@@ -207,8 +207,9 @@
                 padding: 0;
                 height: fit-content;
             }
-            .contact.btn-card {
-                height: fit-content;
+            .contact button {
+                height: 80%;
+                align-self: center;
             }
 
 

@@ -223,15 +223,6 @@ body {
     border-bottom: none;
 }
 
-.trainees-list button {
-    background-color: var(--panel-bg);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 4px 12px;
-    cursor: pointer;
-}
-
 .no-trainees-msg {
     font-size: 0.85rem;
     opacity: 0.7;
