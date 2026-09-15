@@ -274,7 +274,7 @@ function EvaluatorHome() {
       <div className="evaluator-top-row">
         <div className="trainees-panel">
           <div className="trainees-header">
-            <h3>Trainees</h3>
+            <h3>Personnel Certifications/Qualifications</h3>
             <button
               className="add-new-btn"
               onClick={() => setShowAddModal(true)}
@@ -336,7 +336,12 @@ function EvaluatorHome() {
                         )}
                       </div>
                     </div>
-                    <button className="btn-edit" onClick={() => setSelectedTrainee(t)}>Edit</button>
+                    <button
+                      className="btn-edit"
+                      onClick={() => setSelectedTrainee(t)}
+                    >
+                      Edit
+                    </button>
                   </li>
                 );
               })

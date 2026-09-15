@@ -102,15 +102,9 @@ function CertificationCatalog() {
   };
 
   return (
-    <div className="cert-catalog" style={{ position: 'relative' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <h2 style={{ marginTop: '0px' }}>Certification Catalog</h2>
+    <div className="panel" style={{ position: 'relative' }}>
+      <div className="panel-header">
+        <h3>Certification Catalog</h3>
         <button className="new-btn" onClick={openCreateForm}>
           + New Certification
         </button>
@@ -126,7 +120,7 @@ function CertificationCatalog() {
       {loading ? (
         <p>Loading certifications...</p>
       ) : (
-        <ul className="cert-results">
+        <ul className="panel-list">
           {filteredCertifications.length === 0 ? (
             <li>No certifications found.</li>
           ) : (
@@ -138,7 +132,6 @@ function CertificationCatalog() {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   gap: '10px',
-                  margin: '5px 0',
                   padding: '8px 0',
                   borderBottom: '1px solid var(--border-color)'
                 }}

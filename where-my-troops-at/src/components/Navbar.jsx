@@ -10,11 +10,11 @@ const links = [
   { to: '/MPC', label: 'MPC Dashboard' },
 ];
 
-const pages = [
-  { header: 'Admin Home', url: '/admin' },
-  { header: 'General User', url: '/generaluser' },
-  { header: 'MPC', url: '/mpc' },
-];
+// const pages = [
+//   { header: 'Admin Home', url: '/admin' },
+//   { header: 'General User', url: '/generaluser' },
+//   { header: 'MPC', url: '/mpc' },
+// ];
 
 const logoff = () => {
   localStorage.removeItem('user');
@@ -26,9 +26,9 @@ export default function Navbar() {
   const [ menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  const currentPage = pages.find(
-    (page) => page.url.toLowerCase() === pathname.toLowerCase(),
-  );
+  // const currentPage = pages.find(
+  //   (page) => page.url.toLowerCase() === pathname.toLowerCase(),
+  // );
 
   useEffect(() => {
     document.body.classList.toggle('dark-theme', darkMode);

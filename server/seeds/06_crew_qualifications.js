@@ -17,8 +17,8 @@ exports.seed = async function (knex) {
   const seen = new Set();
 
   for (const person of personnel) {
-    // Each crew member is qualified on 1-4 role/system combinations
-    const count = faker.number.int({ min: 1, max: 4 });
+    // Each crew member is qualified on 1-2 role/system combinations
+    const count = faker.number.int({ min: 1, max: 2 });
 
     for (let i = 0; i < count; i += 1) {
       const roleId = faker.helpers.arrayElement(crewRoles).id;
@@ -32,7 +32,7 @@ exports.seed = async function (knex) {
         personnel_id: person.id,
         crew_role_id: roleId,
         system_id: systemId,
-        qualified_date: faker.date.past({ years: 5 }),
+        qualified_date: faker.date.past({ years: 2 }),
       });
     }
   }

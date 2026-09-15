@@ -26,7 +26,7 @@ exports.seed = async function (knex) {
       if (seen.has(key)) continue;
       seen.add(key);
 
-      const dateEarned = faker.date.past({ years: 5 });
+      const dateEarned = faker.date.past({ years: 3 });
       // Certifications are valid for 3 years from the date earned
       const expiryDate = new Date(dateEarned);
       expiryDate.setFullYear(expiryDate.getFullYear() + 3);
