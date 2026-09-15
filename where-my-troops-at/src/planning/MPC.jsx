@@ -1312,7 +1312,13 @@ function MPC() {
 
               <div className="ready-check-row">
                 <span>Required Roles</span>
-                <strong>{selectedMission.requiredRoles}</strong>
+                <strong>
+                  {Array.isArray(selectedMission.requiredRoles)
+                    ? selectedMission.requiredRoles
+                        .map((role) => role.role)
+                        .join(', ')
+                    : selectedMission.requiredRoles}
+                </strong>
               </div>
             </div>
           )}
