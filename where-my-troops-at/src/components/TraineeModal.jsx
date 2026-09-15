@@ -324,8 +324,8 @@ function TraineeModal({
                                                             </span>
                                                         </span>
                                                         <span style={{ display: 'flex', gap: '8px' }}>
-                                                            <button onClick={() => handleStartEditQual(q)} style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
-                                                            <button onClick={() => handleRemoveQual(q)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
+                                                            <button onClick={() => handleStartEditQual(q)} className="btn-edit">Edit</button>
+                                                            <button onClick={() => handleRemoveQual(q)} className="btn-delete">Remove</button>
                                                         </span>
                                                     </div>
                                                 )}
@@ -366,8 +366,8 @@ function TraineeModal({
                                                         </span>
                                                     </span>
                                                     <span style={{ display: 'flex', gap: '8px' }}>
-                                                        <button onClick={() => handleStartEditCert(c)} style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: '0.8rem' }}>Edit</button>
-                                                        <button onClick={() => handleRemoveCert(c.certification)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
+                                                        <button onClick={() => handleStartEditCert(c)} className="btn-edit">Edit</button>
+                                                        <button onClick={() => handleRemoveCert(c.certification)} className="btn-delete">Remove</button>
                                                     </span>
                                                 </div>
                                             )}

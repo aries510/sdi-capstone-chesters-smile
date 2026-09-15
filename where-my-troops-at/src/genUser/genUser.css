@@ -207,8 +207,9 @@
                 padding: 0;
                 height: fit-content;
             }
-            .contact.btn-card {
-                height: fit-content;
+            .contact button {
+                height: 80%;
+                align-self: center;
             }
 
 
