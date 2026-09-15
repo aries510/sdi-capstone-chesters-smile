@@ -16,6 +16,7 @@ import { SERVER_URL, fetchCatch } from '../utils/api';
     const personnelUrl = `${SERVER_URL}/personnel/${personnelId}`;
     const certificationsUrl = `${SERVER_URL}/perscerts/${personnelId}`;
     const qualificationsUrl =`${SERVER_URL}/quals/${personnelId}`;
+    const missionsUrl = `${SERVER_URL}/msnplans`;
 
 
 
@@ -125,6 +126,44 @@ function GenUser() {
             .then((data) => setCrewRoles(data))
             .catch(fetchCatch('Could not load crew role catalog, using demo:'));
     }, []);
+    //Fetch missions
+    useEffect(() => {
+        fetch(missionsUrl)
+            .then((response) => response.json())
+            .then((data) => {
+                const myMissions = data.filter((mission) => 
+                    mission.personnel.some((person) => person.personId === personnelId)
+                );
+                return Promise.all(
+                    myMissions.map((mission) => {
+                        const roleFetches = mission.roles.map((role) =>
+                        fetch(`${SERVER_URL}/crewcerts/${role.roleId}`)
+                            .then((response) => response.json())
+                    );
+
+                    return Promise.all(roleFetches).then((roleCertResults) => {
+                        const allCerts = roleCertResults.flatMap((roleData) =>
+                            roleData.certifications.map((cert) => cert.certification)
+                        );
+                        const uniqueCerts = [...new Set(allCerts)];
+
+                        return {
+                            id: mission.id,
+                            name: mission.msn_name,
+                            type: mission.msn_type,
+                            dates: `${mission.start_date} - ${mission.end_date}`,
+                            location: mission.location,
+                            oic: mission.personnel[0]?.name || 'Unassigned',
+                            purpose: mission.description,
+                            requiredCerts: uniqueCerts
+                        };
+                    });
+                })
+            );
+        })
+        .then((mappedMissions) => setMissions(mappedMissions))
+        .catch(fetchCatch('Could not load missions, using demo:'));
+    }, [])
         
 
         
@@ -360,7 +399,7 @@ function GenUser() {
                     </div>
 
                     {certTasks.map((item, index) => (
-                        <div className="user-task btn-card" key={index}>
+                        <div className="user-task" key={index}>
                             <p className="task-date">{item.date}</p>
                             <p>{item.task}</p>
                             <button className="btn-primary">View</button>
@@ -376,16 +415,36 @@ function GenUser() {
             {openModal?.type === 'mission' && (
                 <div className="mission-modal-backdrop" onClick={() => setOpenModal(null)}>
                     <div className="mission-modal mission-view-modal" onClick={(event) => event.stopPropagation()}>
-                        <div className="modal-header" id="mv-header">
+                        <div className="modal-header">
                             <h2>{openModal.mission.name}</h2>
                             <button onClick={() => setOpenModal(null)}>Close</button>
                         </div>
-                        <p id="mv-type">Type: {openModal.mission.type}</p>
-                        <p id="mv-dates">Dates: {openModal.mission.dates}</p>
-                        <p id="mv-location">Location: {openModal.mission.location}</p>
-                        <p id="mv-oic">OIC: {openModal.mission.oic}</p>
-                        <p id="mv-purpose">Purpose: {openModal.mission.purpose}</p>
-                        <p id="mv-requirements">Requirements: {openModal.mission.requiredCerts.join(', ')}</p>
+                        <div className="ready-checks">
+                            <div className="ready-check-row">
+                                <span>Type</span>
+                                <strong>{openModal.mission.type}</strong>
+                            </div>
+                            <div className="ready-check-row">
+                                <span>Dates</span>
+                                <strong>{openModal.mission.dates}</strong>
+                            </div>
+                            <div className="ready-check-row">
+                                <span>Location</span>
+                                <strong>{openModal.mission.location}</strong>
+                            </div>
+                            <div className="ready-check-row">
+                                <span>OIC</span>
+                                <strong>{openModal.mission.oic}</strong>
+                            </div>
+                            <div className="ready-check-row">
+                                <span>Purpose</span>
+                                <strong>{openModal.mission.purpose}</strong>
+                            </div>
+                            <div className="ready-check-row">
+                                <span>Requirements</span>
+                                <strong>{openModal.mission.requiredCerts.join(', ') || 'None'}</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
