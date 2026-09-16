@@ -170,7 +170,7 @@ function AdminHome() {
               {evaluators.length === 0 ? (
                 <p className="no-records-msg">No evaluators found.</p>
               ) : (
-                <ul className="personnel-list">
+                <ul className="personnel-group-list">
                   {evaluators.map((ev) => (
                     <li
                       key={ev.id}
@@ -211,7 +211,7 @@ function AdminHome() {
               {planners.length === 0 ? (
                 <p className="no-records-msg">No planners found.</p>
               ) : (
-                <ul className="personnel-list">
+                <ul className="personnel-group-list">
                   {planners.map((pl) => (
                     <li
                       key={pl.id}
@@ -252,7 +252,7 @@ function AdminHome() {
               {trainees.length === 0 ? (
                 <p className="no-records-msg">No trainees found.</p>
               ) : (
-                <ul className="personnel-list">
+                <ul className="personnel-group-list">
                   {trainees.map((t) => (
                     <li
                       key={t.id}
@@ -482,9 +482,7 @@ function AdminHome() {
         <AccountManagementPanel />
         <CrewRolePanel roles={crewRoles} setRoles={setCrewRoles} />
         <WeaponSystemPanel />
-        <div className="catalog-wrapper">
-          <CertificationCatalog />
-        </div>
+        <CertificationCatalog />
         <CrewCertificationPanel />
       </div>
 
