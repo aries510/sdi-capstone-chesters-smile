@@ -78,7 +78,7 @@ exports.seed = async function (knex) {
       personnel_id: testPersonnel?.id ?? null,
     },
     {
-      username: 'test_evauluator',
+      username: 'test_evaluator',
       pw_hash: pw_hash,
       is_evaluator: true,
       personnel_id: testEvaluator?.id ?? null,
