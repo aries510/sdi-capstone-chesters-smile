@@ -2,24 +2,746 @@ import { useState, useEffect } from 'react';
 import './MPC.css';
 
 const stages = [
-    'Mission',
-    'Plan / CONOP',
-    'Personnel',
-    'Readiness',
-    'Approval',
+  'Mission',
+  'Plan / CONOP',
+  'Personnel',
+  'Readiness',
+  'Approval',
 ];
 
 function MPC() {
-    const [missions, setMissions] = useState([]);
-    const [personnel, setPersonnel] = useState([]);
-    const [showMissionForm, setShowMissionForm] = useState(false);
-    const [selectedMission, setSelectedMission] = useState(null);
-    const [assignedPersonnel, setAssignedPersonnel] = useState([]);
-    const [viewStage, setViewStage] = useState(null);
-    const [missionViewSection, setMissionViewSection] = useState('mission');
-    const [showAttentionOnly, setShowAttentionOnly] = useState(false);
-    const [showUpcomingOnly, setShowUpcomingOnly] = useState(false);
-    const [newMission, setNewMission] = useState({
+  const [missions, setMissions] = useState([]);
+  const [personnel, setPersonnel] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [showMissionForm, setShowMissionForm] = useState(false);
+  const [selectedMission, setSelectedMission] = useState(null);
+  const [assignedPersonnel, setAssignedPersonnel] = useState([]);
+  const [viewStage, setViewStage] = useState(null);
+  const [editingMissionId, setEditingMissionId] = useState(null);
+  const [missionViewSection, setMissionViewSection] = useState('mission');
+  const [showAttentionOnly, setShowAttentionOnly] = useState(false);
+  const [showUpcomingOnly, setShowUpcomingOnly] = useState(false);
+  const [newMission, setNewMission] = useState({
+    name: '',
+    type: '',
+    startDate: '',
+    endDate: '',
+    location: '',
+    oic: '',
+    purpose: '',
+    requiredPersonnel: '',
+    requiredRoles: '',
+  });
+
+  const [conop, setConop] = useState({
+    situation: '',
+    missionStatement: '',
+    execution: '',
+    sustainment: '',
+    commandSignal: '',
+  });
+
+  useEffect(() => {
+    if (selectedMission && viewStage) {
+      requestAnimationFrame(() => {
+        document.querySelector('.new-mission-form')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      });
+    }
+  }, [selectedMission, viewStage]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/crewroles');
+
+        if (!response.ok) {
+          console.error('Failed to fetch crew roles:', response.status);
+          return;
+        }
+        const data = await response.json();
+        const crewRoles = data.map((role) => role.name);
+        setRoles(crewRoles);
+      } catch (err) {
+        console.error('Error fetching crew roles:', err);
+      }
+    };
+    fetchRoles();
+  }, []);
+
+  useEffect(() => {
+    const fetchMsn = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/msnplans');
+
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+          console.error('Failed to fetch mission plans:', response.status);
+          return;
+        }
+
+        const data = await response.json();
+
+        console.log('Backend mission data:', data);
+
+        const mappedMissions = data.map((mission) => ({
+          id: mission.id,
+          name: mission.msn_name,
+          type: mission.msn_type,
+          startDate: mission.start_date,
+          endDate: mission.end_date,
+          dates: `${mission.start_date} - ${mission.end_date}`,
+          location: mission.location,
+          purpose: mission.description,
+          personnel: mission.personnel,
+          // oic: mission.personnel,
+
+          status: mission.status,
+          readiness: mission.readiness,
+          stage: mission.stage,
+          issue: mission.issue,
+
+          requiredPersonnel: mission.num_personnel_req,
+          requiredRoles: mission.roles,
+
+          approvedBy: mission.approved_by,
+          approvedAt: mission.approved_at,
+
+          conop: {
+            situation: mission.situation || '',
+            missionStatement: mission.mission_statement || '',
+            execution: mission.execution || '',
+            sustainment: mission.sustainment || '',
+            commandSignal: mission.command_signal || '',
+          },
+        }));
+
+        setMissions(mappedMissions);
+      } catch (err) {
+        console.error('Error fetching mission plans:', err);
+      }
+    };
+
+    fetchMsn();
+  }, []);
+
+  useEffect(() => {
+    const fetchPersonnel = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/quals');
+
+        if (!response.ok) {
+          console.error('Failed to fetch personnel:', response.status);
+          return;
+        }
+
+        const data = await response.json();
+
+        const mappedPersonnel = data
+          .map((person) => {
+            const qualifications = person.qualifications || [];
+            const currentQualifications = qualifications.filter(
+              (qualification) => qualification.is_current,
+            );
+            const roles = [
+              ...new Set(
+                currentQualifications.map(
+                  (qualification) => qualification.role,
+                ),
+              ),
+            ];
+
+            return {
+              id: person.personId,
+              name: `${person.rank} ${person.member}`,
+              role: roles,
+              qualified: currentQualifications.length > 0,
+              available: true,
+            };
+          })
+          .filter((person) => person.qualified);
+
+        setPersonnel(mappedPersonnel);
+      } catch (err) {
+        console.error('Error fetching personnel:', err);
+      }
+    };
+
+    fetchPersonnel();
+  }, []);
+
+  function isUpcomingMission(mission) {
+    if (!mission.startDate) {
+      return false;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const missionStart = new Date(`${mission.startDate}T00:00:00`);
+
+    return missionStart >= today;
+  }
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+
+    setNewMission({
+      ...newMission,
+      [name]: value,
+    });
+  }
+
+  function handleRequiredRolesChange(event) {
+    const selectedRoles = Array.from(
+      event.target.selectedOptions,
+      (option) => option.value,
+    );
+
+    setNewMission({
+      ...newMission,
+      requiredRoles: selectedRoles.join(', '),
+    });
+  }
+
+  function handleConopChange(event) {
+    const { name, value } = event.target;
+
+    setConop({
+      ...conop,
+      [name]: value,
+    });
+  }
+
+  function handlePersonnelToggle(personId) {
+    if (assignedPersonnel.includes(personId)) {
+      setAssignedPersonnel(assignedPersonnel.filter((id) => id !== personId));
+    } else {
+      setAssignedPersonnel([...assignedPersonnel, personId]);
+    }
+  }
+
+  async function handlePersonnelSubmit() {
+    if (!selectedMission) {
+      return;
+    }
+
+    if (assignedPersonnel.length === 0) {
+      return;
+    }
+
+    const selectedPersonnel = personnel.filter((person) =>
+      assignedPersonnel.includes(person.id),
+    );
+
+    const requiredPersonnel =
+      selectedMission.requiredPersonnel || selectedPersonnel.length;
+
+    const readiness = calculateReadiness(selectedPersonnel, requiredPersonnel);
+
+    const personnelWithQualificationGaps = selectedPersonnel.filter(
+      (person) => !person.qualified,
+    );
+
+    const qualificationGaps = personnelWithQualificationGaps.length;
+
+    const availabilityConflicts = selectedPersonnel.filter(
+      (person) => !person.available,
+    ).length;
+
+    const requiredRoles = Array.isArray(selectedMission.requiredRoles)
+      ? selectedMission.requiredRoles.map((role) => role.role)
+      : selectedMission.requiredRoles
+        ? selectedMission.requiredRoles
+            .split(',')
+            .map((role) => role.trim())
+            .filter((role) => role)
+        : [];
+
+    const assignedRoles = selectedPersonnel.flatMap((person) =>
+      (person.role || []).map((role) => role.toLowerCase()),
+    );
+
+    const missingRoles = requiredRoles.filter(
+      (role) => !assignedRoles.includes(role.toLowerCase()),
+    );
+
+    const personnelShortage = Math.max(
+      requiredPersonnel - selectedPersonnel.length,
+      0,
+    );
+
+    const issueParts = [];
+
+    if (personnelShortage > 0) {
+      issueParts.push(
+        `${personnelShortage} Personnel Shortage${
+          personnelShortage === 1 ? '' : 's'
+        }`,
+      );
+    }
+
+    if (qualificationGaps > 0) {
+      issueParts.push(
+        `${qualificationGaps} Qualification Gap${
+          qualificationGaps === 1 ? '' : 's'
+        }`,
+      );
+    }
+
+    if (availabilityConflicts > 0) {
+      issueParts.push(
+        `${availabilityConflicts} Availability Conflict${
+          availabilityConflicts === 1 ? '' : 's'
+        }`,
+      );
+    }
+
+    if (missingRoles.length > 0) {
+      issueParts.push(
+        `${missingRoles.length} Role Gap${
+          missingRoles.length === 1 ? '' : 's'
+        }`,
+      );
+    }
+
+    const missionIssue = issueParts.length > 0 ? issueParts.join(' • ') : null;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/msnplans/${selectedMission.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            updates: {
+              num_personnel_req: Number(requiredPersonnel),
+              readiness: readiness,
+              issue: missionIssue,
+              stage: 4,
+            },
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to save personnel readiness:', errorData);
+        return;
+      }
+    } catch (error) {
+      console.error('Error saving personnel readiness:', error);
+      return;
+    }
+
+    const updatedMissions = missions.map((mission) => {
+      if (mission.id === selectedMission.id) {
+        return {
+          ...mission,
+          personnel: selectedPersonnel,
+          readiness: readiness,
+          qualificationGaps: qualificationGaps,
+          availabilityConflicts: availabilityConflicts,
+          personnelShortage: personnelShortage,
+          missingRoles: missingRoles,
+          issue: missionIssue,
+          personnelWithQualificationGaps: personnelWithQualificationGaps,
+          stage: 4,
+        };
+      }
+
+      return mission;
+    });
+
+    setMissions(updatedMissions);
+
+    setSelectedMission({
+      ...selectedMission,
+      personnel: selectedPersonnel,
+      readiness: readiness,
+      qualificationGaps: qualificationGaps,
+      availabilityConflicts: availabilityConflicts,
+      personnelShortage: personnelShortage,
+      missingRoles: missingRoles,
+      issue: missionIssue,
+      personnelWithQualificationGaps: personnelWithQualificationGaps,
+      stage: 4,
+    });
+
+    setViewStage(4);
+  }
+
+  function calculateReadiness(assigned, requiredPersonnel) {
+    if (assigned.length === 0) {
+      return 0;
+    }
+
+    const readyPersonnel = assigned.filter(
+      (person) => person.qualified && person.available,
+    );
+
+    const required = requiredPersonnel || assigned.length;
+
+    return Math.min(Math.round((readyPersonnel.length / required) * 100), 100);
+  }
+
+  async function handleReadinessSubmit() {
+    if (!selectedMission) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/msnplans/${selectedMission.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            updates: {
+              stage: 5,
+            },
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to advance mission to approval:', errorData);
+        return;
+      }
+    } catch (error) {
+      console.error('Error advancing mission to approval:', error);
+      return;
+    }
+
+    const updatedMissions = missions.map((mission) => {
+      if (mission.id === selectedMission.id) {
+        return {
+          ...mission,
+          stage: 5,
+        };
+      }
+
+      return mission;
+    });
+
+    setMissions(updatedMissions);
+
+    setSelectedMission({
+      ...selectedMission,
+      stage: 5,
+    });
+
+    setViewStage(5);
+  }
+
+  async function handleApprovalSubmit() {
+    if (!selectedMission) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/msnplans/${selectedMission.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            updates: {
+              status: 'Ready',
+              issue: null,
+              stage: 5,
+              approved_by: 'Current User',
+              approved_at: new Date().toISOString(),
+            },
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to advance mission to approval:', errorData);
+        return;
+      }
+    } catch (error) {
+      console.error('Error advancing mission to approval:', error);
+      return;
+    }
+
+    const updatedMissions = missions.map((mission) => {
+      if (mission.id === selectedMission.id) {
+        return {
+          ...mission,
+          status: 'Ready',
+          issue: null,
+          stage: 5,
+          approvedBy: 'Current User',
+          approvedAt: new Date().toLocaleString(),
+        };
+      }
+
+      return mission;
+    });
+
+    setMissions(updatedMissions);
+
+    setSelectedMission({
+      ...selectedMission,
+      status: 'Ready',
+      issue: null,
+      stage: 5,
+      approvedBy: 'Current User',
+      approvedAt: new Date().toLocaleString(),
+    });
+
+    setViewStage(6);
+    setMissionViewSection('mission');
+  }
+
+  async function handleConopSubmit(event) {
+    event.preventDefault();
+
+    if (!selectedMission) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/msnplans/${selectedMission.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            updates: {
+              situation: conop.situation,
+              mission_statement: conop.missionStatement,
+              execution: conop.execution,
+              sustainment: conop.sustainment,
+              command_signal: conop.commandSignal,
+              stage: 3,
+            },
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to save CONOP:', errorData);
+        return;
+      }
+
+      const updatedMissions = missions.map((mission) => {
+        if (mission.id === selectedMission.id) {
+          return {
+            ...mission,
+            conop: conop,
+            stage: 3,
+          };
+        }
+
+        return mission;
+      });
+
+      setMissions(updatedMissions);
+
+      setSelectedMission({
+        ...selectedMission,
+        conop: conop,
+        stage: 3,
+      });
+
+      setViewStage(3);
+    } catch (error) {
+      console.error('Error saving CONOP:', error);
+    }
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    if (editingMissionId) {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/msnplans/${editingMissionId}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              updates: {
+                msn_name: newMission.name,
+                msn_type: newMission.type,
+                start_date: newMission.startDate,
+                end_date: newMission.endDate,
+                location: newMission.location,
+                description: newMission.purpose,
+                num_personnel_req: Number(newMission.requiredPersonnel),
+                stage: 2,
+              },
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to update mission:', errorData);
+          return;
+        }
+
+        const updatedMissions = missions.map((mission) =>
+          mission.id === editingMissionId
+            ? {
+                ...mission,
+                name: newMission.name,
+                type: newMission.type,
+                startDate: newMission.startDate,
+                endDate: newMission.endDate,
+                dates: `${newMission.startDate} - ${newMission.endDate}`,
+                location: newMission.location,
+                purpose: newMission.purpose,
+                requiredPersonnel: Number(newMission.requiredPersonnel),
+                requiredRoles: newMission.requiredRoles,
+                stage: 2,
+              }
+            : mission,
+        );
+
+        const updatedMission = updatedMissions.find(
+          (mission) => mission.id === editingMissionId,
+        );
+
+        setMissions(updatedMissions);
+        setSelectedMission(updatedMission);
+        setViewStage(2);
+        setShowMissionForm(false);
+
+        return;
+      } catch (error) {
+        console.error('Error updating mission:', error);
+        return;
+      }
+    }
+
+    const missionData = {
+      msnName: newMission.name,
+      msnType: newMission.type,
+      startDate: newMission.startDate,
+      endDate: newMission.endDate,
+      locationName: newMission.location,
+      personnelName: newMission.oic,
+      descriptionText: newMission.purpose,
+    };
+
+    try {
+      const response = await fetch('http://localhost:8080/msnplans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(missionData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to create mission:', errorData);
+        return;
+      }
+
+      console.log('Mission successfully created');
+
+      const missionsResponse = await fetch('http://localhost:8080/msnplans');
+
+      const data = await missionsResponse.json();
+
+      const mappedMissions = data.map((mission) => ({
+        id: mission.id,
+        name: mission.msn_name,
+        type: mission.msn_type,
+        startDate: mission.start_date,
+        endDate: mission.end_date,
+        dates: `${mission.start_date} - ${mission.end_date}`,
+        location: mission.location,
+        purpose: mission.description,
+        personnel: mission.personnel,
+        // oic: mission.personnel,
+
+        status: mission.status,
+        readiness: mission.readiness,
+        stage: mission.stage,
+        issue: mission.issue,
+
+        requiredPersonnel: mission.num_personnel_req,
+        requiredRoles: mission.roles,
+
+        approvedBy: mission.approved_by,
+        approvedAt: mission.approved_at,
+
+        conop: {
+          situation: mission.situation || '',
+          missionStatement: mission.mission_statement || '',
+          execution: mission.execution || '',
+          sustainment: mission.sustainment || '',
+          commandSignal: mission.command_signal || '',
+        },
+      }));
+
+      setMissions(mappedMissions);
+
+      const createdMission = mappedMissions.find(
+        (mission) =>
+          mission.name === newMission.name &&
+          mission.startDate === newMission.startDate &&
+          mission.endDate === newMission.endDate,
+      );
+
+      if (createdMission) {
+        const patchResponse = await fetch(
+          `http://localhost:8080/msnplans/${createdMission.id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              updates: {
+                num_personnel_req: Number(newMission.requiredPersonnel),
+                stage: 2,
+              },
+            }),
+          },
+        );
+
+        if (!patchResponse.ok) {
+          const errorData = await patchResponse.json();
+          console.error('Failed to update mission requirements:', errorData);
+          return;
+        }
+
+        const missionForPlanning = {
+          ...createdMission,
+          oic: newMission.oic,
+          requiredPersonnel: Number(newMission.requiredPersonnel),
+          requiredRoles: newMission.requiredRoles,
+          stage: 2,
+        };
+
+        setSelectedMission(missionForPlanning);
+        setViewStage(2);
+      }
+
+      setNewMission({
         name: '',
         type: '',
         startDate: '',
@@ -29,1691 +751,1132 @@ function MPC() {
         purpose: '',
         requiredPersonnel: '',
         requiredRoles: '',
-    });
+      });
 
-    const [conop, setConop] = useState({
+      setShowMissionForm(false);
+    } catch (error) {
+      console.error('Error creating mission:', error);
+    }
+  }
+
+  async function handleDeleteMission(missionId) {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this mission?',
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/msnplans/${missionId}`,
+        {
+          method: 'DELETE',
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to delete mission:', errorData);
+        return;
+      }
+
+      setMissions(missions.filter((mission) => mission.id !== missionId));
+
+      if (selectedMission?.id === missionId) {
+        setSelectedMission(null);
+        setViewStage(null);
+      }
+    } catch (error) {
+      console.error('Error deleting mission:', error);
+    }
+  }
+
+  function handleMissionSelect(mission) {
+    console.log('CLICKED MISSION:', mission);
+    const currentMission = missions.find((item) => item.id === mission.id);
+    console.log('FOUND MISSION:', currentMission);
+    if (!currentMission) {
+      return;
+    }
+
+    setShowMissionForm(false);
+    setSelectedMission(currentMission);
+    setEditingMissionId(currentMission.id);
+
+    setNewMission({
+      name: currentMission.name || '',
+      type: currentMission.type || '',
+      startDate: currentMission.startDate || '',
+      endDate: currentMission.endDate || '',
+      location: currentMission.location || '',
+      oic: currentMission.oic || '',
+      purpose: currentMission.purpose || '',
+      requiredPersonnel: currentMission.requiredPersonnel || '',
+      requiredRoles: Array.isArray(currentMission.requiredRoles)
+        ? currentMission.requiredRoles.map((role) => role.role).join(', ')
+        : currentMission.requiredRoles || '',
+    });
+    if (currentMission.status === 'Ready') {
+      setViewStage(6);
+      setMissionViewSection('mission');
+    } else {
+      setViewStage(currentMission.stage);
+    }
+
+    setAssignedPersonnel(
+      Array.isArray(currentMission.personnel)
+        ? currentMission.personnel.map((person) => person.personId ?? person.id)
+        : [],
+    );
+
+    setConop(
+      currentMission.conop || {
         situation: '',
         missionStatement: '',
         execution: '',
         sustainment: '',
         commandSignal: '',
-    });
-
-    useEffect(() => {
-        const fetchMsn = async () => {
-            try {
-                const response = await fetch('http://localhost:8080/msnplans');
-
-                console.log('Response status:', response.status);
-
-                if (!response.ok) {
-                    console.error('Failed to fetch mission plans:', response.status);
-                    return;
-                }
-
-                const data = await response.json();
-
-                console.log('Backend mission data:', data);
-
-                const mappedMissions = data.map((mission) => ({
-                    id: mission.id,
-                    name: mission.msn_name,
-                    type: mission.msn_type,
-                    startDate: mission.start_date,
-                    endDate: mission.end_date,
-                    dates: `${mission.start_date} - ${mission.end_date}`,
-                    location: mission.location,
-                    purpose: mission.description,
-                    personnel: mission.personnel,
-                    // oic: mission.personnel,
-
-                    status: mission.status,
-                    readiness: mission.readiness,
-                    stage: mission.stage,
-                    issue: mission.issue,
-
-                    requiredPersonnel: mission.required_personnel,
-                    requiredRoles: mission.required_roles,
-
-                    approvedBy: mission.approved_by,
-                    approvedAt: mission.approved_at,
-
-                    conop: {
-                        situation: mission.situation || '',
-                        missionStatement: mission.mission_statement || '',
-                        execution: mission.execution || '',
-                        sustainment: mission.sustainment || '',
-                        commandSignal: mission.command_signal || '',
-                    },
-                }));
-
-                setMissions(mappedMissions);
-            } catch (err) {
-                console.error('Error fetching mission plans:', err);
-            }
-        };
-
-        fetchMsn();
-    }, []);
-
-    useEffect(() => {
-        const fetchPersonnel = async () => {
-            try {
-                const response = await fetch('http://localhost:8080/personnel');
-
-                if (!response.ok) {
-                    console.error('Failed to fetch personnel:', response.status);
-                    return;
-                }
-
-                const data = await response.json();
-
-                const mappedPersonnel = data.map((person) => ({
-                    id: person.id,
-                    name: `${person.rank} ${person.first_name} ${person.last_name}`,
-                    role: person.role,
-                    qualified: true,
-                    available: true,
-                }));
-
-                setPersonnel(mappedPersonnel);
-            } catch (err) {
-                console.error('Error fetching personnel:', err);
-            }
-        };
-
-        fetchPersonnel();
-    }, []);
-
-    function isUpcomingMission(mission) {
-        if (!mission.startDate) {
-            return false;
-        }
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const missionStart = new Date(`${mission.startDate}T00:00:00`);
-
-        return missionStart >= today;
-    }
-
-    function handleChange(event) {
-        const { name, value } = event.target;
-
-        setNewMission({
-            ...newMission,
-            [name]: value,
-        });
-    }
-
-    function handleConopChange(event) {
-        const { name, value } = event.target;
-
-        setConop({
-            ...conop,
-            [name]: value,
-        });
-    }
-
-    function handlePersonnelToggle(personId) {
-        if (assignedPersonnel.includes(personId)) {
-            setAssignedPersonnel(assignedPersonnel.filter((id) => id !== personId));
-        } else {
-            setAssignedPersonnel([...assignedPersonnel, personId]);
-        }
-    }
-
-    async function handlePersonnelSubmit() {
-        if (!selectedMission) {
-            return;
-        }
-
-        if (assignedPersonnel.length === 0) {
-            return;
-        }
-
-        const selectedPersonnel = personnel.filter((person) => assignedPersonnel.includes(person.id));
-
-        const requiredPersonnel = selectedMission.requiredPersonnel || selectedPersonnel.length;
-
-        const readiness = calculateReadiness(selectedPersonnel, requiredPersonnel);
-
-        const personnelWithQualificationGaps = selectedPersonnel.filter((person) => !person.qualified);
-
-        const qualificationGaps = personnelWithQualificationGaps.length;
-
-        const availabilityConflicts = selectedPersonnel.filter((person) => !person.available).length;
-
-        const requiredRoles = selectedMission.requiredRoles
-            ? selectedMission.requiredRoles
-                .split(",")
-                .map((role) => role.trim())
-                .filter((role) => role)
-            : [];
-
-        const assignedRoles = selectedPersonnel.map((person) => person.role.toLowerCase());
-
-        const missingRoles = requiredRoles.filter((role) => !assignedRoles.includes(role.toLowerCase()));
-
-        const personnelShortage = Math.max(
-            requiredPersonnel - selectedPersonnel.length, 0);
-
-        const issueParts = [];
-
-        if (personnelShortage > 0) {
-            issueParts.push(
-                `${personnelShortage} Personnel Shortage${personnelShortage === 1 ? "" : "s"
-                }`
-            );
-        }
-
-        if (qualificationGaps > 0) {
-            issueParts.push(
-                `${qualificationGaps} Qualification Gap${qualificationGaps === 1 ? "" : "s"
-                }`
-            );
-        }
-
-        if (availabilityConflicts > 0) {
-            issueParts.push(
-                `${availabilityConflicts} Availability Conflict${availabilityConflicts === 1 ? "" : "s"
-                }`
-            );
-        }
-
-        if (missingRoles.length > 0) {
-            issueParts.push(
-                `${missingRoles.length} Role Gap${missingRoles.length === 1 ? "" : "s"
-                }`
-            );
-        }
-
-        const missionIssue =
-            issueParts.length > 0
-                ? issueParts.join(" • ")
-                : null;
-
-        try {
-            const response = await fetch(
-                `http://localhost:8080/msnplans/${selectedMission.id}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        updates: {
-                            required_personnel: Number(requiredPersonnel),
-                            required_roles: selectedMission.requiredRoles,
-                            readiness: readiness,
-                            issue: missionIssue,
-                            stage: 4,
-                        },
-                    }),
-                }
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error(
-                    "Failed to save personnel readiness:",
-                    errorData
-                );
-                return;
-            }
-        } catch (error) {
-            console.error("Error saving personnel readiness:", error);
-            return;
-        }
-
-        const updatedMissions = missions.map((mission) => {
-            if (mission.id === selectedMission.id) {
-                return {
-                    ...mission,
-                    personnel: selectedPersonnel,
-                    readiness: readiness,
-                    qualificationGaps: qualificationGaps,
-                    availabilityConflicts: availabilityConflicts,
-                    personnelShortage: personnelShortage,
-                    missingRoles: missingRoles,
-                    issue: missionIssue,
-                    personnelWithQualificationGaps: personnelWithQualificationGaps,
-                    stage: 4,
-                };
-            }
-
-            return mission;
-        });
-
-        setMissions(updatedMissions);
-
-        setSelectedMission({
-            ...selectedMission,
-            personnel: selectedPersonnel,
-            readiness: readiness,
-            qualificationGaps: qualificationGaps,
-            availabilityConflicts: availabilityConflicts,
-            personnelShortage: personnelShortage,
-            missingRoles: missingRoles,
-            issue: missionIssue,
-            personnelWithQualificationGaps: personnelWithQualificationGaps,
-            stage: 4,
-        });
-
-        setViewStage(4);
-    }
-
-    function calculateReadiness(assigned, requiredPersonnel) {
-        if (assigned.length === 0) {
-            return 0;
-        }
-
-        const readyPersonnel = assigned.filter(
-            (person) => person.qualified && person.available
-        );
-
-        const required = requiredPersonnel || assigned.length;
-
-        return Math.min(
-            Math.round(
-                (readyPersonnel.length / required) * 100
-            ),
-            100
-        );
-    }
-
-    async function handleReadinessSubmit() {
-        if (!selectedMission) {
-            return;
-        }
-
-        try {
-            const response = await fetch(
-                `http://localhost:8080/msnplans/${selectedMission.id}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        updates: {
-                            stage: 5,
-                        },
-                    }),
-                }
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error(
-                    "Failed to advance mission to approval:",
-                    errorData
-                );
-                return;
-            }
-        } catch (error) {
-            console.error(
-                "Error advancing mission to approval:",
-                error
-            );
-            return;
-        }
-
-        const updatedMissions = missions.map((mission) => {
-            if (mission.id === selectedMission.id) {
-                return {
-                    ...mission,
-                    stage: 5,
-                };
-            }
-
-            return mission;
-        });
-
-        setMissions(updatedMissions);
-
-        setSelectedMission({
-            ...selectedMission,
-            stage: 5,
-        });
-
-        setViewStage(5);
-    }
-
-    async function handleApprovalSubmit() {
-        if (!selectedMission) {
-            return;
-        }
-
-        try {
-            const response = await fetch(
-                `http://localhost:8080/msnplans/${selectedMission.id}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        updates: {
-                            status: "Ready",
-                            issue: null,
-                            stage: 5,
-                            approved_by: "Current User",
-                            approved_at: new Date().toISOString(),
-                        },
-                    }),
-                }
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error(
-                    "Failed to advance mission to approval:",
-                    errorData
-                );
-                return;
-            }
-        } catch (error) {
-            console.error(
-                "Error advancing mission to approval:",
-                error
-            );
-            return;
-        }
-
-        const updatedMissions = missions.map((mission) => {
-            if (mission.id === selectedMission.id) {
-                return {
-                    ...mission,
-                    status: "Ready",
-                    issue: null,
-                    stage: 5,
-                    approvedBy: "Current User",
-                    approvedAt: new Date().toLocaleString(),
-                };
-            }
-
-            return mission;
-        });
-
-        setMissions(updatedMissions);
-
-        setSelectedMission({
-            ...selectedMission,
-            status: "Ready",
-            issue: null,
-            stage: 5,
-            approvedBy: "Current User",
-            approvedAt: new Date().toLocaleString(),
-        });
-
-        setViewStage(6);
-        setMissionViewSection("mission");
-    }
-
-    async function handleConopSubmit(event) {
-        event.preventDefault();
-
-        if (!selectedMission) {
-            return;
-        }
-
-        try {
-            const response = await fetch(
-                `http://localhost:8080/msnplans/${selectedMission.id}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        updates: {
-                            situation: conop.situation,
-                            mission_statement: conop.missionStatement,
-                            execution: conop.execution,
-                            sustainment: conop.sustainment,
-                            command_signal: conop.commandSignal,
-                            stage: 3,
-                        },
-                    }),
-                }
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Failed to save CONOP:", errorData);
-                return;
-            }
-
-            const updatedMissions = missions.map((mission) => {
-                if (mission.id === selectedMission.id) {
-                    return {
-                        ...mission,
-                        conop: conop,
-                        stage: 3,
-                    };
-                }
-
-                return mission;
-            });
-
-            setMissions(updatedMissions);
-
-            setSelectedMission({
-                ...selectedMission,
-                conop: conop,
-                stage: 3,
-            });
-
-            setViewStage(3);
-        } catch (error) {
-            console.error("Error saving CONOP:", error);
-        }
-    }
-    async function handleSubmit(event) {
-        event.preventDefault();
-
-        const missionData = {
-            msnName: newMission.name,
-            msnType: newMission.type,
-            startDate: newMission.startDate,
-            endDate: newMission.endDate,
-            locationName: newMission.location,
-            personnelName: newMission.oic,
-            descriptionText: newMission.purpose,
-        };
-
-        try {
-            const response = await fetch(
-                "http://localhost:8080/msnplans",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(missionData),
-                }
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Failed to create mission:", errorData);
-                return;
-            }
-
-            console.log("Mission successfully created");
-
-            const missionsResponse = await fetch(
-                "http://localhost:8080/msnplans"
-            );
-
-            const data = await missionsResponse.json();
-
-            const mappedMissions = data.map((mission) => ({
-                id: mission.id,
-                name: mission.msn_name,
-                type: mission.msn_type,
-                startDate: mission.start_date,
-                endDate: mission.end_date,
-                dates: `${mission.start_date} - ${mission.end_date}`,
-                location: mission.location,
-                purpose: mission.description,
-                personnel: mission.personnel,
-                oic: mission.personnel,
-
-                status: mission.status,
-                readiness: mission.readiness,
-                stage: mission.stage,
-                issue: mission.issue,
-
-                requiredPersonnel: mission.required_personnel,
-                requiredRoles: mission.required_roles,
-
-                approvedBy: mission.approved_by,
-                approvedAt: mission.approved_at,
-
-                conop: {
-                    situation: mission.situation || "",
-                    missionStatement: mission.mission_statement || "",
-                    execution: mission.execution || "",
-                    sustainment: mission.sustainment || "",
-                    commandSignal: mission.command_signal || "",
-                },
-            }));
-
-            setMissions(mappedMissions);
-
-            const createdMission = mappedMissions.find(
-                (mission) =>
-                    mission.name === newMission.name &&
-                    mission.startDate === newMission.startDate &&
-                    mission.endDate === newMission.endDate
-            );
-
-            if (createdMission) {
-                const patchResponse = await fetch(
-                    `http://localhost:8080/msnplans/${createdMission.id}`,
-                    {
-                        method: "PATCH",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            updates: {
-                                required_personnel: Number(newMission.requiredPersonnel),
-                                required_roles: newMission.requiredRoles,
-                                stage: 2,
-                            },
-                        }),
-                    }
-                );
-
-                if (!patchResponse.ok) {
-                    const errorData = await patchResponse.json();
-                    console.error(
-                        "Failed to update mission requirements:",
-                        errorData
-                    );
-                    return;
-                }
-
-                const missionForPlanning = {
-                    ...createdMission,
-                    oic: newMission.oic,
-                    requiredPersonnel: Number(newMission.requiredPersonnel),
-                    requiredRoles: newMission.requiredRoles,
-                    stage: 2,
-                };
-
-                setSelectedMission(missionForPlanning);
-                setViewStage(2);
-            }
+      },
+    );
+  }
+
+  return (
+    <main className="mpc-page">
+      <header className="mpc-header">
+        <div>
+          <h1>Planning</h1>
+          <p>Manage mission planning and unit readiness</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setEditingMissionId(null);
+            setSelectedMission(null);
+            setViewStage(null);
 
             setNewMission({
-                name: "",
-                type: "",
-                startDate: "",
-                endDate: "",
-                location: "",
-                oic: "",
-                purpose: "",
-                requiredPersonnel: "",
-                requiredRoles: "",
+              name: '',
+              type: '',
+              startDate: '',
+              endDate: '',
+              location: '',
+              oic: '',
+              purpose: '',
+              requiredPersonnel: '',
+              requiredRoles: '',
             });
 
-            setShowMissionForm(false);
-        } catch (error) {
-            console.error("Error creating mission:", error);
-        }
-    }
+            setShowMissionForm(true);
+          }}
+        >
+          + New Mission Plan
+        </button>
+      </header>
 
-    function handleMissionSelect(mission) {
-        const currentMission = missions.find(
-            (item) => item.id === mission.id
-        );
+      {selectedMission && viewStage === 2 && (
+        <section className="new-mission-form">
+          <div className="new-mission-header">
+            <div>
+              <h2>{selectedMission.name}</h2>
+              <p>Step 2 of 5: Plan / CONOP</p>
+            </div>
 
-        if (!currentMission) {
-            return;
-        }
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedMission(null);
+                setViewStage(null);
+                setShowMissionForm(false);
+              }}
+            >
+              Back to Dashboard
+            </button>
+          </div>
 
-        setShowMissionForm(false);
-        setSelectedMission(currentMission);
-        if (currentMission.status === "Ready") {
-            setViewStage(6);
-            setMissionViewSection("mission");
-        } else {
-            setViewStage(currentMission.stage || 1);
-        }
+          <form onSubmit={handleConopSubmit}>
+            <div className="form-group full-width">
+              <label htmlFor="situation">Situation</label>
+              <textarea
+                id="situation"
+                name="situation"
+                rows="3"
+                value={conop.situation}
+                onChange={handleConopChange}
+                required
+                placeholder="Describe the operational situation/environment..."
+              />
+            </div>
 
-        setAssignedPersonnel(
-            Array.isArray(currentMission.personnel)
-                ? currentMission.personnel.map(
-                    (person) => person.personId ?? person.id
-                )
-                : []
-        );
+            <div className="form-group full-width">
+              <label htmlFor="missionStatement">Mission Statement</label>
+              <textarea
+                id="missionStatement"
+                name="missionStatement"
+                rows="3"
+                value={conop.missionStatement}
+                onChange={handleConopChange}
+                required
+                placeholder="5Ws: Who, what, where, when, and why..."
+              />
+            </div>
 
-        setConop(
-            currentMission.conop || {
-                situation: "",
-                missionStatement: "",
-                execution: "",
-                sustainment: "",
-                commandSignal: "",
-            }
-        );
-    }
+            <div className="form-group full-width">
+              <label htmlFor="execution">Execution</label>
+              <textarea
+                id="execution"
+                name="execution"
+                rows="4"
+                value={conop.execution}
+                onChange={handleConopChange}
+                required
+                placeholder="Provide details on how the mission will be accomplished, including the commander's intent, specific tasks, and coordinating instructions..."
+              />
+            </div>
 
-    return (
-        <main className="mpc-page">
-                <header className="mpc-header">
-                    <div>
-                        <h1>Planning</h1>
-                        <p>Manage mission planning and unit readiness</p>
-                    </div>
+            <div className="form-group full-width">
+              <label htmlFor="sustainment">Sustainment</label>
+              <textarea
+                id="sustainment"
+                name="sustainment"
+                rows="3"
+                value={conop.sustainment}
+                onChange={handleConopChange}
+                required
+                placeholder="Beans, bullets, band-aids..."
+              />
+            </div>
 
-                    <button
-                        type="button"
-                        onClick={() => setShowMissionForm(true)}
+            <div className="form-group full-width">
+              <label htmlFor="commandSignal">Command & Signal</label>
+              <textarea
+                id="commandSignal"
+                name="commandSignal"
+                rows="3"
+                value={conop.commandSignal}
+                onChange={handleConopChange}
+                required
+                placeholder="Leadership/Chain of Command, communications, reporting..."
+              />
+            </div>
+
+            <div className="form-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setViewStage(1);
+                  setShowMissionForm(true);
+                }}
+              >
+                Back to Mission
+              </button>
+
+              <button type="submit">Save & Continue</button>
+            </div>
+          </form>
+        </section>
+      )}
+
+      {selectedMission && viewStage === 3 && (
+        <section className="new-mission-form">
+          <div className="new-mission-header">
+            <div>
+              <h2>{selectedMission.name}</h2>
+              <p>Step 3 of 5: Personnel</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedMission(null);
+                setViewStage(null);
+              }}
+            >
+              Back to Dashboard
+            </button>
+          </div>
+
+          <div className="personnel-list">
+            {personnel.map((person) => (
+              <div className="personnel-row" key={person.personId ?? person.id}>
+                <div>
+                  <strong>{person.name}</strong>
+                  {person.role?.map((role) => (
+                    <p key={role}>{role}</p>
+                  ))}
+                </div>
+
+                <div className="personnel-statuses">
+                  <span
+                    className={`personnel-status ${
+                      person.qualified ? 'status-good' : 'status-bad'
+                    }`}
+                  >
+                    {person.qualified ? 'Qualified' : 'Qualification Gap'}
+                  </span>
+
+                  <span
+                    className={`personnel-status ${
+                      person.available ? 'status-good' : 'status-bad'
+                    }`}
+                  >
+                    {person.available ? 'Available' : 'Unavailable'}
+                  </span>
+                </div>
+                <label className="personnel-select">
+                  <input
+                    type="checkbox"
+                    checked={assignedPersonnel.includes(person.id)}
+                    onChange={() => handlePersonnelToggle(person.id)}
+                  />
+                  <span>Assign</span>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          <div className="form-actions">
+            <button type="button" onClick={() => setViewStage(2)}>
+              Back to Plan / CONOP
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePersonnelSubmit}
+              disabled={assignedPersonnel.length === 0}
+            >
+              Save & Continue
+            </button>
+          </div>
+        </section>
+      )}
+
+      {selectedMission && viewStage === 4 && (
+        <section className="new-mission-form">
+          <div className="new-mission-header">
+            <div>
+              <h2>{selectedMission.name}</h2>
+              <p>Step 4 of 5: Readiness</p>
+            </div>
+
+            <button type="button" onClick={() => setSelectedMission(null)}>
+              Back to Dashboard
+            </button>
+          </div>
+
+          <div className="readiness-overview">
+            <div>
+              <p className="readiness-label">Mission Readiness</p>
+
+              <strong className="readiness-score">
+                {selectedMission.readiness}% Ready
+              </strong>
+            </div>
+
+            <div
+              className={`readiness-status ${
+                selectedMission.issue ? 'not-ready' : 'ready'
+              }`}
+            >
+              {selectedMission.issue
+                ? 'Not Ready for Approval'
+                : 'Ready for Approval'}
+            </div>
+          </div>
+
+          <div className="readiness-progress">
+            <div
+              className="readiness-progress-fill"
+              style={{
+                width: `${selectedMission.readiness}%`,
+              }}
+            />
+          </div>
+
+          <h3 className="readiness-section-title">Requires Attention</h3>
+
+          <div className="attention-grid">
+            {selectedMission.personnelShortage > 0 && (
+              <div className="attention-card">
+                <h3>Personnel Shortage</h3>
+                <strong>{selectedMission.personnelShortage}</strong>
+                <p>Unfilled Positions</p>
+              </div>
+            )}
+
+            {selectedMission.missingRoles?.length > 0 && (
+              <div className="attention-card">
+                <h3>Missing Roles</h3>
+                <strong>{selectedMission.missingRoles.length}</strong>
+                <p>{selectedMission.missingRoles.join(', ')}</p>
+              </div>
+            )}
+
+            {selectedMission.qualificationGaps > 0 && (
+              <div className="attention-card">
+                <h3>Qualification Gaps</h3>
+                <strong>{selectedMission.qualificationGaps}</strong>
+                <p>
+                  {selectedMission.personnelWithQualificationGaps
+                    ?.map((person) => person.name)
+                    .join(', ')}
+                </p>
+              </div>
+            )}
+
+            {selectedMission.availabilityConflicts > 0 && (
+              <div className="attention-card">
+                <h3>Availability Conflicts</h3>
+                <strong>{selectedMission.availabilityConflicts}</strong>
+                <p>Personnel Unavailable</p>
+              </div>
+            )}
+          </div>
+
+          <h3 className="readiness-section-title">Readiness Details</h3>
+
+          <div className="ready-checks">
+            <div className="ready-check-row">
+              <span>Personnel Assigned</span>
+              <strong>
+                {selectedMission.personnel?.length || 0} of{' '}
+                {selectedMission.requiredPersonnel || 0}
+              </strong>
+            </div>
+
+            <div className="ready-check-row">
+              <span>Qualification Gaps</span>
+              <strong>
+                {selectedMission.qualificationGaps > 0
+                  ? selectedMission.qualificationGaps
+                  : 'None'}
+              </strong>
+            </div>
+
+            <div className="ready-check-row">
+              <span>Availability Conflicts</span>
+              <strong>
+                {selectedMission.availabilityConflicts > 0
+                  ? selectedMission.availabilityConflicts
+                  : 'None'}
+              </strong>
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button type="button" onClick={() => setViewStage(3)}>
+              Back to Personnel
+            </button>
+
+            <button
+              type="button"
+              onClick={handleReadinessSubmit}
+              disabled={selectedMission.issue !== null}
+            >
+              Continue to Approval
+            </button>
+          </div>
+        </section>
+      )}
+
+      {selectedMission && viewStage === 5 && (
+        <section className="new-mission-form">
+          <div className="new-mission-header">
+            <div>
+              <h2>{selectedMission.name}</h2>
+              <p>Step 5 of 5: Approval</p>
+            </div>
+
+            <button type="button" onClick={() => setSelectedMission(null)}>
+              Back to Dashboard
+            </button>
+          </div>
+
+          <div className="readiness-summary">
+            <h3>Mission Readiness</h3>
+            <strong>{selectedMission.readiness}% Ready</strong>
+          </div>
+
+          <p>Mission plan is ready for review and approval</p>
+
+          <div className="form-actions">
+            <button type="button" onClick={() => setViewStage(4)}>
+              Back to Readiness
+            </button>
+
+            <button type="button" onClick={handleApprovalSubmit}>
+              Approve Mission
+            </button>
+          </div>
+        </section>
+      )}
+
+      {selectedMission && viewStage === 6 && (
+        <section className="new-mission-form">
+          <div className="new-mission-header">
+            <div>
+              <h2>{selectedMission.name}</h2>
+              <p>Approved Mission</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedMission(null);
+                setViewStage(null);
+              }}
+            >
+              Back
+            </button>
+          </div>
+
+          <div className="mission-view-tabs">
+            <button
+              type="button"
+              className={missionViewSection === 'mission' ? 'active' : ''}
+              onClick={() => setMissionViewSection('mission')}
+            >
+              Mission
+            </button>
+
+            <button
+              type="button"
+              className={missionViewSection === 'conop' ? 'active' : ''}
+              onClick={() => setMissionViewSection('conop')}
+            >
+              Plan / CONOP
+            </button>
+
+            <button
+              type="button"
+              className={missionViewSection === 'personnel' ? 'active' : ''}
+              onClick={() => setMissionViewSection('personnel')}
+            >
+              Personnel
+            </button>
+
+            <button
+              type="button"
+              className={missionViewSection === 'readiness' ? 'active' : ''}
+              onClick={() => setMissionViewSection('readiness')}
+            >
+              Readiness
+            </button>
+
+            <button
+              type="button"
+              className={missionViewSection === 'approval' ? 'active' : ''}
+              onClick={() => setMissionViewSection('approval')}
+            >
+              Approval
+            </button>
+          </div>
+
+          {missionViewSection === 'mission' && (
+            <div className="ready-checks">
+              <div className="ready-check-row">
+                <span>Mission Name</span>
+                <strong>{selectedMission.name}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>Mission Type</span>
+                <strong>{selectedMission.type}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>Dates</span>
+                <strong>{selectedMission.dates}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>Location</span>
+                <strong>{selectedMission.location}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>OIC</span>
+                <strong>{selectedMission.oic}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>Purpose</span>
+                <strong>{selectedMission.purpose}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>Required Personnel</span>
+                <strong>{selectedMission.requiredPersonnel}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>Required Roles</span>
+                <strong>
+                  {Array.isArray(selectedMission.requiredRoles)
+                    ? selectedMission.requiredRoles
+                        .map((role) => role.role)
+                        .join(', ')
+                    : selectedMission.requiredRoles}
+                </strong>
+              </div>
+            </div>
+          )}
+          {missionViewSection === 'conop' && (
+            <div className="ready-checks">
+              <div className="ready-check-row">
+                <span>Situation</span>
+                <strong>{selectedMission.conop?.situation}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>Mission Statement</span>
+                <strong>{selectedMission.conop?.missionStatement}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>Execution</span>
+                <strong>{selectedMission.conop?.execution}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>Sustainment</span>
+                <strong>{selectedMission.conop?.sustainment}</strong>
+              </div>
+
+              <div className="ready-check-row">
+                <span>Command & Signal</span>
+                <strong>{selectedMission.conop?.commandSignal}</strong>
+              </div>
+            </div>
+          )}
+
+          {missionViewSection === 'personnel' && (
+            <div className="personnel-list">
+              {selectedMission.personnel?.map((person) => (
+                <div
+                  className="personnel-row"
+                  key={person.personId ?? person.id}
+                >
+                  <div>
+                    <strong>{person.name}</strong>
+                    <p>{person.role}</p>
+                  </div>
+
+                  <div className="personnel-statuses">
+                    <span
+                      className={`personnel-status ${
+                        person.qualified ? 'status-good' : 'status-bad'
+                      }`}
                     >
-                        + New Mission Plan
-                    </button>
-                </header>
+                      {person.qualified ? 'Qualified' : 'Qualification Gap'}
+                    </span>
 
-                {selectedMission && viewStage === 2 && (
-                    <section className="new-mission-form">
-                        <div className="new-mission-header">
-                            <div>
-                                <h2>{selectedMission.name}</h2>
-                                <p>Step 2 of 5: Plan / CONOP</p>
-                            </div>
+                    <span
+                      className={`personnel-status ${
+                        person.available ? 'status-good' : 'status-bad'
+                      }`}
+                    >
+                      {person.available ? 'Available' : 'Unavailable'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
-                            <button
-                                type="button"
-                                onClick={() => setSelectedMission(null)}
-                            >
-                                Back
-                            </button>
-                        </div>
+          {missionViewSection === 'readiness' && (
+            <>
+              <div className="readiness-overview">
+                <div>
+                  <p className="readiness-label">Mission Readiness</p>
 
-                        <form onSubmit={handleConopSubmit}>
-                            <div className="form-group full-width">
-                                <label htmlFor="situation">Situation</label>
-                                <textarea
-                                    id="situation"
-                                    name="situation"
-                                    rows="3"
-                                    value={conop.situation}
-                                    onChange={handleConopChange}
-                                    required
-                                    placeholder="Describe the operational situation/environment..."
-                                />
-                            </div>
+                  <strong className="readiness-score">
+                    {selectedMission.readiness}% Ready
+                  </strong>
+                </div>
 
-                            <div className="form-group full-width">
-                                <label htmlFor="missionStatement">Mission Statement</label>
-                                <textarea
-                                    id="missionStatement"
-                                    name="missionStatement"
-                                    rows="3"
-                                    value={conop.missionStatement}
-                                    onChange={handleConopChange}
-                                    required
-                                    placeholder="5Ws: Who, what, where, when, and why..."
-                                />
-                            </div>
+                <div
+                  className={`readiness-status ${
+                    selectedMission.issue ? 'not-ready' : 'ready'
+                  }`}
+                >
+                  {selectedMission.issue ? 'Not Ready' : 'Ready'}
+                </div>
+              </div>
 
-                            <div className="form-group full-width">
-                                <label htmlFor="execution">Execution</label>
-                                <textarea
-                                    id="execution"
-                                    name="execution"
-                                    rows="4"
-                                    value={conop.execution}
-                                    onChange={handleConopChange}
-                                    required
-                                    placeholder="Provide details on how the mission will be accomplished, including the commander's intent, specific tasks, and coordinating instructions..."
-                                />
-                            </div>
+              <div className="readiness-progress">
+                <div
+                  className="readiness-progress-fill"
+                  style={{
+                    width: `${selectedMission.readiness}%`,
+                  }}
+                />
+              </div>
 
-                            <div className="form-group full-width">
-                                <label htmlFor="sustainment">Sustainment</label>
-                                <textarea
-                                    id="sustainment"
-                                    name="sustainment"
-                                    rows="3"
-                                    value={conop.sustainment}
-                                    onChange={handleConopChange}
-                                    required
-                                    placeholder="Beans, bullets, band-aids..."
-                                />
-                            </div>
+              <h3 className="readiness-section-title">Readiness Details</h3>
 
-                            <div className="form-group full-width">
-                                <label htmlFor="commandSignal">Command & Signal</label>
-                                <textarea
-                                    id="commandSignal"
-                                    name="commandSignal"
-                                    rows="3"
-                                    value={conop.commandSignal}
-                                    onChange={handleConopChange}
-                                    required
-                                    placeholder="Leadership/Chain of Command, communications, reporting..."
-                                />
-                            </div>
+              <div className="ready-checks">
+                <div className="ready-check-row">
+                  <span>Personnel Assigned</span>
+                  <strong>
+                    {selectedMission.personnel?.length || 0} of{' '}
+                    {selectedMission.requiredPersonnel || 0}
+                  </strong>
+                </div>
 
-                            <div className="form-actions">
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedMission(null)}
-                                >
-                                    Back
-                                </button>
+                <div className="ready-check-row">
+                  <span>Personnel Shortage</span>
+                  <strong>
+                    {selectedMission.personnelShortage > 0
+                      ? selectedMission.personnelShortage
+                      : 'None'}
+                  </strong>
+                </div>
 
-                                <button type="submit">
-                                    Save & Continue
-                                </button>
-                            </div>
-                        </form>
-                    </section>
-                )}
+                <div className="ready-check-row">
+                  <span>Qualification Gaps</span>
+                  <strong>
+                    {selectedMission.qualificationGaps > 0
+                      ? selectedMission.qualificationGaps
+                      : 'None'}
+                  </strong>
+                </div>
 
-                {selectedMission && viewStage === 3 && (
-                    <section className="new-mission-form">
-                        <div className="new-mission-header">
-                            <div>
-                                <h2>{selectedMission.name}</h2>
-                                <p>Step 3 of 5: Personnel</p>
-                            </div>
+                <div className="ready-check-row">
+                  <span>Availability Conflicts</span>
+                  <strong>
+                    {selectedMission.availabilityConflicts > 0
+                      ? selectedMission.availabilityConflicts
+                      : 'None'}
+                  </strong>
+                </div>
 
-                            <button
-                                type="button"
-                                onClick={() => setSelectedMission(null)}
-                            >
-                                Back
-                            </button>
-                        </div>
+                <div className="ready-check-row">
+                  <span>Missing Roles</span>
+                  <strong>
+                    {selectedMission.missingRoles?.length > 0
+                      ? selectedMission.missingRoles.join(', ')
+                      : 'None'}
+                  </strong>
+                </div>
+              </div>
+            </>
+          )}
 
-                        <div className="personnel-list">
-                            {personnel.map((person) => (
-                                <div
-                                    className="personnel-row"
-                                    key={person.personId ?? person.id}
-                                >
-                                    <div>
-                                        <strong>{person.name}</strong>
-                                        <p>{person.role}</p>
-                                    </div>
+          {missionViewSection === 'approval' && (
+            <>
+              <div className="readiness-summary">
+                <h3>Mission Approval</h3>
+                <strong>Approved</strong>
+              </div>
 
-                                    <div className="personnel-statuses">
-                                        <span
-                                            className={`personnel-status ${person.qualified ? "status-good" : "status-bad"
-                                                }`}
-                                        >
-                                            {person.qualified
-                                                ? "Qualified"
-                                                : "Qualification Gap"}
-                                        </span>
+              <div className="ready-checks">
+                <div className="ready-check-row">
+                  <span>Mission Planning Status</span>
+                  <strong>{selectedMission.status}</strong>
+                </div>
+                <div className="ready-check-row">
+                  <span>Approved By</span>
+                  <strong>{selectedMission.approvedBy}</strong>
+                </div>
 
-                                        <span
-                                            className={`personnel-status ${person.available ? "status-good" : "status-bad"
-                                                }`}
-                                        >
-                                            {person.available
-                                                ? "Available"
-                                                : "Unavailable"}
-                                        </span>
-                                    </div>
-                                    <label className="personnel-select">
-                                        <input
-                                            type="checkbox"
-                                            checked={assignedPersonnel.includes(person.id)}
-                                            onChange={() => handlePersonnelToggle(person.id)}
-                                        />
-                                        <span>Assign</span>
-                                    </label>
-                                </div>
-                            ))}
-                        </div>
+                <div className="ready-check-row">
+                  <span>Approved At</span>
+                  <strong>{selectedMission.approvedAt}</strong>
+                </div>
 
-                        <div className="form-actions">
-                            <button
-                                type="button"
-                                onClick={() => setSelectedMission(null)}
-                            >
-                                Back
-                            </button>
+                <div className="ready-check-row">
+                  <span>Mission Readiness</span>
+                  <strong>{selectedMission.readiness}%</strong>
+                </div>
 
-                            <button
-                                type="button"
-                                onClick={handlePersonnelSubmit}
-                                disabled={assignedPersonnel.length === 0}
-                            >
-                                Save & Continue
-                            </button>
-                        </div>
-                    </section>
-                )}
+                <div className="ready-check-row">
+                  <span>Outstanding Issues</span>
+                  <strong>
+                    {selectedMission.issue ? selectedMission.issue : 'None'}
+                  </strong>
+                </div>
 
-                {selectedMission && viewStage === 4 && (
-                    <section className="new-mission-form">
-                        <div className="new-mission-header">
-                            <div>
-                                <h2>{selectedMission.name}</h2>
-                                <p>Step 4 of 5: Readiness</p>
-                            </div>
+                <div className="ready-check-row">
+                  <span>Approval Status</span>
+                  <strong>Mission Approved</strong>
+                </div>
+              </div>
+            </>
+          )}
+        </section>
+      )}
+      {(showMissionForm || viewStage === 1) && (
+        <section className="new-mission-form">
+          <div className="new-mission-header">
+            <div>
+              <h2>{editingMissionId ? 'Edit Mission' : 'New Mission Plan'}</h2>
+              <p>Step 1 of 5: Mission</p>
+            </div>
 
-                            <button
-                                type="button"
-                                onClick={() => setSelectedMission(null)}
-                            >
-                                Back
-                            </button>
-                        </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowMissionForm(false);
+                setSelectedMission(null);
+                setViewStage(null);
+                setEditingMissionId(null);
+              }}
+            >
+              Cancel
+            </button>
+          </div>
 
-                        <div className="readiness-overview">
-                            <div>
-                                <p className="readiness-label">
-                                    Mission Readiness
-                                </p>
+          <form onSubmit={handleSubmit}>
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="missionName">Mission Name</label>
+                <input
+                  id="missionName"
+                  name="name"
+                  type="text"
+                  placeholder="Range Support"
+                  value={newMission.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-                                <strong className="readiness-score">
-                                    {selectedMission.readiness}% Ready
-                                </strong>
-                            </div>
+              <div className="form-group">
+                <label htmlFor="missionType">Mission Type</label>
+                <input
+                  id="missionType"
+                  name="type"
+                  type="text"
+                  placeholder="Training Support"
+                  value={newMission.type}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-                            <div
-                                className={`readiness-status ${selectedMission.issue
-                                    ? "not-ready"
-                                    : "ready"
-                                    }`}
-                            >
-                                {selectedMission.issue
-                                    ? "Not Ready for Approval"
-                                    : "Ready for Approval"}
-                            </div>
-                        </div>
+              <div className="form-group">
+                <label htmlFor="startDate">Start Date</label>
+                <input
+                  id="startDate"
+                  name="startDate"
+                  type="date"
+                  value={newMission.startDate}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-                        <div className="readiness-progress">
-                            <div
-                                className="readiness-progress-fill"
-                                style={{
-                                    width: `${selectedMission.readiness}%`,
-                                }}
-                            />
-                        </div>
+              <div className="form-group">
+                <label htmlFor="endDate">End Date</label>
+                <input
+                  id="endDate"
+                  name="endDate"
+                  type="date"
+                  value={newMission.endDate}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-                        <h3 className="readiness-section-title">
-                            Requires Attention
-                        </h3>
+              <div className="form-group">
+                <label htmlFor="location">Location</label>
+                <input
+                  id="location"
+                  name="location"
+                  type="text"
+                  placeholder="Fort Bragg, NC"
+                  value={newMission.location}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-                        <div className="attention-grid">
-                            {selectedMission.personnelShortage > 0 && (
-                                <div className="attention-card">
-                                    <h3>Personnel Shortage</h3>
-                                    <strong>
-                                        {selectedMission.personnelShortage}
-                                    </strong>
-                                    <p>Unfilled Positions</p>
-                                </div>
-                            )}
+              <div className="form-group">
+                <label htmlFor="oic">OIC</label>
+                <input
+                  id="oic"
+                  name="oic"
+                  type="text"
+                  placeholder="CPT Smith"
+                  value={newMission.oic}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
 
-                            {selectedMission.missingRoles?.length > 0 && (
-                                <div className="attention-card">
-                                    <h3>Missing Roles</h3>
-                                    <strong>
-                                        {selectedMission.missingRoles.length}
-                                    </strong>
-                                    <p>
-                                        {selectedMission.missingRoles.join(", ")}
-                                    </p>
-                                </div>
-                            )}
+            <div className="form-group full-width">
+              <label htmlFor="purpose">Purpose / Description</label>
+              <textarea
+                id="purpose"
+                name="purpose"
+                rows="4"
+                placeholder="Describe the mission purpose..."
+                value={newMission.purpose}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-                            {selectedMission.qualificationGaps > 0 && (
-                                <div className="attention-card">
-                                    <h3>Qualification Gaps</h3>
-                                    <strong>
-                                        {selectedMission.qualificationGaps}
-                                    </strong>
-                                    <p>
-                                        {selectedMission.personnelWithQualificationGaps
-                                            ?.map((person) => person.name)
-                                            .join(", ")}
-                                    </p>
-                                </div>
-                            )}
+            <div className="form-group">
+              <label htmlFor="requiredPersonnel">Required Personnel</label>
 
-                            {selectedMission.availabilityConflicts > 0 && (
-                                <div className="attention-card">
-                                    <h3>Availability Conflicts</h3>
-                                    <strong>
-                                        {selectedMission.availabilityConflicts}
-                                    </strong>
-                                    <p>Personnel Unavailable</p>
-                                </div>
-                            )}
-                        </div>
+              <input
+                id="requiredPersonnel"
+                name="requiredPersonnel"
+                type="number"
+                min="1"
+                placeholder="4"
+                value={newMission.requiredPersonnel}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-                        <h3 className="readiness-section-title">
-                            Readiness Details
-                        </h3>
+            <div className="form-group">
+              <label htmlFor="requiredRoles">Required Roles</label>
 
-                        <div className="ready-checks">
-                            <div className="ready-check-row">
-                                <span>Personnel Assigned</span>
-                                <strong>
-                                    {selectedMission.personnel?.length || 0} of{" "}
-                                    {selectedMission.requiredPersonnel || 0}
-                                </strong>
-                            </div>
-
-                            <div className="ready-check-row">
-                                <span>Qualification Gaps</span>
-                                <strong>
-                                    {selectedMission.qualificationGaps > 0
-                                        ? selectedMission.qualificationGaps
-                                        : "None"}
-                                </strong>
-                            </div>
-
-                            <div className="ready-check-row">
-                                <span>Availability Conflicts</span>
-                                <strong>
-                                    {selectedMission.availabilityConflicts > 0
-                                        ? selectedMission.availabilityConflicts
-                                        : "None"}
-                                </strong>
-                            </div>
-                        </div>
-
-                        <div className="form-actions">
-                            <button
-                                type="button"
-                                onClick={() => setViewStage(3)}
-                            >
-                                Back to Personnel
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={handleReadinessSubmit}
-                                disabled={selectedMission.issue !== null}
-                            >
-                                Continue to Approval
-                            </button>
-                        </div>
-                    </section>
-                )
+              <select
+                id="requiredRoles"
+                name="requiredRoles"
+                multiple
+                value={
+                  newMission.requiredRoles
+                    ? newMission.requiredRoles
+                        .split(',')
+                        .map((role) => role.trim())
+                        .filter((role) => role)
+                    : []
                 }
+                onChange={handleRequiredRolesChange}
+              >
+                {roles.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                {
-                    selectedMission && viewStage === 5 && (
-                        <section className="new-mission-form">
-                            <div className="new-mission-header">
-                                <div>
-                                    <h2>{selectedMission.name}</h2>
-                                    <p>Step 5 of 5: Approval</p>
-                                </div>
+            <div className="form-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMissionForm(false);
+                  setSelectedMission(null);
+                  setViewStage(null);
+                  setEditingMissionId(null);
+                }}
+              >
+                Cancel
+              </button>
 
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedMission(null)}
-                                >
-                                    Back
-                                </button>
-                            </div>
+              <button type="submit">Save & Continue</button>
+            </div>
+          </form>
+        </section>
+      )}
+      <section className="summary-grid">
+        <div
+          className="summary-card summary-active"
+          onClick={() => {
+            setShowAttentionOnly(false);
+            setShowUpcomingOnly(false);
+          }}
+        >
+          <div className="summary-card-content">
+            <div className="summary-icon">☰</div>
 
-                            <div className="readiness-summary">
-                                <h3>Mission Readiness</h3>
-                                <strong>{selectedMission.readiness}% Ready</strong>
-                            </div>
+            <div>
+              <h3>Active Missions</h3>
+              <span>{missions.length}</span>
+              <p>Mission Plans</p>
+            </div>
+          </div>
+        </div>
 
-                            <p>Mission plan is ready for review and approval</p>
+        <div
+          className="summary-card summary-attention"
+          onClick={() => {
+            setShowAttentionOnly(true);
+            setShowUpcomingOnly(false);
+          }}
+        >
+          <div className="summary-card-content">
+            <div className="summary-icon">
+              <svg
+                viewBox="0 0 24 24"
+                width="26"
+                height="26"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 3L2 21h20L12 3z" />
+                <line x1="12" y1="9" x2="12" y2="14" />
+                <line x1="12" y1="18" x2="12.01" y2="18" />
+              </svg>
+            </div>
 
-                            <div className="form-actions">
-                                <button
-                                    type="button"
-                                    onClick={() => setViewStage(4)}
-                                >
-                                    Back to Readiness
-                                </button>
+            <div>
+              <h3>Needs Attention</h3>
+              <span>{missions.filter((mission) => mission.issue).length}</span>
+              <p>Items</p>
+            </div>
+          </div>
+        </div>
 
-                                <button
-                                    type="button"
-                                    onClick={handleApprovalSubmit}
-                                >
-                                    Approve Mission
-                                </button>
-                            </div>
-                        </section>
-                    )
-                }
+        <div
+          className="summary-card summary-upcoming"
+          onClick={() => {
+            setShowUpcomingOnly(true);
+            setShowAttentionOnly(false);
+          }}
+        >
+          <div className="summary-card-content">
+            <div className="summary-icon">
+              <svg
+                viewBox="0 0 24 24"
+                width="26"
+                height="26"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="5" width="18" height="16" rx="2" />
+                <line x1="16" y1="3" x2="16" y2="7" />
+                <line x1="8" y1="3" x2="8" y2="7" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+            </div>
 
-                {selectedMission && viewStage === 6 && (
-                    <section className="new-mission-form">
-                        <div className="new-mission-header">
+            <div>
+              <h3>Upcoming Missions</h3>
+              <span>{missions.filter(isUpcomingMission).length}</span>
+              <p>Upcoming</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-                            <div>
-                                <h2>{selectedMission.name}</h2>
-                                <p>Approved Mission</p>
-                            </div>
+      <section className="mission-section">
+        <h2>Active Mission Plans</h2>
+        {showAttentionOnly && (
+          <p>Displaying missions requiring further action</p>
+        )}
+        {showUpcomingOnly && <p>Displaying upcoming missions</p>}
 
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setSelectedMission(null);
-                                    setViewStage(null);
-                                }}
-                            >
-                                Back
-                            </button>
+        <div className="mission-list">
+          {missions
+            .filter((mission) => {
+              if (showAttentionOnly) {
+                return mission.issue;
+              }
+
+              if (showUpcomingOnly) {
+                return isUpcomingMission(mission);
+              }
+
+              return true;
+            })
+            .map((mission) => (
+              <article className="mission-card" key={mission.id}>
+                <div>
+                  <h3>{mission.name}</h3>
+                  <p>{mission.dates}</p>
+                  <p>{mission.location}</p>
+                  <p>OIC: {mission.oic}</p>
+                </div>
+
+                {/* Progress Tracker */}
+
+                <div className="mission-progress">
+                  {stages.map((stage, index) => {
+                    const step = index + 1;
+                    const completed =
+                      step < mission.stage ||
+                      (step === 5 && mission.status === 'Ready');
+                    const current = step === mission.stage;
+
+                    return (
+                      <div className="progress-wrapper" key={stage}>
+                        <div className="progress-step">
+                          <div
+                            className={`progress-circle ${
+                              completed ? 'completed' : current ? 'current' : ''
+                            }`}
+                          >
+                            {completed ? '✓' : step}
+                          </div>
+
+                          <span className={current ? 'current-label' : ''}>
+                            {stage}
+                          </span>
                         </div>
 
-                        <div className="mission-view-tabs">
-                            <button
-                                type="button"
-                                className={missionViewSection === "mission" ? "active" : ""}
-                                onClick={() => setMissionViewSection("mission")}
-                            >
-                                Mission
-                            </button>
-
-                            <button
-                                type="button"
-                                className={missionViewSection === "conop" ? "active" : ""}
-                                onClick={() => setMissionViewSection("conop")}
-                            >
-                                Plan / CONOP
-                            </button>
-
-                            <button
-                                type="button"
-                                className={missionViewSection === "personnel" ? "active" : ""}
-                                onClick={() => setMissionViewSection("personnel")}
-                            >
-                                Personnel
-                            </button>
-
-                            <button
-                                type="button"
-                                className={missionViewSection === "readiness" ? "active" : ""}
-                                onClick={() => setMissionViewSection("readiness")}
-                            >
-                                Readiness
-                            </button>
-
-                            <button
-                                type="button"
-                                className={missionViewSection === "approval" ? "active" : ""}
-                                onClick={() => setMissionViewSection("approval")}
-                            >
-                                Approval
-                            </button>
-                        </div>
-
-                        {missionViewSection === "mission" && (
-                            <div className="ready-checks">
-                                <div className="ready-check-row">
-                                    <span>Mission Name</span>
-                                    <strong>{selectedMission.name}</strong>
-                                </div>
-
-                                <div className="ready-check-row">
-                                    <span>Mission Type</span>
-                                    <strong>{selectedMission.type}</strong>
-                                </div>
-
-                                <div className="ready-check-row">
-                                    <span>Dates</span>
-                                    <strong>{selectedMission.dates}</strong>
-                                </div>
-
-                                <div className="ready-check-row">
-                                    <span>Location</span>
-                                    <strong>{selectedMission.location}</strong>
-                                </div>
-
-                                <div className="ready-check-row">
-                                    <span>OIC</span>
-                                    <strong>{selectedMission.oic}</strong>
-                                </div>
-
-                                <div className="ready-check-row">
-                                    <span>Purpose</span>
-                                    <strong>{selectedMission.purpose}</strong>
-                                </div>
-
-                                <div className="ready-check-row">
-                                    <span>Required Personnel</span>
-                                    <strong>{selectedMission.requiredPersonnel}</strong>
-                                </div>
-
-                                <div className="ready-check-row">
-                                    <span>Required Roles</span>
-                                    <strong>{selectedMission.requiredRoles}</strong>
-                                </div>
-                            </div>
+                        {index < stages.length - 1 && (
+                          <div
+                            className={`progress-line ${
+                              step < mission.stage ? 'completed' : ''
+                            }`}
+                          />
                         )}
-                        {missionViewSection === "conop" && (
-                            <div className="ready-checks">
-                                <div className="ready-check-row">
-                                    <span>Situation</span>
-                                    <strong>{selectedMission.conop?.situation}</strong>
-                                </div>
+                      </div>
+                    );
+                  })}
+                </div>
 
-                                <div className="ready-check-row">
-                                    <span>Mission Statement</span>
-                                    <strong>{selectedMission.conop?.missionStatement}</strong>
-                                </div>
+                {/* Readiness */}
+                <div className="mission-status">
+                  <p>Status: {mission.status}</p>
+                  <p>Readiness: {mission.readiness}%</p>
 
-                                <div className="ready-check-row">
-                                    <span>Execution</span>
-                                    <strong>{selectedMission.conop?.execution}</strong>
-                                </div>
+                  {mission.issue && (
+                    <p className="mission-issue">Issue: {mission.issue}</p>
+                  )}
+                </div>
 
-                                <div className="ready-check-row">
-                                    <span>Sustainment</span>
-                                    <strong>{selectedMission.conop?.sustainment}</strong>
-                                </div>
+                <div className="mission-card-actions">
+                  <button
+                    type="button"
+                    className="edit-mission-button"
+                    onClick={() => {
+                      handleMissionSelect(mission);
+                      setViewStage(1);
+                      setShowMissionForm(true);
+                    }}
+                  >
+                    Edit Mission
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleMissionSelect(mission)}
+                  >
+                    {mission.status === 'Ready'
+                      ? 'View Mission'
+                      : 'Continue Planning'}
+                  </button>
 
-                                <div className="ready-check-row">
-                                    <span>Command & Signal</span>
-                                    <strong>{selectedMission.conop?.commandSignal}</strong>
-                                </div>
-                            </div>
-                        )}
-
-                        {missionViewSection === "personnel" && (
-                            <div className="personnel-list">
-                                {selectedMission.personnel?.map((person) => (
-                                    <div
-                                        className="personnel-row"
-                                        key={person.personId ?? person.id}
-                                    >
-                                        <div>
-                                            <strong>{person.name}</strong>
-                                            <p>{person.role}</p>
-                                        </div>
-
-                                        <div className="personnel-statuses">
-                                            <span
-                                                className={`personnel-status ${person.qualified ? "status-good" : "status-bad"
-                                                    }`}
-                                            >
-                                                {person.qualified
-                                                    ? "Qualified"
-                                                    : "Qualification Gap"}
-                                            </span>
-
-                                            <span
-                                                className={`personnel-status ${person.available ? "status-good" : "status-bad"
-                                                    }`}
-                                            >
-                                                {person.available
-                                                    ? "Available"
-                                                    : "Unavailable"}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {missionViewSection === "readiness" && (
-                            <>
-                                <div className="readiness-overview">
-                                    <div>
-                                        <p className="readiness-label">
-                                            Mission Readiness
-                                        </p>
-
-                                        <strong className="readiness-score">
-                                            {selectedMission.readiness}% Ready
-                                        </strong>
-                                    </div>
-
-                                    <div
-                                        className={`readiness-status ${selectedMission.issue
-                                            ? "not-ready"
-                                            : "ready"
-                                            }`}
-                                    >
-                                        {selectedMission.issue
-                                            ? "Not Ready"
-                                            : "Ready"}
-                                    </div>
-                                </div>
-
-                                <div className="readiness-progress">
-                                    <div
-                                        className="readiness-progress-fill"
-                                        style={{
-                                            width: `${selectedMission.readiness}%`,
-                                        }}
-                                    />
-                                </div>
-
-                                <h3 className="readiness-section-title">
-                                    Readiness Details
-                                </h3>
-
-                                <div className="ready-checks">
-                                    <div className="ready-check-row">
-                                        <span>Personnel Assigned</span>
-                                        <strong>
-                                            {selectedMission.personnel?.length || 0} of{" "}
-                                            {selectedMission.requiredPersonnel || 0}
-                                        </strong>
-                                    </div>
-
-                                    <div className="ready-check-row">
-                                        <span>Personnel Shortage</span>
-                                        <strong>
-                                            {selectedMission.personnelShortage > 0
-                                                ? selectedMission.personnelShortage
-                                                : "None"}
-                                        </strong>
-                                    </div>
-
-                                    <div className="ready-check-row">
-                                        <span>Qualification Gaps</span>
-                                        <strong>
-                                            {selectedMission.qualificationGaps > 0
-                                                ? selectedMission.qualificationGaps
-                                                : "None"}
-                                        </strong>
-                                    </div>
-
-                                    <div className="ready-check-row">
-                                        <span>Availability Conflicts</span>
-                                        <strong>
-                                            {selectedMission.availabilityConflicts > 0
-                                                ? selectedMission.availabilityConflicts
-                                                : "None"}
-                                        </strong>
-                                    </div>
-
-                                    <div className="ready-check-row">
-                                        <span>Missing Roles</span>
-                                        <strong>
-                                            {selectedMission.missingRoles?.length > 0
-                                                ? selectedMission.missingRoles.join(", ")
-                                                : "None"}
-                                        </strong>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
-                        {missionViewSection === "approval" && (
-                            <>
-                                <div className="readiness-summary">
-                                    <h3>Mission Approval</h3>
-                                    <strong>Approved</strong>
-                                </div>
-
-                                <div className="ready-checks">
-                                    <div className="ready-check-row">
-                                        <span>Mission Planning Status</span>
-                                        <strong>{selectedMission.status}</strong>
-                                    </div>
-                                    <div className="ready-check-row">
-                                        <span>Approved By</span>
-                                        <strong>{selectedMission.approvedBy}</strong>
-                                    </div>
-
-                                    <div className="ready-check-row">
-                                        <span>Approved At</span>
-                                        <strong>{selectedMission.approvedAt}</strong>
-                                    </div>
-
-                                    <div className="ready-check-row">
-                                        <span>Mission Readiness</span>
-                                        <strong>{selectedMission.readiness}%</strong>
-                                    </div>
-
-                                    <div className="ready-check-row">
-                                        <span>Outstanding Issues</span>
-                                        <strong>
-                                            {selectedMission.issue
-                                                ? selectedMission.issue
-                                                : "None"}
-                                        </strong>
-                                    </div>
-
-                                    <div className="ready-check-row">
-                                        <span>Approval Status</span>
-                                        <strong>Mission Approved</strong>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </section>
-                )}
-                {
-                    showMissionForm && (
-                        <section className="new-mission-form">
-                            <div className="new-mission-header">
-                                <div>
-                                    <h2>New Mission Plan</h2>
-                                    <p>Step 1 of 5: Mission</p>
-                                </div>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setShowMissionForm(false)}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-
-                            <form onSubmit={handleSubmit}>
-                                <div className="form-grid">
-
-                                    <div className="form-group">
-                                        <label htmlFor="missionName">Mission Name</label>
-                                        <input
-                                            id="missionName"
-                                            name="name"
-                                            type="text"
-                                            placeholder="Range Support"
-                                            value={newMission.name}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="missionType">Mission Type</label>
-                                        <input
-                                            id="missionType"
-                                            name="type"
-                                            type="text"
-                                            placeholder="Training Support"
-                                            value={newMission.type}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="startDate">Start Date</label>
-                                        <input
-                                            id="startDate"
-                                            name="startDate"
-                                            type="date"
-                                            value={newMission.startDate}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="endDate">End Date</label>
-                                        <input
-                                            id="endDate"
-                                            name="endDate"
-                                            type="date"
-                                            value={newMission.endDate}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="location">Location</label>
-                                        <input
-                                            id="location"
-                                            name="location"
-                                            type="text"
-                                            placeholder="Fort Bragg, NC"
-                                            value={newMission.location}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="oic">OIC</label>
-                                        <input
-                                            id="oic"
-                                            name="oic"
-                                            type="text"
-                                            placeholder="CPT Smith"
-                                            value={newMission.oic}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                </div>
-
-                                <div className="form-group full-width">
-                                    <label htmlFor="purpose">Purpose / Description</label>
-                                    <textarea
-                                        id="purpose"
-                                        name="purpose"
-                                        rows="4"
-                                        placeholder="Describe the mission purpose..."
-                                        value={newMission.purpose}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label htmlFor="requiredPersonnel">
-                                        Required Personnel
-                                    </label>
-
-                                    <input
-                                        id="requiredPersonnel"
-                                        name="requiredPersonnel"
-                                        type="number"
-                                        min="1"
-                                        placeholder="4"
-                                        value={newMission.requiredPersonnel}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label htmlFor="requiredRoles">
-                                        Required Roles
-                                    </label>
-
-                                    <input
-                                        id="requiredRoles"
-                                        name="requiredRoles"
-                                        type="text"
-                                        placeholder="OIC, Team Leader, Medic"
-                                        value={newMission.requiredRoles}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
-
-                                <div className="form-actions">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowMissionForm(false)}
-                                    >
-                                        Cancel
-                                    </button>
-
-                                    <button type="submit">
-                                        Save & Continue
-                                    </button>
-                                </div>
-                            </form>
-                        </section>
-                    )
-                }
-                <section className="summary-grid">
-                    <div
-                        className="summary-card summary-active"
-                        onClick={() => {
-                            setShowAttentionOnly(false);
-                            setShowUpcomingOnly(false);
-                        }}
-                    >
-                        <div className="summary-card-content">
-                            <div className="summary-icon">☰</div>
-
-                            <div>
-                                <h3>Active Missions</h3>
-                                <span>{missions.length}</span>
-                                <p>Mission Plans</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div
-                        className="summary-card summary-attention"
-                        onClick={() => {
-                            setShowAttentionOnly(true);
-                            setShowUpcomingOnly(false);
-                        }}
-                    >
-                        <div className="summary-card-content">
-                            <div className="summary-icon">
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    width="26"
-                                    height="26"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <path d="M12 3L2 21h20L12 3z" />
-                                    <line x1="12" y1="9" x2="12" y2="14" />
-                                    <line x1="12" y1="18" x2="12.01" y2="18" />
-                                </svg>
-                            </div>
-
-                            <div>
-                                <h3>Needs Attention</h3>
-                                <span>
-                                    {missions.filter((mission) => mission.issue).length}
-                                </span>
-                                <p>Items</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div
-                        className="summary-card summary-upcoming"
-                        onClick={() => {
-                            setShowUpcomingOnly(true);
-                            setShowAttentionOnly(false);
-                        }}
-                    >
-                        <div className="summary-card-content">
-                            <div className="summary-icon">
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    width="26"
-                                    height="26"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <rect x="3" y="5" width="18" height="16" rx="2" />
-                                    <line x1="16" y1="3" x2="16" y2="7" />
-                                    <line x1="8" y1="3" x2="8" y2="7" />
-                                    <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
-                            </div>
-
-                            <div>
-                                <h3>Upcoming Missions</h3>
-                                <span>
-                                    {missions.filter(isUpcomingMission).length}
-                                </span>
-                                <p>Upcoming</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section className="mission-section">
-                    <h2>Active Mission Plans</h2>
-                    {showAttentionOnly && (
-                        <p>Displaying missions requiring further action</p>
-                    )}
-                    {showUpcomingOnly && (
-                        <p>Displaying upcoming missions</p>
-                    )}
-
-                    <div className="mission-list">
-                        {missions
-                            .filter((mission) => {
-                                if (showAttentionOnly) {
-                                    return mission.issue;
-                                }
-
-                                if (showUpcomingOnly) {
-                                    return isUpcomingMission(mission);
-                                }
-
-                                return true;
-                            })
-                            .map((mission) => (
-                                <article className="mission-card" key={mission.id}>
-                                    <div>
-                                        <h3>{mission.name}</h3>
-                                        <p>{mission.dates}</p>
-                                        <p>{mission.location}</p>
-                                        <p>OIC: {mission.oic}</p>
-                                    </div>
-
-                                    {/* Progress Tracker */}
-
-                                    <div className="mission-progress">
-                                        {stages.map((stage, index) => {
-                                            const step = index + 1;
-                                            const completed = step < mission.stage;
-                                            const current = step === mission.stage;
-
-                                            return (
-                                                <div className="progress-wrapper" key={stage}>
-                                                    <div className="progress-step">
-                                                        <div
-                                                            className={`progress-circle ${completed ? "completed" : current ? "current" : ""
-                                                                }`}
-                                                        >
-                                                            {completed ? "✓" : step}
-                                                        </div>
-
-                                                        <span className={current ? "current-label" : ""}>
-                                                            {stage}
-                                                        </span>
-                                                    </div>
-
-                                                    {index < stages.length - 1 && (
-                                                        <div
-                                                            className={`progress-line ${step < mission.stage ? "completed" : ""
-                                                                }`}
-                                                        />
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {/* Readiness */}
-                                    <div className="mission-status">
-                                        <p>Status: {mission.status}</p>
-                                        <p>Readiness: {mission.readiness}%</p>
-
-                                        {mission.issue && (
-                                            <p className="mission-issue">
-                                                Issue: {mission.issue}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => handleMissionSelect(mission)}
-                                    >
-                                        {mission.status === "Ready"
-                                            ? "View Mission"
-                                            : "Continue Planning"}
-                                    </button>
-                                </article>
-                            ))}
-                    </div>
-                </section>
-            </main>
-    );
+                  <button
+                    type="button"
+                    className="delete-mission-button"
+                    onClick={() => handleDeleteMission(mission.id)}
+                  >
+                    Delete Mission
+                  </button>
+                </div>
+              </article>
+            ))}
+        </div>
+      </section>
+    </main>
+  );
 }
 
 export default MPC;

@@ -145,7 +145,8 @@ export default function CrewCertificationPanel() {
                                 <div style={{ fontSize: '0.8rem', opacity: 0.75 }}>requires {row.certification}</div>
                             </div>
                             <button
-                                style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', flexShrink: 0 }}
+                                className="btn-delete"
+                                style={{ flexShrink: 0 }}
                                 onClick={() => handleDelete(row)}
                             >
                                 Remove

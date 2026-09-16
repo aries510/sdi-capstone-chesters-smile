@@ -8,7 +8,6 @@ import { SERVER_URL, fetchCatch } from '../utils/api';
 
 
 {/* // 1. Variables for production ---- */}
-//#######################################################
 
 //server routes
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -17,6 +16,7 @@ import { SERVER_URL, fetchCatch } from '../utils/api';
     const personnelUrl = `${SERVER_URL}/personnel/${personnelId}`;
     const certificationsUrl = `${SERVER_URL}/perscerts/${personnelId}`;
     const qualificationsUrl =`${SERVER_URL}/quals/${personnelId}`;
+    const missionsUrl = `${SERVER_URL}/msnplans`;
 
 
 
@@ -80,6 +80,9 @@ function GenUser() {
     ]);
     // Used for crew certifications modal | tells us which role is selected so we know what data to display
     const [selectedRole, setSelectedRole] = useState(null);
+    // Full crew role catalog (name + description), used to show role info
+    // alongside its required certs in the Crew Certifications modal
+    const [crewRoles, setCrewRoles] = useState([]);
     
     
     
@@ -105,9 +108,28 @@ function GenUser() {
             .then((data) => setCerts(data.certifications))
             .catch(fetchCatch('Could not load certifications data, using demo:'));
     }, [])
+
+    function getDistinctRoles(qualsArray) {
+        const rolesMap = {};
+        qualsArray.forEach((qual) => {
+            if (!rolesMap[qual.roleId]) {
+                rolesMap[qual.roleId] = {
+                    roleId: qual.roleId,
+                    role: qual.role
+                };
+            }
+        });
+        return Object.values(rolesMap);
+    }
+
     //Fetch Crew Role cert requirements
     useEffect(() => {
+        if (!quals || quals.length === 0) return;
         const distinctRoles = getDistinctRoles(quals);
+
+        const validRoles = distinctRoles.filter(role => role.roleId !== undefined && role.roleId !== null);
+
+        if (validRoles.length === 0) return;
         Promise.all(
             distinctRoles.map((role) => 
             fetch(`${SERVER_URL}/crewcerts/${role.roleId}`).then((response) => response.json())
@@ -116,10 +138,55 @@ function GenUser() {
         .then((results) => setRoleCerts(results))
         .catch(fetchCatch('Could not load role certification requirements, using demo:'));
     }, [quals]);
+    //Fetch full crew role catalog (name + description), independent of this person's own quals
+    useEffect(() => {
+        fetch(`${SERVER_URL}/crewroles`)
+            .then((response) => response.json())
+            .then((data) => setCrewRoles(data))
+            .catch(fetchCatch('Could not load crew role catalog, using demo:'));
+    }, []);
+    //Fetch missions
+    useEffect(() => {
+        fetch(missionsUrl)
+            .then((response) => response.json())
+            .then((data) => {
+                const myMissions = data.filter((mission) => 
+                    mission.personnel.some((person) => person.personId === personnelId)
+                );
+                return Promise.all(
+                    myMissions.map((mission) => {
+                        const roleFetches = mission.roles.map((role) =>
+                        fetch(`${SERVER_URL}/crewcerts/${role.roleId}`)
+                            .then((response) => response.json())
+                    );
+
+                    return Promise.all(roleFetches).then((roleCertResults) => {
+                        const allCerts = roleCertResults.flatMap((roleData) =>
+                            roleData.certifications.map((cert) => cert.certification)
+                        );
+                        const uniqueCerts = [...new Set(allCerts)];
+
+                        return {
+                            id: mission.id,
+                            name: mission.msn_name,
+                            type: mission.msn_type,
+                            dates: `${mission.start_date} - ${mission.end_date}`,
+                            location: mission.location,
+                            oic: mission.personnel[0]?.name || 'Unassigned',
+                            purpose: mission.description,
+                            requiredCerts: uniqueCerts
+                        };
+                    });
+                })
+            );
+        })
+        .then((mappedMissions) => setMissions(mappedMissions))
+        .catch(fetchCatch('Could not load missions, using demo:'));
+    }, [])
         
 
         
-    {/* ////// 2.1.3 Sub Functions ---- */}
+    {/* //// 2.1.3 Sub Functions ---- */}
     //Used for Weapons Systems quick info in User Info Panel
     function getDistinctSystems(qualsArray) {
         const systemsMap = {};
@@ -176,18 +243,7 @@ function GenUser() {
         return null;
     }
 
-    function getDistinctRoles(qualsArray) {
-        const rolesMap = {};
-        qualsArray.forEach((qual) => {
-            if (!rolesMap[qual.roleId]) {
-                rolesMap[qual.roleId] = {
-                    roleId: qual.roleId,
-                    role: qual.role
-                };
-            }
-        });
-        return Object.values(rolesMap);
-    }
+
 
     //Used for Mission's readiness logic
     function meetsRequirements(mission, certsArray) {
@@ -249,7 +305,7 @@ function GenUser() {
 
         /**-----Dashboard/Home view-=------------------------ */
         <div className="genUser-dashboard">
-            {/**------------User Info Panel---------------- */}
+            {/* ////// 2.1.4.1 User Info Panel ---- */}
             <div className="user-info user-panel">
                 <div className="header">
                     <h3>User Info</h3>
@@ -300,7 +356,7 @@ function GenUser() {
                 <div className="contact">
                     <div>
                         <h4>Contact Info:</h4>
-                        <button className="btn-toggle">Edit</button>
+                        <button className="btn-edit">Edit</button>
                     </div>
                     <p>Email@example.com</p>
                     <p>Comm:(000)000-0000</p>
@@ -308,7 +364,7 @@ function GenUser() {
             </div>
             
 
-            {/**-----------User Mission Panel---------------- */}
+            {/* ////// 2.1.4.2 User Mission Panel ---- */}
             <div className="user-mission-container user-panel">
                 <div className="header">
                     <h3>Current Missions</h3>
@@ -341,7 +397,7 @@ function GenUser() {
             </div>
 
 
-            {/**-----------User Tasks Panel---------------- */} 
+            {/* ////// 2.1.4.3 User Tasks Panel ---- */} 
             <div className="user-tasks user-panel">
                 <h3>Next Steps</h3>
                 <div className="user-tasks-content">
@@ -351,7 +407,7 @@ function GenUser() {
                     </div>
 
                     {certTasks.map((item, index) => (
-                        <div className="user-task btn-card" key={index}>
+                        <div className="user-task" key={index}>
                             <p className="task-date">{item.date}</p>
                             <p>{item.task}</p>
                             <button className="btn-primary">View</button>
@@ -367,16 +423,36 @@ function GenUser() {
             {openModal?.type === 'mission' && (
                 <div className="mission-modal-backdrop" onClick={() => setOpenModal(null)}>
                     <div className="mission-modal mission-view-modal" onClick={(event) => event.stopPropagation()}>
-                        <div className="modal-header" id="mv-header">
+                        <div className="modal-header">
                             <h2>{openModal.mission.name}</h2>
                             <button onClick={() => setOpenModal(null)}>Close</button>
                         </div>
-                        <p id="mv-type">Type: {openModal.mission.type}</p>
-                        <p id="mv-dates">Dates: {openModal.mission.dates}</p>
-                        <p id="mv-location">Location: {openModal.mission.location}</p>
-                        <p id="mv-oic">OIC: {openModal.mission.oic}</p>
-                        <p id="mv-purpose">Purpose: {openModal.mission.purpose}</p>
-                        <p id="mv-requirements">Requirements: {openModal.mission.requiredCerts.join(', ')}</p>
+                        <div className="ready-checks">
+                            <div className="ready-check-row">
+                                <span>Type</span>
+                                <strong>{openModal.mission.type}</strong>
+                            </div>
+                            <div className="ready-check-row">
+                                <span>Dates</span>
+                                <strong>{openModal.mission.dates}</strong>
+                            </div>
+                            <div className="ready-check-row">
+                                <span>Location</span>
+                                <strong>{openModal.mission.location}</strong>
+                            </div>
+                            <div className="ready-check-row">
+                                <span>OIC</span>
+                                <strong>{openModal.mission.oic}</strong>
+                            </div>
+                            <div className="ready-check-row">
+                                <span>Purpose</span>
+                                <strong>{openModal.mission.purpose}</strong>
+                            </div>
+                            <div className="ready-check-row">
+                                <span>Requirements</span>
+                                <strong>{openModal.mission.requiredCerts.join(', ') || 'None'}</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
@@ -420,6 +496,7 @@ function GenUser() {
                         
                         <div className="crew-cert-body">
                             <div className="crew-cert-role-list">
+                            <p className="crew-cert-pane-header">Crew Role</p>
                             {roleCerts.map((role) => {
                                 const isSelected =
                                 selectedRole?.roleId === role.roleId;
@@ -438,6 +515,18 @@ function GenUser() {
                             </div>
 
                             <div className="crew-cert-requirements">
+                            <p className="crew-cert-pane-header">Certifications</p>
+                            {selectedRole && (() => {
+                                const roleInfo = crewRoles.find(
+                                    (r) => r.id === selectedRole.roleId
+                                );
+                                return (
+                                    <div className="crew-cert-role-info">
+                                        <h5>{selectedRole.crew_role}</h5>
+                                        <p>{roleInfo?.description || 'No description available.'}</p>
+                                    </div>
+                                );
+                            })()}
                             {selectedRole &&
                                 selectedRole.certifications.map((cert) => {
                                 const held = certs.some(

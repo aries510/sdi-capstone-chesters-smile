@@ -138,29 +138,21 @@ function CertificationCatalog() {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   gap: '10px',
+                  margin: '5px 0',
+                  padding: '8px 0',
+                  borderBottom: '1px solid var(--border-color)'
                 }}
               >
                 <span>{cert.name}</span>
                 <span style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
                   <button
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'inherit',
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                    }}
+                    className="btn-edit"
                     onClick={() => openEditForm(cert)}
                   >
                     Edit
                   </button>
                   <button
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#dc2626',
-                      cursor: 'pointer',
-                    }}
+                    className="btn-delete"
                     onClick={() => handleDelete(cert)}
                   >
                     Delete

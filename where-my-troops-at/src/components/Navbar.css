@@ -1,14 +1,5 @@
-:root {
-  --panel-bg: rgba(255, 255, 255, 0.55);
-  --text-color: #222222;
-  --border-color: #dcdcdc;
-}
-
-.dark-theme {
-  --panel-bg: rgba(30, 30, 30, 0.55);
-  --text-color: #c0c0c0;
-  --border-color: #333333;
-}
+/* --panel-bg / --text-color / --border-color now come from the
+   shared index.css :root - removed the duplicate declaration here */
 
 .wmta-brand-title {
   font-family: Impact, "Arial Narrow", sans-serif;
@@ -42,7 +33,9 @@
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   color: var(--text-color);
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .navbar-page-name {
@@ -100,6 +93,54 @@
   cursor: pointer;
   font-size: 0.9rem;
 }
+.navbar-theme-btn:hover {
+  background-color: var(--panel-bg-hover);
+  color: var(--text-color-hover);
+}
+
+
+.logoff {
+  text-decoration: none;
+  position: relative;
+  margin-bottom: 5px;
+}
+
+
+.nav-utils * {
+  color: var(--text-color);
+}
+.nav-utils *:hover {
+  color: var(--text-color);
+}
+.hamburger-icon {
+  position: relative;
+  border-radius: 5px;
+  border: none;
+  font-size: 1.4em;
+  color: var(--text-color);
+  background-color: var(--bg-color)
+}
+.menu-dropdown {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 6vh;
+  right: 10px;
+  gap: 10px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 10px;
+  z-index: 3;
+}
+
+/* Only shown inside the dropdown at small widths - see media query.
+   Hidden by default so desktop doesn't show the nav links twice. */
+.menu-dropdown-links {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+}
 
 @media (max-width: 768px) {
   .navbar-page-name {
@@ -110,10 +151,17 @@
   }
 
   .navbar-links {
-    flex-basis: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  /* The flat links outside the dropdown hide at this width - the
+     duplicate copy inside .menu-dropdown-links takes over instead */
+  .navbar-links > .navbar-link {
+    display: none;
+  }
+
+  .menu-dropdown-links {
+    display: flex;
   }
 
   .navbar-link,
@@ -125,7 +173,7 @@
 .title {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 12px;
 }
 
 .title span {

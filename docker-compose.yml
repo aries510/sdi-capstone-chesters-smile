@@ -9,3 +9,26 @@ services:
       - '5432:5432'
     volumes:
       - ./dbs:/var/lib/postgresql/data
+
+  server:
+    build: ./server
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://postgres:docker@db:5432/capstone
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      - 'db'
+
+  client:
+    build: ./where-my-troops-at
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./where-my-troops-at:/app
+      - /app/node_modules
+    depends_on:
+      - 'server'

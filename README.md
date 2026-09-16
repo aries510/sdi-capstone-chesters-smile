@@ -103,6 +103,9 @@ erDiagram
     <tr>
       <td><strong>Global Shell:</strong> Shared navbar with consistent branding, navigation paths, and a native light/dark mode switch.</td>
     </tr>
+    <tr>
+      <td>Global shared styling (single source for theme colors/variables and font in index.css - removed duplicate/conflicting per-page copies)</td>
+    </tr>
   </table>
 </details>
 
@@ -116,16 +119,6 @@ erDiagram
       <th>Team member</th>
     </tr>
     <tr>
-      <td>Context Wrapper for persistent Light/Dark theme</td>
-      <td>pending</td>
-    </tr>
-    <tr>
-      <td>Crew Certifications modal (role → required certs)</td>
-      <td>Augustine</td>
-    </tr>
-    <tr>
-      <td>Wire GeneralUser to real personnel_id from login</td>
-      <td>Augustine</td>
     </tr>
   </table>
 </details>

@@ -188,13 +188,13 @@ function AdminHome() {
                       <div className="trainee-item-actions">
                         <span className="badge badge-evaluator">Evaluator</span>
                         <button
-                          className="btn-delete-trainee"
+                          className="btn-edit"
                           onClick={(e) => openEditPersonnel(ev, e)}
                         >
                           Edit
                         </button>
                         <button
-                          className="btn-delete-trainee"
+                          className="btn-delete"
                           onClick={(e) => handleDeletePersonnel(ev.id, e)}
                         >
                           Delete
@@ -229,13 +229,13 @@ function AdminHome() {
                       <div className="trainee-item-actions">
                         <span className="badge badge-planner">Planner</span>
                         <button
-                          className="btn-delete-trainee"
+                          className="btn-edit"
                           onClick={(e) => openEditPersonnel(pl, e)}
                         >
                           Edit
                         </button>
                         <button
-                          className="btn-delete-trainee"
+                          className="btn-delete"
                           onClick={(e) => handleDeletePersonnel(pl.id, e)}
                         >
                           Delete
@@ -265,13 +265,13 @@ function AdminHome() {
                       <div className="trainee-item-actions">
                         <span className="badge badge-trainee">Trainee</span>
                         <button
-                          className="btn-delete-trainee"
+                          className="btn-edit"
                           onClick={(e) => openEditPersonnel(t, e)}
                         >
                           Edit
                         </button>
                         <button
-                          className="btn-delete-trainee"
+                          className="btn-delete"
                           onClick={(e) => handleDeletePersonnel(t.id, e)}
                         >
                           Delete

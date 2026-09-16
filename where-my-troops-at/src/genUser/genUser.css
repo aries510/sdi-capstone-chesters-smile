@@ -47,7 +47,7 @@
         display: grid;
         grid-template-columns: 1fr 3fr 1fr;
         grid-gap: 10px;
-        color: white;
+        color: var(--text-color);
     }
 
     .user-panel {
@@ -56,7 +56,7 @@
         height: 70vh;
         margin: 5vh 0;
         padding: 10px;
-        background-color: var(--list-bg);
+        background-color: var(--panel-bg);
         backdrop-filter: blur(6px);
         min-width: 0;
     }
@@ -127,7 +127,7 @@
         }
         /*status bubble*/
             #user-status {
-                border: solid 2px white;
+                border: solid 2px var(--text-color);
                 border-radius: 25px;
                 height: fit-content;
                 width: 82.88px;
@@ -207,8 +207,9 @@
                 padding: 0;
                 height: fit-content;
             }
-            .contact.btn-card {
-                height: fit-content;
+            .contact button {
+                height: 80%;
+                align-self: center;
             }
 
 
@@ -265,6 +266,14 @@
             display: grid;
             grid-template-columns: 1fr 2fr;
             text-align: center;
+        }
+        .user-task {
+            align-items: center;
+            background-color: var(--list-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 12px 14px;
+            margin: 8px 0;
         }
         .task-date {
             font-size: 1vw;
@@ -339,26 +348,7 @@
     }
 
     .mission-view-modal {
-        display: grid;
-        gap: 5px;
-        grid-template-areas:
-        "mv-header mv-header mv-header"
-        "mv-type mv-dates mv-location"
-        "mv-oic mv-purpose mv-purpose"
-        "mv-requriements mv-purpose mv-purpose";
-    }
-    #mv-header {grid-area: mv-header}
-    #mv-type {grid-area: mv-type}
-    #mv-dates {grid-area: mv-dates}
-    #mv-location {grid-area: mv-location}
-    #mv-oic {grid-area: mv-oic}
-    #mv-purpose {grid-area: mv-purpose}
-    #mv-requirements {grid-area: mv-requriements}
-
-
-    .mission-view-modal > p {
-        border-left: 1px solid var(--border-color);
-        padding: 5%;
+        display: block;
     }
 
     .status-pill-ready,
@@ -379,6 +369,36 @@
         background-color: var(--status-bad-bg);
         color: var(--status-bad-text);
         border: 1px solid var(--status-bad-border);
+    }
+
+    /* Mission detail modal - matches MPC's ready-checks/ready-check-row */
+    .ready-checks {
+        display: flex;
+        flex-direction: column;
+        background-color: var(--list-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        overflow: hidden;
+        color: var(--text-color);
+    }
+    .ready-check-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .ready-check-row:last-child {
+        border-bottom: none;
+    }
+    .ready-check-row span {
+        color: var(--text-color);
+        opacity: 0.7;
+    }
+    .ready-check-row strong {
+        color: var(--status-good-text);
+        text-align: right;
     }
 
     /* Certs/Quals/Systems list modal - item rows */
@@ -407,14 +427,44 @@
         flex: 1;
         min-height: 0;
     }
-    .crew-cert-role-list,
-    .crew-cert-requirements {
+    .crew-cert-pane-header {
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-color);
+        opacity: 0.7;
+        margin: 0 0 10px;
+    }
+    .crew-cert-role-list {
         flex: 1;
         overflow-y: auto;
         background-color: var(--list-bg);
         border: 1px solid var(--border-color);
         border-radius: 4px;
         padding: 10px;
+    }
+    .crew-cert-requirements {
+        flex: 2;
+        overflow-y: auto;
+        background-color: var(--list-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 10px;
+    }
+    .crew-cert-role-info {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+    .crew-cert-role-info h5 {
+        margin: 0 0 4px;
+        font-size: 1.1rem;
+    }
+    .crew-cert-role-info p {
+        margin: 0;
+        font-size: 0.9rem;
+        opacity: 0.85;
     }
     .crew-cert-role-list p {
         padding: 8px 10px;

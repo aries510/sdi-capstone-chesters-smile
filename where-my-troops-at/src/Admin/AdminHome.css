@@ -1,26 +1,6 @@
-/* Light Theme Variables */
-:root {
-    --bg-color: #ffffff;
-    --panel-bg: rgba(255, 255, 255, 0.55);
-    --text-color: #222222;
-    --border-color: #dcdcdc;
-    --list-bg: rgba(253, 245, 230, 0.55);
-    --catalog-bg: rgba(234, 241, 248, 0.55);
-    --button-text: #ffffff;
-    --scrollbar-thumb: #cbd5e1;
-}
-
-/* Dark Theme Variables */
-.dark-theme {
-    --bg-color: #001026;
-    --panel-bg: rgba(30, 30, 30, 0.55);
-    --text-color: #c0c0c0;
-    --border-color: #333333;
-    --list-bg: rgba(17, 30, 56, 0.55);
-    --catalog-bg: rgba(22, 34, 44, 0.55);
-    --button-text: #ffffff;
-    --scrollbar-thumb: #334155;
-}
+/* --bg-color / --panel-bg / --text-color / --border-color / --list-bg /
+   --catalog-bg / --button-text / --scrollbar-thumb now come from the
+   shared index.css :root - removed the duplicate declaration here */
 
 /* Global Theme Transitions & Background Image */
 body {
@@ -39,7 +19,6 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    font-family: sans-serif;
     color: var(--text-color);
 }
 
@@ -84,7 +63,7 @@ body {
 
 .eval-trainee-list {
     flex: 1;
-    background-color: var(--panel-bg);
+    background-color: var(--list-bg);
     backdrop-filter: blur(6px);
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -92,6 +71,7 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    z-index: 2;
 }
 
 .eval-trainee-list h3 {
@@ -190,19 +170,6 @@ body {
     align-items: center;
 }
 
-.btn-delete-trainee {
-    background: none;
-    border: none;
-    color: #dc2626;
-    cursor: pointer;
-    font-size: 0.8rem;
-    padding: 0;
-}
-
-.btn-delete-trainee:hover {
-    text-decoration: underline;
-}
-
 /* Custom Scrollbar Styles for the Inner List */
 .eval-trainee-scroll::-webkit-scrollbar,
 .panel-list::-webkit-scrollbar {
@@ -229,7 +196,7 @@ body {
 }
 
 .panel {
-    background-color: var(--panel-bg);
+    background-color: var(--list-bg);
     backdrop-filter: blur(6px);
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -383,4 +350,8 @@ body {
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
+}
+
+.cert-results {
+    
 }
