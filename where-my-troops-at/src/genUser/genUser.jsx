@@ -108,9 +108,28 @@ function GenUser() {
             .then((data) => setCerts(data.certifications))
             .catch(fetchCatch('Could not load certifications data, using demo:'));
     }, [])
+
+    function getDistinctRoles(qualsArray) {
+        const rolesMap = {};
+        qualsArray.forEach((qual) => {
+            if (!rolesMap[qual.roleId]) {
+                rolesMap[qual.roleId] = {
+                    roleId: qual.roleId,
+                    role: qual.role
+                };
+            }
+        });
+        return Object.values(rolesMap);
+    }
+
     //Fetch Crew Role cert requirements
     useEffect(() => {
+        if (!quals || quals.length === 0) return;
         const distinctRoles = getDistinctRoles(quals);
+
+        const validRoles = distinctRoles.filter(role => role.roleId !== undefined && role.roleId !== null);
+
+        if (validRoles.length === 0) return;
         Promise.all(
             distinctRoles.map((role) => 
             fetch(`${SERVER_URL}/crewcerts/${role.roleId}`).then((response) => response.json())
@@ -224,18 +243,7 @@ function GenUser() {
         return null;
     }
 
-    function getDistinctRoles(qualsArray) {
-        const rolesMap = {};
-        qualsArray.forEach((qual) => {
-            if (!rolesMap[qual.roleId]) {
-                rolesMap[qual.roleId] = {
-                    roleId: qual.roleId,
-                    role: qual.role
-                };
-            }
-        });
-        return Object.values(rolesMap);
-    }
+
 
     //Used for Mission's readiness logic
     function meetsRequirements(mission, certsArray) {
