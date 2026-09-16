@@ -9,7 +9,9 @@ import { SERVER_URL, fetchCatch } from '../utils/api';
 
 {/* // 1. Variables for production ---- */}
 
-//server routes
+{/* // 2.1 GenUser ---- */}
+function GenUser() {
+
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
     const personnelId = storedUser.personnel_id || 1;
 
@@ -17,15 +19,6 @@ import { SERVER_URL, fetchCatch } from '../utils/api';
     const certificationsUrl = `${SERVER_URL}/perscerts/${personnelId}`;
     const qualificationsUrl =`${SERVER_URL}/quals/${personnelId}`;
     const missionsUrl = `${SERVER_URL}/msnplans`;
-
-
-
-
-
-    
-
-{/* // 2.1 GenUser ---- */}
-function GenUser() {
 
 
     {/* //// 2.1.1 UseStates | Tracked information ----*/}
