@@ -142,13 +142,19 @@ erDiagram
 ---
 
 <details>
-  <summary>In-progress</summary>
+  <summary>Future Features</summary>
   <table>
     <tr>
-      <th>Task</th>
-      <th>Team member</th>
+      <th>Features</th>
     </tr>
     <tr>
+    <td>Auto-complete function for input fields.</td>
+    </tr>
+    <tr>
+      <td>Filter function for drop-down selection fields.</td>
+    </tr>
+    <tr>
+      <td>Auto filter of personnel when matching to a crew role. Once a crew role has been satisfied the available personnel for selection will only be for the crew roles left based on personnel qualifications. </td>
     </tr>
   </table>
 </details>
