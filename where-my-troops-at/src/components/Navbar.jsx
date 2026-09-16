@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import logo from '../bg-images/WMTA.png';
 
@@ -16,19 +16,21 @@ const links = [
 //   { header: 'MPC', url: '/mpc' },
 // ];
 
-const logoff = () => {
-  localStorage.removeItem('user');
-};
-
 export default function Navbar() {
   const [darkMode, setDarkMode] = useState(true);
   const { pathname } = useLocation();
-  const [ menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const navigate = useNavigate();
 
   // const currentPage = pages.find(
   //   (page) => page.url.toLowerCase() === pathname.toLowerCase(),
   // );
+
+  const logoff = () => {
+    localStorage.removeItem('user');
+    navigate('/');
+  };
 
   useEffect(() => {
     document.body.classList.toggle('dark-theme', darkMode);
@@ -46,57 +48,71 @@ export default function Navbar() {
     };
   }, []);
 
-
-  if (pathname === '/') { 
+  if (pathname === '/') {
     return null;
   } else {
     return (
       <nav className="navbar">
-      <div className="title">
-        <img src={logo} alt="Space Force Logo" className="navbar-logo" />
-        <div className="wmta-brand-title">WHERE MY TROOPS AT</div>
-      </div>
+        <div className="title">
+          <img src={logo} alt="Space Force Logo" className="navbar-logo" />
+          <div className="wmta-brand-title">WHERE MY TROOPS AT</div>
+        </div>
 
-      {/* {currentPage && (
+        {/* {currentPage && (
         <span className="navbar-page-name">{currentPage.header}</span>
         )} */}
 
-      <div className="navbar-links">
-        {links.map((link) => (
-          <NavLink
-          key={link.to}
-          to={link.to}
-          end
-          className={({ isActive }) =>
-            `navbar-link ${isActive ? 'active' : ''}`
-        }
-        >
-            {link.label}
-          </NavLink>
-        ))}
-       <div className="menu-wrapper" ref={menuRef}>
-        <button
-            className="hamburger-icon"
-            onClick={() => setMenuOpen((open) => !open)}
-        >
-            {menuOpen ? '✕' : '☰'}
-        </button>
+        <div className="navbar-links">
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end
+              className={({ isActive }) =>
+                `navbar-link ${isActive ? 'active' : ''}`
+              }
+            >
+              {link.label}
+            </NavLink>
+          ))}
+          <div className="menu-wrapper" ref={menuRef}>
+            <button
+              className="hamburger-icon"
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              {menuOpen ? '✕' : '☰'}
+            </button>
 
-        {menuOpen && (
-            <div className="menu-dropdown">
+            {menuOpen && (
+              <div className="menu-dropdown">
+                <div className="menu-dropdown-links">
+                  {links.map((link) => (
+                    <NavLink
+                      key={link.to}
+                      to={link.to}
+                      end
+                      className={({ isActive }) =>
+                        `navbar-link ${isActive ? 'active' : ''}`
+                      }
+                    >
+                      {link.label}
+                    </NavLink>
+                  ))}
+                </div>
                 <button
-                    className="navbar-theme-btn"
-                    onClick={() => setDarkMode((mode) => !mode)}
+                  className="navbar-theme-btn"
+                  onClick={() => setDarkMode((mode) => !mode)}
                 >
-                    {darkMode ? 'Light Mode' : 'Dark Mode'}
+                  {darkMode ? 'Light Mode' : 'Dark Mode'}
                 </button>
                 <button className="navbar-theme-btn" onClick={() => logoff()}>
-                    Logoff
+                  Logoff
                 </button>
-            </div>
-        )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </nav>
-  );
-}}
+      </nav>
+    );
+  }
+}

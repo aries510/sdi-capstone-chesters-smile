@@ -194,7 +194,7 @@ function EvaluatorHome() {
             <input
               type="text"
               className="search-bar"
-              placeholder="Name, AFSC, Weapons System, or Certification"
+              placeholder="Name, Rank, Weapons System, or Certification"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -274,7 +274,7 @@ function EvaluatorHome() {
       <div className="evaluator-top-row">
         <div className="trainees-panel">
           <div className="trainees-header">
-            <h3>Personnel Certifications/Qualifications</h3>
+            <h3>Trainees</h3>
             <button
               className="add-new-btn"
               onClick={() => setShowAddModal(true)}

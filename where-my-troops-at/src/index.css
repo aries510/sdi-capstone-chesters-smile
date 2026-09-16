@@ -32,6 +32,13 @@ body {
     margin: 0;
 }
 
+/* Single shared spot for bottom clearance under the fixed footer -
+   applies to whichever page is currently routed, so no individual
+   page needs its own bottom padding/margin to avoid being covered. */
+.page-wrapper {
+    padding-bottom: 40px;
+}
+
 /* Shared Edit/Delete button styling - matches the pattern MPC.css
    originally established (.edit-mission-button / .delete-mission-button).
    Used app-wide now instead of each page inventing its own. */
@@ -63,4 +70,39 @@ body {
 .btn-delete:hover {
     background-color: #8f1c13;
     border-color: #8f1c13;
+}
+
+
+footer {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: var(--panel-bg);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    color: var(--text-color);
+    max-width: 1200px;
+    width: auto;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0 auto 10px auto;
+    padding: 10px 20px;
+}
+.support-footer {
+    margin-left: 25px;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+.support-footer:hover {
+    color: var(--text-color-hover);
+}
+
+@media (max-width: 768px) {
+    footer {
+
+    }
 }
