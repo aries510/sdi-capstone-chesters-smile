@@ -1,8 +1,38 @@
+# The Squad
+<table>
+  <tr>
+    <td><strong>Squad Lead</strong></td>
+  </tr>
+  <tr>
+    <td>SSG James Roe</td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <td><strong>Front Enders</strong></td>
+  </tr>
+  <tr>
+    <td>SSG Davy Yang</td>
+    <td>Spc3 Jacob Augustine Flory</td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <td><strong>Back Enders</strong></td>
+  </tr>
+  <tr>
+    <td>TSgt Chester Bullard</td>
+    <td>TSgt Daren Respicio</td>
+  </tr>
+</table>
+
+
+
 # Problem Statement
 
-- Current personnel tracking is fragmented across disconnected spreadsheets and PowerPoint presentations. This leaves commanders without a centralized method to evaluate unit readiness in real time, leading to ineffective management of unit personnel.
+- Current personnel tracking is fragmented across disconnected spreadsheets and PowerPoint presentations. This leaves commanders without a centralized method to evaluate unit readiness in real time, leading to ineffective management.
 
-- Where My Troops At?™ aims to centralize personnel tracking by providing commanders with a single platform to manage and monitor unit personnel information in real time. This will improve visibility into unit readiness, reduce reliance on disconnected spreadsheets and presentations, and enable more effective personnel management and informed decision-making.
+- Where My Troops At?™ centralizes personnel tracking into a single platform. The application delivers real-time visibility into unit readiness, eliminates manual tracking, and empowers commanders to make fast, data-driven decisions.
 
 ## ERD
 
@@ -77,37 +107,31 @@ erDiagram
 ## Features:
 
 <details>
-  <summary>Current Features</summary>
+  <summary>Implemented Features</summary>
   <table>
-    <tr>
+    <!-- <tr>
       <th>Feature</th>
+    </tr> -->
+    <tr>
+      <td><strong>Role-Based Authentication:</strong> Secure login with automatic dashboard routing based on user permissions.</td>
     </tr>
     <tr>
-      <td>Login (auth, role-based redirect)</td>
+      <td><strong>General User Dashboard:</strong> Displays personal identity details, qualifications, active certifications, tracking for weapon systems, assigned missions, and upcoming milestones.</td>
     </tr>
     <tr>
-      <td>GeneralUser dashboard (identity, quals, certs, weapon systems, missions, next steps), wired to the real logged-in user's personnel_id</td>
+      <td><strong>Admin Controls:</strong> Interface for evaluator management, trainee rosters, catalog searches, and tools for bullk spreadsheet/data uploads.</td>
     </tr>
     <tr>
-      <td>Crew Certifications modal (role list + required certs, with role description, held/missing status per cert)</td>
+      <td><strong>Evaluator Workspace:</strong> Personnel search and filtering options alongside a dedicated, editable trainee roster.</td>
     </tr>
     <tr>
-      <td>Shared Navbar (branding, nav links, light/dark toggle) - mounted once above the router, so the theme choice now persists across page navigation</td>
+      <td><strong>MPC Planning Dashboard:</strong> Mission summary views and active mission planners equipped with dynamic readiness trackers.</td>
     </tr>
     <tr>
-      <td>Admin Dashboard (evaluators & trainees roster, evaluator management, certification catalog search, upload/bulk import UI)</td>
+      <td><strong>Mission Wizard:</strong> Multi-step creation tool covering core mission parametes, CONOP development, personnel assignment, and readiness approval workflows.</td>
     </tr>
     <tr>
-      <td>Evaluator Dashboard (personnel search/filter, trainee roster with add/edit)</td>
-    </tr>
-    <tr>
-      <td>Trainee add/edit modal</td>
-    </tr>
-    <tr>
-      <td>MPC Planning Dashboard (mission summary cards, active mission plans with readiness tracker)</td>
-    </tr>
-    <tr>
-      <td>New Mission Plan wizard (mission info, CONOP, personnel assignment, readiness, approval)</td>
+      <td><strong>Global Shell:</strong> Shared navbar with consistent branding, navigation paths, and a native light/dark mode switch.</td>
     </tr>
     <tr>
       <td>Global shared styling (single source for theme colors/variables and font in index.css - removed duplicate/conflicting per-page copies)</td>
@@ -118,13 +142,19 @@ erDiagram
 ---
 
 <details>
-  <summary>In-progress</summary>
+  <summary>Future Features</summary>
   <table>
     <tr>
-      <th>Task</th>
-      <th>Team member</th>
+      <th>Features</th>
     </tr>
     <tr>
+    <td>Auto-complete function for input fields.</td>
+    </tr>
+    <tr>
+      <td>Filter function for drop-down selection fields.</td>
+    </tr>
+    <tr>
+      <td>Auto filter of personnel when matching to a crew role. Once a crew role has been satisfied the available personnel for selection will only be for the crew roles left based on personnel qualifications. </td>
     </tr>
   </table>
 </details>
@@ -162,94 +192,94 @@ Base URL: `http://localhost:8080`
 
 | Method | Endpoint         | Description                                                                                                                                            |
 | ------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| GET    | `/users`         | List users. Optional `?username=`                                                                                                                      |
-| GET    | `/users/:userId` | Get a single user by id                                                                                                                                |
-| POST   | `/users`         | Create a user. Body: `{ username, password, is_admin?, is_evaluator?, is_planner? }` (`password` is plaintext; it's hashed server-side before storing) |
-| PATCH  | `/users/:userId` | Update a user. Body: any of `{ pw_hash, is_admin, is_evaluator, is_planner }`                                                                          |
-| DELETE | `/users/:userId` | Delete a user                                                                                                                                          |
+| GET    | `/users`         | Fetch global users                                                                                                                      |
+| GET    | `/users/:userId` | Fetch specific user using unique ID                                                                                                                                |
+| POST   | `/users`         | Inject new user |
+| PATCH  | `/users/:userId` | Modify specific user using a unique ID                                                                          |
+| DELETE | `/users/:userId` | Remove a user using a unique ID                                                                                                                                         |
 
 ### Domains — `/domains`
 
 | Method | Endpoint             | Description                       |
 | ------ | -------------------- | --------------------------------- |
-| GET    | `/domains`           | List domains. Optional `?name=`   |
-| GET    | `/domains/:domainId` | Get a single domain by id         |
-| POST   | `/domains`           | Create a domain. Body: `{ name }` |
-| PATCH  | `/domains/:domainId` | Rename a domain. Body: `{ name }` |
-| DELETE | `/domains/:domainId` | Delete a domain                   |
+| GET    | `/domains`           | Fetch operational domains   |
+| GET    | `/domains/:domainId` | Fetch specific domain using a unique ID         |
+| POST   | `/domains`           | Inject a new domain |
+| PATCH  | `/domains/:domainId` | Modify a specific domain using a unique ID |
+| DELETE | `/domains/:domainId` | Remove a specific domain using a unique ID                   |
 
 ### Personnel — `/personnel`
 
 | Method | Endpoint               | Description                                                                                       |
 | ------ | ---------------------- | ------------------------------------------------------------------------------------------------- |
-| GET    | `/personnel`           | List personnel. Optional `?name=` (full-name ilike filter), `?firstName=`, `?lastName=`, `?rank=` |
-| GET    | `/personnel/:personId` | Get a single person by id                                                                         |
-| POST   | `/personnel`           | Create a person. Body: `{ rank, first_name, last_name }`                                          |
-| PATCH  | `/personnel/:personId` | Update a person, by id. Body: any of `{ rank, last_name, first_name }`                            |
-| PATCH  | `/personnel?name=`     | Update a person, by full name. Body: any of `{ rank, last_name, first_name }`                     |
-| DELETE | `/personnel/:personId` | Delete a person, by id                                                                            |
-| DELETE | `/personnel?name=`     | Delete a person, by full name                                                                     |
+| GET    | `/personnel`           | Fetch global personnel |
+| GET    | `/personnel/:personId` | Fetch a specific personnel unsing a unique ID                                                                         |
+| POST   | `/personnel`           | Inject a new personnel record                                         |
+| PATCH  | `/personnel/:personId` | Modify a specific personnel using a unique ID                            |
+| PATCH  | `/personnel?name=`     | Modify a specfic personnel using a matching string                     |
+| DELETE | `/personnel/:personId` | Remove a spcefic personnel using a unique ID                                                                           |
+| DELETE | `/personnel?name=`     | Remove a specific personnel using a matching string                                                                    |
 
 ### Weapon Systems — `/weaponsystems`
 
 | Method | Endpoint                          | Description                                                                                    |
 | ------ | --------------------------------- | ---------------------------------------------------------------------------------------------- |
-| GET    | `/weaponsystems`                  | List weapon systems. Optional `?system=`                                                       |
-| GET    | `/weaponsystems/:systemId`        | Get a single weapon system by id                                                               |
-| POST   | `/weaponsystems`                  | Create a weapon system. Body: `{ name, acronym?, description, domain }`                        |
-| PATCH  | `/weaponsystems/:systemId`        | Update a weapon system, by id. Body: any of `{ name, acronym, description, domain }`           |
-| PATCH  | `/weaponsystems?system=`          | Update a weapon system, by current name. Body: any of `{ name, acronym, description, domain }` |
-| DELETE | `/weaponsystems/:systemId`        | Delete a weapon system, by id                                                                  |
-| DELETE | `/weaponsystems?system=&acronym=` | Delete weapon system(s) matching `system` or `acronym`                                         |
+| GET    | `/weaponsystems`                  | Fetch global weapon systems                                                       |
+| GET    | `/weaponsystems/:systemId`        | Fetch a specfici weapon system using a unique ID                                                              |
+| POST   | `/weaponsystems`                  | Inject a new weapon system                        |
+| PATCH  | `/weaponsystems/:systemId`        | Modify a specific weapon system using a unique ID          |
+| PATCH  | `/weaponsystems?system=`          | Modify a specific weapon system using a matching string |
+| DELETE | `/weaponsystems/:systemId`        | Remove a weapon system using a unique ID                                                                 |
+| DELETE | `/weaponsystems?system=&acronym=` | Remove a wweapon system using a matching string                                        |
 
 ### Crew Roles — `/crewroles`
 
 | Method | Endpoint             | Description                                                               |
 | ------ | -------------------- | ------------------------------------------------------------------------- |
-| GET    | `/crewroles`         | List crew roles. Optional `?role=`                                        |
-| GET    | `/crewroles/:roleId` | Get a single crew role by id                                              |
-| POST   | `/crewroles`         | Create a crew role. Body: `{ role, description? }`                        |
-| PATCH  | `/crewroles/:roleId` | Update a crew role, by id. Body: any of `{ name, description }`           |
-| PATCH  | `/crewroles?role=`   | Update a crew role, by current name. Body: any of `{ name, description }` |
-| DELETE | `/crewroles/:roleId` | Delete a crew role, by id                                                 |
-| DELETE | `/crewroles?role=`   | Delete a crew role, by name                                               |
+| GET    | `/crewroles`         | Fetch global crew roles                                        |
+| GET    | `/crewroles/:roleId` | Fetch a specific crew role using a unique ID                                            |
+| POST   | `/crewroles`         | Inject a new crew role                       |
+| PATCH  | `/crewroles/:roleId` | Modify a crew role using a unique ID           |
+| PATCH  | `/crewroles?role=`   | Modify a specific crew role using a matching string |
+| DELETE | `/crewroles/:roleId` | Remove a specific crew role using a unique ID                                                |
+| DELETE | `/crewroles?role=`   | Remove a specific crew role using a matching string                                              |
 
 ### Certifications — `/certs`
 
 | Method | Endpoint         | Description                                               |
 | ------ | ---------------- | --------------------------------------------------------- |
-| GET    | `/certs`         | List certifications. Optional `?name=`                    |
-| GET    | `/certs/:certId` | Get a single certification by id                          |
-| POST   | `/certs`         | Create a certification. Body: `{ name }`                  |
-| PATCH  | `/certs/:certId` | Rename a certification, by id. Body: `{ name }`           |
-| PATCH  | `/certs?name=`   | Rename a certification, by current name. Body: `{ name }` |
-| DELETE | `/certs/:certId` | Delete a certification, by id                             |
-| DELETE | `/certs?name=`   | Delete a certification, by name                           |
+| GET    | `/certs`         | Fetch global certifications                   |
+| GET    | `/certs/:certId` | Fetch a specific certification using a unique ID                         |
+| POST   | `/certs`         | Inject a new certification                  |
+| PATCH  | `/certs/:certId` | Modify a certification using a unique ID           |
+| PATCH  | `/certs?name=`   | Modify a certification using a matching string |
+| DELETE | `/certs/:certId` | Remove a certification using a unique ID                             |
+| DELETE | `/certs?name=`   | Remove a certification using a matching string                           |
 
 ### Crew Qualifications — `/quals`
 
 | Method | Endpoint                             | Description                                                                                                |
 | ------ | ------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| GET    | `/quals`                             | List personnel with their qualifications (role, system, qualified_date, `is_current`). Optional `?member=` |
-| GET    | `/quals/:personId`                   | Get one person's qualifications                                                                            |
-| POST   | `/quals`                             | Add a qualification. Body: `{ member, role, system, qualified_date }`                                      |
-| PATCH  | `/quals/:personId/:roleId/:systemId` | Update `qualified_date`, by ids                                                                            |
-| PATCH  | `/quals?member=&role=&system=`       | Update `qualified_date`, by names                                                                          |
-| DELETE | `/quals/:personId/:roleId/:systemId` | Remove a qualification, by ids                                                                             |
-| DELETE | `/quals?member=&role=&system=`       | Remove a qualification, by names                                                                           |
+| GET    | `/quals`                             | Fetch global crew qualifications |
+| GET    | `/quals/:personId`                   | Fetch specific crew qualification using unique ID                                                                           |
+| POST   | `/quals`                             | Inject crew qualification record                                      |
+| PATCH  | `/quals/:personId/:roleId/:systemId` | Modify crew qualification record using unique ID                                                                           |
+| PATCH  | `/quals?member=&role=&system=`       | Modify crew qualification record using matching string                                                                         |
+| DELETE | `/quals/:personId/:roleId/:systemId` | Remove crew qualification record using unique ID                                                                             |
+| DELETE | `/quals?member=&role=&system=`       | Remove a crew qualification using a matching string                                                                           |
 
-`is_current` is computed at query time — true if `qualified_date` is less than a year old.
+Note: `is_current` is computed at query time — true if `qualified_date` is less than a year old.
 
 ### Personnel Certifications — `/perscerts`
 
 | Method | Endpoint                       | Description                                                                                 |
 | ------ | ------------------------------ | ------------------------------------------------------------------------------------------- |
-| GET    | `/perscerts`                   | List personnel with their certifications (certId, dates, `is_current`). Optional `?member=` |
-| GET    | `/perscerts/:personId`         | Get one person's certifications                                                             |
-| POST   | `/perscerts`                   | Assign a certification to a person. Body: `{ member, cert, date_earned, expiry_date }`      |
-| PATCH  | `/perscerts/:personId/:certId` | Update `date_earned` and/or `expiry_date` for an existing assignment                        |
-| DELETE | `/perscerts/:personId/:certId` | Remove a certification from a person, by id                                                 |
-| DELETE | `/perscerts?member=&cert=`     | Remove a certification from a person, by name                                               |
+| GET    | `/perscerts`                   | Fetch global personnel with respective certifications |
+| GET    | `/perscerts/:personId`         | Fetch certification record for specific personnel using unique ID                                                             |
+| POST   | `/perscerts`                   | Inject certification record to personnel      |
+| PATCH  | `/perscerts/:personId/:certId` | Modify certification record for personnel using unique ID                       |
+| DELETE | `/perscerts/:personId/:certId` | Remove certification record from personnel using unique ID                                                 |
+| DELETE | `/perscerts?member=&cert=`     | Remove certification record from personnel using matching string                                              |
 
 `is_current` is computed at query time — true if `expiry_date` hasn't passed yet.
 
@@ -257,11 +287,11 @@ Base URL: `http://localhost:8080`
 
 | Method | Endpoint                     | Description                                                                            |
 | ------ | ---------------------------- | -------------------------------------------------------------------------------------- |
-| GET    | `/crewcerts`                 | List crew roles with their required certifications (roleId, certId). Optional `?role=` |
-| GET    | `/crewcerts/:roleId`         | Get one crew role's required certifications                                            |
-| POST   | `/crewcerts`                 | Require a certification for a crew role. Body: `{ crewRole, certification }`           |
-| DELETE | `/crewcerts?role=&cert=`     | Remove a required certification from a crew role, by name                              |
-| DELETE | `/crewcerts/:roleId/:certId` | Remove a required certification from a crew role, by id                                |
+| GET    | `/crewcerts`                 | Fetch global crew role certifications |
+| GET    | `/crewcerts/:roleId`         | Fetch a specific crew role certification using a unique ID                                            |
+| POST   | `/crewcerts`                 | Inject a new crew role certification          |
+| DELETE | `/crewcerts?role=&cert=`     | Remove a specific crew role certification using a matching string                             |
+| DELETE | `/crewcerts/:roleId/:certId` | Remove a specific crew role certification using a unique ID                               |
 
 </details>
 
