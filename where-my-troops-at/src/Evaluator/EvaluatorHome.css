@@ -16,9 +16,11 @@ body {
 }
 
 .evaluator-container {
-    max-width: 1200px;
+    width: 90%;
+    max-width: 1550px;
+    box-sizing: border-box;
     margin: 0 auto;
-    padding: 20px;
+    padding: 32px 0;
     color: var(--text-color);
 }
 

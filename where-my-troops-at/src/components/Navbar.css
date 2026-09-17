@@ -23,9 +23,11 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  max-width: 1200px;
+  width: 90%;
+  max-width: 1550px;
+  box-sizing: border-box;
   margin: 20px auto 0 auto;
-  padding: 10px 20px;
+  padding: 16px 20px;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   background-color: var(--panel-bg);
   backdrop-filter: blur(6px);

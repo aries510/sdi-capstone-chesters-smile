@@ -40,7 +40,8 @@
 
     .genUser-dashboard {
         height: 80vh;
-        max-width: 1200px;
+        width: 90%;
+        max-width: 1550px;
         box-sizing: border-box;
         padding: 0 10px;
         margin: 20px auto;
