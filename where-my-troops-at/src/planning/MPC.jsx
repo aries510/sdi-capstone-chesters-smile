@@ -62,8 +62,7 @@ function MPC() {
           return;
         }
         const data = await response.json();
-        const crewRoles = data.map((role) => role.name);
-        setRoles(crewRoles);
+        setRoles(data);
       } catch (err) {
         console.error('Error fetching crew roles:', err);
       }
@@ -207,6 +206,143 @@ function MPC() {
     });
   }
 
+  function parseRoleNames(rolesString) {
+    return rolesString
+      ? rolesString
+          .split(',')
+          .map((role) => role.trim())
+          .filter((role) => role)
+      : [];
+  }
+
+  function getRoleIdByName(name) {
+    const match = roles.find(
+      (role) => role.name.toLowerCase() === name.toLowerCase(),
+    );
+
+    return match?.id;
+  }
+
+  async function syncMissionRoles(missionId, previousRoles, selectedRoleNames) {
+    const previousRoleIds = new Set(
+      (previousRoles || []).map((role) => role.roleId),
+    );
+
+    const selectedRoleIds = new Set(
+      selectedRoleNames
+        .map((name) => getRoleIdByName(name))
+        .filter((id) => id !== undefined),
+    );
+
+    for (const roleId of selectedRoleIds) {
+      if (previousRoleIds.has(roleId)) {
+        continue;
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/msnplans/${missionId}/roles`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ crewRoleId: roleId }),
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to add mission role:', errorData);
+        }
+      } catch (error) {
+        console.error('Error adding mission role:', error);
+      }
+    }
+
+    for (const roleId of previousRoleIds) {
+      if (selectedRoleIds.has(roleId)) {
+        continue;
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/msnplans/${missionId}/roles`,
+          {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ crewRoleId: roleId }),
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to remove mission role:', errorData);
+        }
+      } catch (error) {
+        console.error('Error removing mission role:', error);
+      }
+    }
+  }
+
+  async function syncMissionPersonnel(
+    missionId,
+    previousPersonnel,
+    selectedPersonnelIds,
+  ) {
+    const previousPersonnelIds = new Set(
+      (previousPersonnel || []).map((person) => person.personId ?? person.id),
+    );
+
+    const selectedIds = new Set(selectedPersonnelIds);
+
+    for (const personnelId of selectedIds) {
+      if (previousPersonnelIds.has(personnelId)) {
+        continue;
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/msnplans/${missionId}/personnel`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ personnelId }),
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to add mission personnel:', errorData);
+        }
+      } catch (error) {
+        console.error('Error adding mission personnel:', error);
+      }
+    }
+
+    for (const personnelId of previousPersonnelIds) {
+      if (selectedIds.has(personnelId)) {
+        continue;
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/msnplans/${missionId}/personnel`,
+          {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ personnelId }),
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to remove mission personnel:', errorData);
+        }
+      } catch (error) {
+        console.error('Error removing mission personnel:', error);
+      }
+    }
+  }
+
   function handleConopChange(event) {
     const { name, value } = event.target;
 
@@ -338,6 +474,12 @@ function MPC() {
       console.error('Error saving personnel readiness:', error);
       return;
     }
+
+    await syncMissionPersonnel(
+      selectedMission.id,
+      selectedMission.personnel,
+      assignedPersonnel,
+    );
 
     const updatedMissions = missions.map((mission) => {
       if (mission.id === selectedMission.id) {
@@ -600,6 +742,12 @@ function MPC() {
           return;
         }
 
+        await syncMissionRoles(
+          editingMissionId,
+          selectedMission?.requiredRoles,
+          parseRoleNames(newMission.requiredRoles),
+        );
+
         const updatedMissions = missions.map((mission) =>
           mission.id === editingMissionId
             ? {
@@ -728,6 +876,12 @@ function MPC() {
           console.error('Failed to update mission requirements:', errorData);
           return;
         }
+
+        await syncMissionRoles(
+          createdMission.id,
+          [],
+          parseRoleNames(newMission.requiredRoles),
+        );
 
         const missionForPlanning = {
           ...createdMission,
@@ -1364,20 +1518,8 @@ function MPC() {
                   </div>
 
                   <div className="personnel-statuses">
-                    <span
-                      className={`personnel-status ${
-                        person.qualified ? 'status-good' : 'status-bad'
-                      }`}
-                    >
-                      {person.qualified ? 'Qualified' : 'Qualification Gap'}
-                    </span>
-
-                    <span
-                      className={`personnel-status ${
-                        person.available ? 'status-good' : 'status-bad'
-                      }`}
-                    >
-                      {person.available ? 'Available' : 'Unavailable'}
+                    <span className="personnel-status status-good">
+                      Assigned
                     </span>
                   </div>
                 </div>
@@ -1653,8 +1795,8 @@ function MPC() {
                 onChange={handleRequiredRolesChange}
               >
                 {roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
+                  <option key={role.id} value={role.name}>
+                    {role.name}
                   </option>
                 ))}
               </select>
