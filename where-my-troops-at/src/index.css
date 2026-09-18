@@ -17,12 +17,12 @@
 
 .dark-theme {
     --bg-color: #001026;
-    --panel-bg: rgba(30, 30, 30, 0.55);
-    --panel-bg-hover: rgba(97, 97, 97, 0.55);
+    --panel-bg: rgba(30, 30, 30, 0.8);
+    --panel-bg-hover: rgba(97, 97, 97, 0.8);
     --text-color: #c0c0c0;
     --border-color: #333333;
-    --list-bg: rgba(17, 30, 56, 0.55);
-    --catalog-bg: rgba(22, 34, 44, 0.55);
+    --list-bg: rgba(17, 30, 56, 0.8);
+    --catalog-bg: rgba(22, 34, 44, 0.8);
     --button-text: #ffffff;
     --scrollbar-thumb: #334155;
 }
@@ -52,6 +52,7 @@ body {
     font-weight: 500;
     cursor: pointer;
 }
+
 .btn-edit:hover {
     background-color: #975a16;
     border-color: #975a16;
@@ -67,6 +68,7 @@ body {
     font-weight: 500;
     cursor: pointer;
 }
+
 .btn-delete:hover {
     background-color: #8f1c13;
     border-color: #8f1c13;
@@ -93,17 +95,17 @@ footer {
     margin: 0 auto 10px auto;
     padding: 10px 20px;
 }
+
 .support-footer {
     margin-left: 25px;
     color: var(--text-color);
     font-size: 0.9rem;
 }
+
 .support-footer:hover {
     color: var(--text-color-hover);
 }
 
 @media (max-width: 768px) {
-    footer {
-
-    }
+    footer {}
 }

@@ -3,7 +3,7 @@
 
 .wmta-brand-title {
   font-family: Impact, "Arial Narrow", sans-serif;
-  font-size: 1.6rem;
+  font-size: 3rem;
   margin: 0;
   font-weight: 900;
   letter-spacing: 0.02em;
@@ -44,7 +44,7 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-color);
   pointer-events: none;
@@ -52,7 +52,7 @@
 }
 
 .navbar-logo {
-  height: 55px;
+  height: 115px;
   width: auto;
 }
 
@@ -66,7 +66,7 @@
 .navbar-link {
   text-decoration: none;
   color: var(--text-color);
-  font-size: 0.9rem;
+  font-size: 1.25rem;
   padding: 6px 16px;
   border-radius: 20px;
   border: 1px solid transparent;
@@ -95,6 +95,7 @@
   cursor: pointer;
   font-size: 0.9rem;
 }
+
 .navbar-theme-btn:hover {
   background-color: var(--panel-bg-hover);
   color: var(--text-color-hover);
@@ -111,9 +112,11 @@
 .nav-utils * {
   color: var(--text-color);
 }
+
 .nav-utils *:hover {
   color: var(--text-color);
 }
+
 .hamburger-icon {
   position: relative;
   border-radius: 5px;
@@ -122,6 +125,7 @@
   color: var(--text-color);
   background-color: var(--bg-color)
 }
+
 .menu-dropdown {
   display: flex;
   flex-direction: column;
@@ -158,7 +162,7 @@
 
   /* The flat links outside the dropdown hide at this width - the
      duplicate copy inside .menu-dropdown-links takes over instead */
-  .navbar-links > .navbar-link {
+  .navbar-links>.navbar-link {
     display: none;
   }
 
